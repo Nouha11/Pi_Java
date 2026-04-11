@@ -10,7 +10,6 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // 1. Tell it exactly where to find your visual file
         URL fxmlLocation = getClass().getResource("/views/forum_feed.fxml");
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
 

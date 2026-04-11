@@ -1,4 +1,4 @@
-package models;
+package models.forum;
 
 import java.sql.Timestamp;
 
