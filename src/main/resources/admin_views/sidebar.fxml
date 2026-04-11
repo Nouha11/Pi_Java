@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.AdminSidebarController"
+      style="-fx-background-color: #34495e; -fx-font-family: Arial; -fx-font-size: 12;"
+      spacing="10"
+      prefWidth="200">
+
+    <padding>
+        <Insets top="20" right="15" bottom="20" left="15"/>
+    </padding>
+
+    <!-- Admin Header -->
+    <Label text="ADMIN PANEL"
+           style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: white;"/>
+
+    <Separator style="-fx-padding: 5 0;"/>
+
+    <!-- Navigation Items -->
+    <VBox spacing="5" style="-fx-background-color: transparent;">
+
+        <!-- Dashboard -->
+        <Button fx:id="dashboardBtn"
+                text="📊 Dashboard"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-content-display: LEFT; -fx-padding: 10 10; -fx-font-size: 12;"
+                onAction="#handleDashboard"
+                maxWidth="Infinity"/>
+
+        <!-- Quiz Management -->
+        <Button fx:id="quizBtn"
+                text="📝 Quiz Management"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-content-display: LEFT; -fx-padding: 10 10; -fx-font-size: 12;"
+                onAction="#handleQuizManagement"
+                maxWidth="Infinity"/>
+
+        <!-- Users Management -->
+        <Button fx:id="usersBtn"
+                text="👥 Users Management"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-content-display: LEFT; -fx-padding: 10 10; -fx-font-size: 12;"
+                onAction="#handleUsersManagement"
+                maxWidth="Infinity"/>
+
+        <!-- Reports -->
+        <Button fx:id="reportsBtn"
+                text="🚩 Reports"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-content-display: LEFT; -fx-padding: 10 10; -fx-font-size: 12;"
+                onAction="#handleReports"
+                maxWidth="Infinity"/>
+
+        <!-- Settings -->
+        <Button fx:id="settingsBtn"
+                text="⚙️ Settings"
+                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-content-display: LEFT; -fx-padding: 10 10; -fx-font-size: 12;"
+                onAction="#handleSettings"
+                maxWidth="Infinity"/>
+
+    </VBox>
+
+    <!-- Spacer -->
+    <Region VBox.vgrow="ALWAYS"/>
+
+    <!-- Logout Button -->
+    <Separator style="-fx-padding: 5 0;"/>
+    <Button fx:id="logoutBtn"
+            text="🚪 Logout"
+            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 10; -fx-font-size: 12;"
+            onAction="#handleLogout"
+            maxWidth="Infinity"/>
+
+</VBox>

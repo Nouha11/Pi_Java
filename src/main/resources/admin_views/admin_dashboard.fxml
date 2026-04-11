@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.QuizController"
+            style="-fx-font-family: Arial; -fx-font-size: 12;">
+
+    <!-- Sidebar on the left -->
+    <left>
+        <fx:include source="sidebar.fxml"/>
+    </left>
+
+    <!-- Content area in the center -->
+    <center>
+        <VBox spacing="20" style="-fx-background-color: #ecf0f1;">
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30"/>
+            </padding>
+
+            <!-- Header -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Quiz Management"
+                       style="-fx-font-size: 24; -fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Quiz Form -->
+            <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-border-radius: 5;">
+
+                <!-- Title -->
+                <HBox spacing="10">
+                    <Label text="Quiz Title:" minWidth="120"
+                           style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                    <TextField fx:id="titleField"
+                               promptText="Enter quiz title"
+                               HBox.hgrow="ALWAYS"
+                               style="-fx-font-size: 12; -fx-padding: 8; -fx-border-radius: 3;"/>
+                </HBox>
+
+                <!-- Description -->
+                <HBox spacing="10" alignment="TOP_LEFT">
+                    <Label text="Description:" minWidth="120"
+                           style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                    <TextArea fx:id="descriptionField"
+                              promptText="Enter quiz description (optional)"
+                              wrapText="true"
+                              prefRowCount="6"
+                              HBox.hgrow="ALWAYS"
+                              style="-fx-font-size: 12; -fx-padding: 8; -fx-border-radius: 3;"/>
+                </HBox>
+
+                <!-- Buttons -->
+                <HBox spacing="10" alignment="CENTER">
+                    <Button fx:id="createButton"
+                            text="Create Quiz"
+                            onAction="#handleCreateQuiz"
+                            style="-fx-font-size: 12; -fx-padding: 10 30; -fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: HAND;"/>
+
+                    <Button fx:id="updateButton"
+                            text="Update Quiz"
+                            onAction="#handleUpdateQuiz"
+                            visible="false"
+                            style="-fx-font-size: 12; -fx-padding: 10 30; -fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: HAND;"/>
+
+                    <Button fx:id="deleteButton"
+                            text="Delete Quiz"
+                            onAction="#handleDeleteQuiz"
+                            visible="false"
+                            style="-fx-font-size: 12; -fx-padding: 10 30; -fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: HAND;"/>
+
+                    <Button fx:id="cancelButton"
+                            text="Cancel"
+                            onAction="#handleCancel"
+                            style="-fx-font-size: 12; -fx-padding: 10 30; -fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: HAND;"/>
+                </HBox>
+
+                <!-- Message Label -->
+                <Label fx:id="messageLabel"
+                       style="-fx-font-size: 12; -fx-text-fill: #e74c3c;"/>
+
+            </VBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>
