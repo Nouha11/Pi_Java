@@ -22,6 +22,17 @@ public class MainFX extends Application {
 
         // 3. Show the window!
         primaryStage.show();
+
+
+        // --- Study Session module ---
+        FXMLLoader studyLoader = new FXMLLoader(
+                getClass().getResource("/views/studysession/MainDashboard.fxml")
+        );
+        Parent studyRoot = studyLoader.load();
+        Stage studyStage = new Stage();
+        studyStage.setTitle("📚 Study Session Manager");
+        studyStage.setScene(new Scene(studyRoot, 1100, 740));
+        studyStage.show();
     }
 
     public static void main(String[] args) {
