@@ -132,15 +132,20 @@ public class PostService {
     }
 
 
-    // --- READ (Afficher avec Jointure) ---
+    // --- READ (Afficher avec Jointure et Tags) ---
     public List<Post> afficher() {
         List<Post> posts = new ArrayList<>();
 
-        // The magic query that fulfills your "pas d'affichage d'id" requirement!
-        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
+        // The Magic Query: Joins User, Space, AND crushes all Tags into a single comma-separated string!
+        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
+                "GROUP_CONCAT(t.name SEPARATOR ',') AS tags_list " +
                 "FROM post p " +
                 "JOIN user u ON p.author_id = u.id " +
-                "LEFT JOIN space s ON p.space_id = s.id";
+                "LEFT JOIN space s ON p.space_id = s.id " +
+                "LEFT JOIN post_tags pt ON p.id = pt.post_id " +
+                "LEFT JOIN tag t ON pt.tag_id = t.id " +
+                "GROUP BY p.id " +
+                "ORDER BY p.created_at DESC"; // Newest posts first!
 
         try {
             Statement st = cnx.createStatement();
@@ -155,16 +160,21 @@ public class PostService {
                 p.setLocked(rs.getBoolean("is_locked"));
                 p.setHotScore(rs.getDouble("hot_score"));
                 p.setCreatedAt(rs.getTimestamp("created_at"));
+                p.setLink(rs.getString("link"));
+                p.setImageName(rs.getString("image_name"));
+                p.setAttachmentName(rs.getString("attachment_name"));
 
-                // We map the raw IDs just in case we need them for updates/deletes later
                 p.setAuthorId(rs.getInt("author_id"));
                 if (rs.getObject("space_id") != null) {
                     p.setSpaceId(rs.getInt("space_id"));
                 }
 
-                // 🔥 HERE IS THE MAGIC: We save the actual names for the JavaFX UI 🔥
+                // Map the joined string names
                 p.setAuthorName(rs.getString("author_name"));
                 p.setSpaceName(rs.getString("space_name"));
+
+                // Set the tags (It will look like "Science,Math,Exams" or be null)
+                p.setTags(rs.getString("tags_list"));
 
                 posts.add(p);
             }
@@ -174,6 +184,8 @@ public class PostService {
 
         return posts;
     }
+
+
     // --- UPDATE (Modifier) ---
     public void modifier(Post p) {
         // We update the title, content, space_id, and updated_at based on the post ID

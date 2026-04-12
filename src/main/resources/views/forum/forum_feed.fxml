@@ -6,8 +6,8 @@
 
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
-   <children>
-      <ListView fx:id="postListView" prefHeight="341.0" prefWidth="600.0" />
-      <Button layoutX="500.0" layoutY="352.0" mnemonicParsing="false" text="New Post" />
-   </children>
+    <children>
+        <ListView fx:id="postListView" prefHeight="341.0" prefWidth="600.0" />
+        <Button layoutX="500.0" layoutY="352.0" mnemonicParsing="false" text="New Post" />
+    </children>
 </AnchorPane>

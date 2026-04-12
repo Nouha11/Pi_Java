@@ -32,6 +32,18 @@ public class MainFX extends Application {
     }
 
     public static void main(String[] args) {
+        // TEMPORARY TEST
+        services.forum.PostService service = new services.forum.PostService();
+        java.util.List<models.forum.Post> myPosts = service.afficher();
+
+        System.out.println("--- FORUM FEED TEST ---");
+        for (models.forum.Post p : myPosts) {
+            System.out.println("Title: " + p.getTitle());
+            System.out.println("Author: " + p.getAuthorName() + " | Space: " + p.getSpaceName());
+            System.out.println("Tags: " + p.getTags());
+            System.out.println("-----------------------");
+        }
+
         launch(args);
     }
 }
