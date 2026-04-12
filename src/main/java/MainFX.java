@@ -29,6 +29,17 @@ public class MainFX extends Application {
         primaryStage.setTitle("Forum Application - Add Post Test");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+
+        // --- Study Session module ---
+        FXMLLoader studyLoader = new FXMLLoader(
+                getClass().getResource("/views/studysession/MainDashboard.fxml")
+        );
+        Parent studyRoot = studyLoader.load();
+        Stage studyStage = new Stage();
+        studyStage.setTitle("📚 Study Session Manager");
+        studyStage.setScene(new Scene(studyRoot, 1100, 740));
+        studyStage.show();
     }
 
     public static void main(String[] args) {
