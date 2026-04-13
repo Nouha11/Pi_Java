@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+
+<VBox spacing="0" styleClass="stats-pane"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.StatsController">
+
+
+    <!-- HEADER -->
+    <HBox styleClass="stats-header" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+        <Label text="📊" style="-fx-font-size:22px;"/>
+        <Label text="Study Session Statistics" styleClass="stats-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="🔄 Refresh" styleClass="btn-ghost"
+                style="-fx-text-fill:white; -fx-border-color:rgba(255,255,255,0.4);"
+                onAction="#handleRefresh"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                hbarPolicy="NEVER"
+                style="-fx-background-color:transparent; -fx-background:transparent;">
+        <VBox spacing="16">
+            <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
+
+            <!-- ── ROW 1: SESSION STAT CARDS ── -->
+            <Label text="⏱ Session Overview" styleClass="section-label"/>
+            <HBox spacing="14">
+                <!-- Total Sessions -->
+                <VBox styleClass="stat-card" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblTotalSessions" text="—" styleClass="stat-card-value"/>
+                    <Label text="TOTAL SESSIONS" styleClass="stat-card-label"/>
+                </VBox>
+                <!-- Total XP -->
+                <VBox styleClass="stat-card" alignment="CENTER" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:white;">
+                    <Label fx:id="lblTotalXP" text="—"
+                           style="-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill:#6a1b9a;"/>
+                    <Label text="TOTAL XP EARNED" styleClass="stat-card-label"/>
+                </VBox>
+                <!-- Avg Duration -->
+                <VBox styleClass="stat-card" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblAvgDuration" text="—"
+                           style="-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill:#0277bd;"/>
+                    <Label text="AVG DURATION" styleClass="stat-card-label"/>
+                </VBox>
+                <!-- Total Minutes -->
+                <VBox styleClass="stat-card" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblTotalMinutes" text="—"
+                           style="-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill:#2e7d32;"/>
+                    <Label text="TOTAL STUDY TIME" styleClass="stat-card-label"/>
+                </VBox>
+            </HBox>
+
+            <!-- ── ROW 2: COURSES + PLANNINGS ── -->
+            <HBox spacing="14">
+                <!-- Course Card -->
+                <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="8">
+                    <Label text="📘 Courses" styleClass="chart-title"/>
+                    <Separator/>
+                    <HBox spacing="30" alignment="CENTER">
+                        <VBox alignment="CENTER" spacing="4">
+                            <Label fx:id="lblTotalCourses" text="—"
+                                   style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#1a237e;"/>
+                            <Label text="TOTAL" styleClass="stat-card-label"/>
+                        </VBox>
+                        <VBox alignment="CENTER" spacing="4">
+                            <Label fx:id="lblPublishedCourses" text="—"
+                                   style="-fx-font-size:15px; -fx-text-fill:#2e7d32; -fx-font-weight:bold;"/>
+                            <Label text="STATUS" styleClass="stat-card-label"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Planning Card -->
+                <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="6">
+                    <Label text="📅 Plannings" styleClass="chart-title"/>
+                    <Separator/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label fx:id="lblTotalPlannings" text="—"
+                               style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#1a237e;"/>
+                        <Label text="Total" styleClass="stat-card-label"/>
+                    </HBox>
+                    <Label fx:id="lblScheduled"  text="📅 0 Scheduled"  style="-fx-text-fill:#0277bd;"/>
+                    <Label fx:id="lblCompleted"  text="✅ 0 Completed"  style="-fx-text-fill:#2e7d32;"/>
+                    <Label fx:id="lblMissed"     text="❌ 0 Missed"     style="-fx-text-fill:#c62828;"/>
+                    <Label fx:id="lblCancelled"  text="🚫 0 Cancelled"  style="-fx-text-fill:#546e7a;"/>
+                </VBox>
+            </HBox>
+
+            <!-- ── ROW 3: BURNOUT DISTRIBUTION ── -->
+            <VBox styleClass="chart-card" spacing="10">
+                <Label text="🔥 Burnout Risk Distribution" styleClass="chart-title"/>
+                <Separator/>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <Label fx:id="lblBurnoutLow"      text="🟢 LOW: 0"      style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#2e7d32;"/>
+                    <Label fx:id="lblBurnoutModerate" text="🟡 MODERATE: 0" style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#e65100;"/>
+                    <Label fx:id="lblBurnoutHigh"     text="🔴 HIGH: 0"     style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#c62828;"/>
+                </HBox>
+                <!-- Visual bars rendered by StatsController -->
+                <HBox fx:id="burnoutBars" spacing="24" alignment="BOTTOM_LEFT" minHeight="140"/>
+            </VBox>
+
+            <!-- ── ROW 4: XP PER COURSE + DIFFICULTY ── -->
+            <HBox spacing="14">
+                <!-- XP per Course -->
+                <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="8" minWidth="0">
+                    <Label text="🏆 XP Earned per Course (Top 10)" styleClass="chart-title"/>
+                    <Separator/>
+                    <VBox fx:id="xpPerCourseChart" spacing="6"/>
+                </VBox>
+
+                <!-- Difficulty Distribution -->
+                <VBox styleClass="chart-card" prefWidth="300" spacing="8" minWidth="260">
+                    <Label text="📊 Courses by Difficulty" styleClass="chart-title"/>
+                    <Separator/>
+                    <VBox fx:id="difficultyChart" spacing="8"/>
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

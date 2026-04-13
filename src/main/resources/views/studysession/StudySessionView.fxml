@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+
+<VBox spacing="0" styleClass="module-pane"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.StudySessionController">
+
+
+    <!-- TOOLBAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+        <Button text="➕ New Session"  styleClass="btn-primary"   onAction="#handleNew"/>
+        <Button text="✏ Edit"          styleClass="btn-secondary" onAction="#handleEdit"/>
+        <Button text="🗑 Delete"       styleClass="btn-danger"    onAction="#handleDelete"/>
+        <Separator orientation="VERTICAL"/>
+        <Button text="📊 Statistics"   styleClass="btn-stats"     onAction="#handleStats"/>
+        <Button text="🔄 Refresh"      styleClass="btn-ghost"     onAction="#handleRefresh"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="statsLabel" styleClass="stats-label"/>
+    </HBox>
+
+    <!-- FILTER BAR -->
+    <HBox styleClass="filter-bar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="7" right="14" bottom="7" left="14"/></padding>
+        <Label text="Burnout Risk:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterBurnout" prefWidth="120"/>
+        <Label text="Mood:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterMood" prefWidth="110"/>
+        <Label text="Energy:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterEnergy" prefWidth="110"/>
+        <Label text="From:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <DatePicker fx:id="dateFrom" prefWidth="130"/>
+        <Label text="To:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <DatePicker fx:id="dateTo" prefWidth="130"/>
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="sessionTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"       text="ID"            prefWidth="50"  minWidth="40"/>
+            <TableColumn fx:id="colCourse"   text="Course"        prefWidth="180" minWidth="100"/>
+            <TableColumn fx:id="colPlanning" text="Planning"      prefWidth="180" minWidth="100"/>
+            <TableColumn fx:id="colStarted"  text="Started At"    prefWidth="155" minWidth="100"/>
+            <TableColumn fx:id="colDuration" text="Duration (min)" prefWidth="115" minWidth="80"/>
+            <TableColumn fx:id="colXP"       text="XP Earned"     prefWidth="90"  minWidth="60"/>
+            <TableColumn fx:id="colBurnout"  text="Burnout Risk"  prefWidth="110" minWidth="80"/>
+            <TableColumn fx:id="colMood"     text="Mood"          prefWidth="90"  minWidth="60"/>
+            <TableColumn fx:id="colEnergy"   text="Energy Level"  prefWidth="100" minWidth="60"/>
+        </columns>
+        <placeholder>
+            <Label text="No study sessions yet. Start a session from the Plannings tab."
+                   style="-fx-text-fill:#90a4ae; -fx-font-size:13px;"/>
+        </placeholder>
+    </TableView>
+
+    <!-- STATUS BAR -->
+    <HBox styleClass="module-status-bar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="5" right="14" bottom="5" left="14"/></padding>
+        <Label fx:id="statusLabel" text="Ready"
+               style="-fx-text-fill:#546e7a; -fx-font-size:11px;"/>
+    </HBox>
+
+</VBox>

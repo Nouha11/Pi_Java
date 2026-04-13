@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="@../../css/study.css"
+            prefWidth="1100" prefHeight="740">
+
+    <!-- TOP BAR -->
+    <top>
+        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
+            <Label text="📚" style="-fx-font-size:26px;"/>
+            <Label text="Study Session Manager" styleClass="app-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Nova Application" styleClass="top-subtitle"/>
+        </HBox>
+    </top>
+
+    <!-- MAIN TABS -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
+
+            <Tab text="📘  Courses">
+                <fx:include source="CourseView.fxml"/>
+            </Tab>
+
+            <Tab text="📅  Plannings">
+                <fx:include source="PlanningView.fxml"/>
+            </Tab>
+
+            <Tab text="⏱  Study Sessions">
+                <fx:include source="StudySessionView.fxml"/>
+            </Tab>
+
+            <Tab text="📊  Statistics">
+                <fx:include source="StatsView.fxml"/>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- STATUS BAR -->
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="8">
+            <padding><Insets top="5" right="16" bottom="5" left="16"/></padding>
+            <Label text="✅ Connected — nova_db"
+                   style="-fx-text-fill:#27ae60; -fx-font-size:11px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Study Session Module v1.0  |  Pi_Java Project"
+                   style="-fx-text-fill:#90a4ae; -fx-font-size:11px;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

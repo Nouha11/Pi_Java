@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+
+<VBox spacing="0" styleClass="module-pane"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.CourseController">
+
+
+    <!-- TOOLBAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+        <Button text="➕ New Course"      styleClass="btn-primary"   onAction="#handleNew"/>
+        <Button text="✏ Edit"             styleClass="btn-secondary" onAction="#handleEdit"/>
+        <Button text="🗑 Delete"          styleClass="btn-danger"    onAction="#handleDelete"/>
+        <Button text="📢 Toggle Publish"  styleClass="btn-warning"   onAction="#handleTogglePublish"/>
+        <Button text="📅 View Plannings"  styleClass="btn-info"      onAction="#handleViewPlannings"/>
+        <Separator orientation="VERTICAL"/>
+        <Button text="📊 Stats"           styleClass="btn-stats"     onAction="#handleStats"/>
+        <Button text="🔄 Refresh"         styleClass="btn-ghost"     onAction="#handleRefresh"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="statsLabel" styleClass="stats-label"/>
+    </HBox>
+
+    <!-- FILTER BAR -->
+    <HBox styleClass="filter-bar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="7" right="14" bottom="7" left="14"/></padding>
+        <Label text="🔍" style="-fx-font-size:14px;"/>
+        <TextField fx:id="searchField"
+                   promptText="Search name, category, description…"
+                   prefWidth="230" styleClass="search-field"/>
+        <Label text="Difficulty:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterDifficulty" prefWidth="130"/>
+        <Label text="Category:"  style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterCategory"  prefWidth="130"/>
+        <Label text="Status:"    style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterStatus"    prefWidth="130"/>
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="courseTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"         text="ID"              prefWidth="50"  minWidth="40"/>
+            <TableColumn fx:id="colName"       text="Course Name"     prefWidth="230" minWidth="120"/>
+            <TableColumn fx:id="colCategory"   text="Category"        prefWidth="130" minWidth="80"/>
+            <TableColumn fx:id="colDifficulty" text="Difficulty"      prefWidth="110" minWidth="80"/>
+            <TableColumn fx:id="colStatus"     text="Status"          prefWidth="120" minWidth="80"/>
+            <TableColumn fx:id="colDuration"   text="Duration (min)"  prefWidth="115" minWidth="80"/>
+            <TableColumn fx:id="colProgress"   text="Progress"        prefWidth="80"  minWidth="60"/>
+            <TableColumn fx:id="colPublished"  text="Published"       prefWidth="90"  minWidth="60"/>
+        </columns>
+        <placeholder>
+            <Label text="No courses found. Click ➕ New Course to add one."
+                   style="-fx-text-fill:#90a4ae; -fx-font-size:13px;"/>
+        </placeholder>
+    </TableView>
+
+    <!-- BOTTOM STATUS -->
+    <HBox styleClass="module-status-bar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="5" right="14" bottom="5" left="14"/></padding>
+        <Label fx:id="statusLabel" text="Ready"
+               style="-fx-text-fill:#546e7a; -fx-font-size:11px;"/>
+    </HBox>
+
+</VBox>

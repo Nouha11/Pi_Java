@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+
+<VBox spacing="0" styleClass="detail-pane" prefWidth="900" prefHeight="600"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.CourseDetailController">
+
+
+    <!-- HEADER CARD -->
+    <HBox styleClass="detail-header" alignment="CENTER_LEFT" spacing="20">
+        <padding><Insets top="18" right="24" bottom="18" left="24"/></padding>
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblCourseName" text="—" styleClass="detail-title"/>
+            <HBox spacing="14" alignment="CENTER_LEFT">
+                <Label fx:id="lblCategory"   text="—" styleClass="detail-badge-gray"/>
+                <Label text="•" style="-fx-text-fill:#b0bec5;"/>
+                <Label fx:id="lblDifficulty" text="—" styleClass="detail-badge-blue"/>
+                <Label text="•" style="-fx-text-fill:#b0bec5;"/>
+                <Label fx:id="lblStatus"     text="—" styleClass="detail-badge-green"/>
+            </HBox>
+        </VBox>
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label fx:id="lblPublished" text="—" styleClass="detail-badge-orange"/>
+            <Label fx:id="lblDuration"  text="—" styleClass="detail-meta"/>
+            <Label fx:id="lblProgress"  text="—" styleClass="detail-meta"/>
+        </VBox>
+    </HBox>
+
+    <!-- DESCRIPTION -->
+    <VBox styleClass="detail-section">
+        <padding><Insets top="10" right="24" bottom="10" left="24"/></padding>
+        <Label text="Description" styleClass="section-label"/>
+        <TextArea fx:id="txtDescription" editable="false" wrapText="true"
+                  prefRowCount="3" styleClass="detail-textarea"
+                  style="-fx-font-size:12px; -fx-text-fill:#546e7a;"/>
+    </VBox>
+
+    <Separator style="-fx-background-color:#e0e4ef;"/>
+
+    <!-- PLANNINGS SUB-SECTION -->
+    <VBox VBox.vgrow="ALWAYS" styleClass="detail-section">
+        <padding><Insets top="10" right="24" bottom="12" left="24"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <padding><Insets bottom="8"/></padding>
+            <Label text="📅 Planning Sessions" styleClass="section-label"/>
+            <Label fx:id="lblPlanCount" text="0" styleClass="badge-count"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="➕ Add Planning Session" styleClass="btn-primary"
+                    onAction="#handleAddPlanning"/>
+        </HBox>
+
+        <TableView fx:id="planningTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+            <columns>
+                <TableColumn fx:id="colTitle"      text="Title"         prefWidth="220"/>
+                <TableColumn fx:id="colDate"       text="Date"          prefWidth="120"/>
+                <TableColumn fx:id="colTime"       text="Time"          prefWidth="80"/>
+                <TableColumn fx:id="colDuration"   text="Duration (min)" prefWidth="110"/>
+                <TableColumn fx:id="colPlanStatus" text="Status"        prefWidth="120"/>
+            </columns>
+            <placeholder>
+                <Label text="No planning sessions yet. Click ➕ to add one."
+                       style="-fx-text-fill:#90a4ae;"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+</VBox>

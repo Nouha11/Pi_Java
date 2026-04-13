@@ -1,9 +1,9 @@
-package controllers;
+package controllers.forum;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
-import models.Post;
-import services.PostService;
+import models.forum.Post;
+import services.forum.PostService;
 import java.util.List;
 
 public class ForumFeedController {

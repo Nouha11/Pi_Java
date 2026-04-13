@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+
+<VBox spacing="0" styleClass="module-pane"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.PlanningController">
+
+
+    <!-- TOOLBAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
+        <Button text="➕ New Planning"     styleClass="btn-primary"   onAction="#handleNew"/>
+        <Button text="✏ Edit"              styleClass="btn-secondary" onAction="#handleEdit"/>
+        <Button text="🗑 Delete"           styleClass="btn-danger"    onAction="#handleDelete"/>
+        <Separator orientation="VERTICAL"/>
+        <Button text="✅ Mark Complete"    styleClass="btn-success"   onAction="#handleMarkComplete"/>
+        <Button text="🚫 Cancel"           styleClass="btn-warning"   onAction="#handleMarkCancelled"/>
+        <Button text="▶ Start Session"     styleClass="btn-info"      onAction="#handleStartSession"/>
+        <Separator orientation="VERTICAL"/>
+        <Button text="🔄 Refresh"          styleClass="btn-ghost"     onAction="#handleRefresh"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="statsLabel" styleClass="stats-label"/>
+    </HBox>
+
+    <!-- FILTER BAR -->
+    <HBox styleClass="filter-bar" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="7" right="14" bottom="7" left="14"/></padding>
+        <Label text="🔍" style="-fx-font-size:14px;"/>
+        <TextField fx:id="searchField" promptText="Search by title…"
+                   prefWidth="200" styleClass="search-field"/>
+        <Label text="Status:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterStatus" prefWidth="130"/>
+        <Label text="Course:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <ComboBox fx:id="filterCourse" prefWidth="180"/>
+        <Label text="From:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <DatePicker fx:id="dateFrom" prefWidth="130"/>
+        <Label text="To:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
+        <DatePicker fx:id="dateTo" prefWidth="130"/>
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="planningTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="colId"       text="ID"            prefWidth="50"  minWidth="40"/>
+            <TableColumn fx:id="colCourse"   text="Course"        prefWidth="180" minWidth="100"/>
+            <TableColumn fx:id="colTitle"    text="Title"         prefWidth="200" minWidth="100"/>
+            <TableColumn fx:id="colDate"     text="Date"          prefWidth="110" minWidth="80"/>
+            <TableColumn fx:id="colTime"     text="Time"          prefWidth="80"  minWidth="60"/>
+            <TableColumn fx:id="colDuration" text="Duration (min)" prefWidth="115" minWidth="80"/>
+            <TableColumn fx:id="colStatus"   text="Status"        prefWidth="120" minWidth="80"/>
+            <TableColumn fx:id="colReminder" text="Reminder"      prefWidth="80"  minWidth="60"/>
+        </columns>
+        <placeholder>
+            <Label text="No planning sessions found."
+                   style="-fx-text-fill:#90a4ae; -fx-font-size:13px;"/>
+        </placeholder>
+    </TableView>
+
+    <!-- STATUS BAR -->
+    <HBox styleClass="module-status-bar" alignment="CENTER_LEFT" spacing="8">
+        <padding><Insets top="5" right="14" bottom="5" left="14"/></padding>
+        <Label fx:id="statusLabel" text="Ready"
+               style="-fx-text-fill:#546e7a; -fx-font-size:11px;"/>
+        <Label text=" | 💡 Tip: Past SCHEDULED sessions are auto-marked MISSED on refresh"
+               style="-fx-text-fill:#90a4ae; -fx-font-size:10px;"/>
+    </HBox>
+
+</VBox>

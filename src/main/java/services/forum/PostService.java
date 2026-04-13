@@ -1,6 +1,6 @@
-package services;
+package services.forum;
 
-import models.Post;
+import models.forum.Post;
 import utils.MyConnection;
 import java.sql.*;
 import java.util.ArrayList;

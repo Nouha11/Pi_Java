@@ -1,6 +1,6 @@
-package services;
+package services.forum;
 
-import models.Comment;
+import models.forum.Comment;
 import utils.MyConnection;
 
 import java.sql.*;
