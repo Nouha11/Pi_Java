@@ -32,7 +32,6 @@ public class StudySessionFormController implements Initializable {
     @FXML private Label lblError;
     @FXML private Button btnSave;
 
-    // Per-field error labels
     @FXML private Label errPlanning;
     @FXML private Label errDuration;
     @FXML private Label errActualDuration;
@@ -41,7 +40,7 @@ public class StudySessionFormController implements Initializable {
     private final PlanningService planningService = new PlanningService();
     private StudySession session;
     private boolean isEdit;
-    private int preselectedUserId = 1; // Default – replace with session user
+    private int preselectedUserId = 4;
     private Runnable onSaveCallback;
 
     @Override
@@ -53,7 +52,6 @@ public class StudySessionFormController implements Initializable {
 
         loadPlannings();
 
-        // Auto-calculate XP and burnout on duration change
         txtActualDuration.textProperty().addListener((obs, o, n) -> autoCalculatePreview());
         txtDuration.textProperty().addListener((obs, o, n) -> autoCalculatePreview());
 
@@ -61,7 +59,6 @@ public class StudySessionFormController implements Initializable {
         txtActualDuration.focusedProperty().addListener((obs, o, n) -> { if (!n) validateActualDuration(); });
     }
 
-    /** Called from PlanningController when "Start Session" is clicked */
     public void initForPlanning(Planning planning, Runnable onSave) {
         this.onSaveCallback = onSave;
         isEdit = false;
@@ -74,7 +71,6 @@ public class StudySessionFormController implements Initializable {
         autoCalculatePreview();
     }
 
-    /** Called from StudySessionController for generic add/edit */
     public void initData(StudySession s, Runnable onSave) {
         this.onSaveCallback = onSave;
         if (s == null) {
@@ -85,7 +81,6 @@ public class StudySessionFormController implements Initializable {
             isEdit = true;
             session = s;
             formTitle.setText("✏ Edit Study Session");
-            // Pre-fill planning
             for (Planning p : cbPlanning.getItems()) {
                 if (p.getId() == s.getPlanningId()) { cbPlanning.setValue(p); break; }
             }
@@ -123,7 +118,6 @@ public class StudySessionFormController implements Initializable {
         }
     }
 
-    /** Shows auto-calculated XP and burnout risk as preview */
     private void autoCalculatePreview() {
         try {
             String durText = txtActualDuration.getText();
@@ -147,12 +141,13 @@ public class StudySessionFormController implements Initializable {
         if (!validateAll()) return;
 
         populateSession();
-        sessionService.autoCalculate(session); // always auto-calc on save
+        sessionService.autoCalculate(session);
 
         String validationError = sessionService.validate(session, isEdit);
         if (validationError != null) {
             lblError.setText("⚠ " + validationError);
             lblError.setVisible(true);
+            lblError.setManaged(true);
             return;
         }
 
@@ -165,6 +160,8 @@ public class StudySessionFormController implements Initializable {
         } catch (SQLException e) {
             lblError.setText("⚠ Database error: " + e.getMessage());
             lblError.setVisible(true);
+            lblError.setManaged(true);
+            e.printStackTrace();
         }
     }
 
@@ -178,7 +175,13 @@ public class StudySessionFormController implements Initializable {
     private boolean validateAll() {
         boolean ok = true;
         if (cbPlanning.getValue() == null) {
-            errPlanning.setText("Planning is required."); errPlanning.setVisible(true); ok = false;
+            errPlanning.setText("Planning is required.");
+            errPlanning.setVisible(true);
+            errPlanning.setManaged(true);
+            ok = false;
+        } else {
+            errPlanning.setVisible(false);
+            errPlanning.setManaged(false);
         }
         if (!validateDuration()) ok = false;
         if (!validateActualDuration()) ok = false;
@@ -189,23 +192,35 @@ public class StudySessionFormController implements Initializable {
         try {
             int val = Integer.parseInt(txtDuration.getText().trim());
             if (val <= 0) throw new NumberFormatException();
-            errDuration.setVisible(false); return true;
+            errDuration.setVisible(false);
+            errDuration.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
             errDuration.setText("Planned duration must be a positive integer (minutes).");
-            errDuration.setVisible(true); return false;
+            errDuration.setVisible(true);
+            errDuration.setManaged(true);
+            return false;
         }
     }
 
     private boolean validateActualDuration() {
         String v = txtActualDuration.getText();
-        if (v == null || v.trim().isEmpty()) { errActualDuration.setVisible(false); return true; }
+        if (v == null || v.trim().isEmpty()) {
+            errActualDuration.setVisible(false);
+            errActualDuration.setManaged(false);
+            return true;
+        }
         try {
             int val = Integer.parseInt(v.trim());
             if (val < 0) throw new NumberFormatException();
-            errActualDuration.setVisible(false); return true;
+            errActualDuration.setVisible(false);
+            errActualDuration.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
             errActualDuration.setText("Must be a non-negative integer.");
-            errActualDuration.setVisible(true); return false;
+            errActualDuration.setVisible(true);
+            errActualDuration.setManaged(true);
+            return false;
         }
     }
 
@@ -232,9 +247,13 @@ public class StudySessionFormController implements Initializable {
 
     private void clearErrors() {
         lblError.setVisible(false);
+        lblError.setManaged(false);
         errPlanning.setVisible(false);
+        errPlanning.setManaged(false);
         errDuration.setVisible(false);
+        errDuration.setManaged(false);
         errActualDuration.setVisible(false);
+        errActualDuration.setManaged(false);
     }
 
     private void closeWindow() { ((Stage) btnSave.getScene().getWindow()).close(); }

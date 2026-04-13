@@ -5,7 +5,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import models.studysession.Planning;
-import services.studysession.CourseService;
 import services.studysession.PlanningService;
 
 import java.net.URL;
@@ -20,14 +19,13 @@ public class PlanningFormController implements Initializable {
     @FXML private Label lblCourseName;
     @FXML private TextField txtTitle;
     @FXML private DatePicker dpDate;
-    @FXML private TextField txtTime;       // HH:mm format
+    @FXML private TextField txtTime;
     @FXML private TextField txtDuration;
     @FXML private ComboBox<String> cbStatus;
     @FXML private CheckBox chkReminder;
     @FXML private Label lblError;
     @FXML private Button btnSave;
 
-    // Per-field error labels
     @FXML private Label errTitle;
     @FXML private Label errDate;
     @FXML private Label errTime;
@@ -49,7 +47,6 @@ public class PlanningFormController implements Initializable {
         txtTime.focusedProperty().addListener((obs, o, n) -> { if (!n) validateTime(); });
         txtDuration.focusedProperty().addListener((obs, o, n) -> { if (!n) validateDuration(); });
 
-        // Default time placeholder
         txtTime.setPromptText("HH:mm  (e.g. 14:30)");
     }
 
@@ -88,6 +85,7 @@ public class PlanningFormController implements Initializable {
         if (validationError != null) {
             lblError.setText("⚠ " + validationError);
             lblError.setVisible(true);
+            lblError.setManaged(true);
             return;
         }
 
@@ -100,6 +98,8 @@ public class PlanningFormController implements Initializable {
         } catch (SQLException e) {
             lblError.setText("⚠ Database error: " + e.getMessage());
             lblError.setVisible(true);
+            lblError.setManaged(true);
+            e.printStackTrace();
         }
     }
 
@@ -117,10 +117,19 @@ public class PlanningFormController implements Initializable {
         if (!validateTime()) ok = false;
         if (!validateDuration()) ok = false;
         if (cbStatus.getValue() == null) {
-            errStatus.setText("Status is required."); errStatus.setVisible(true); ok = false;
+            errStatus.setText("Status is required.");
+            errStatus.setVisible(true);
+            errStatus.setManaged(true);
+            ok = false;
+        } else {
+            errStatus.setVisible(false);
+            errStatus.setManaged(false);
         }
         if (courseId <= 0) {
-            lblError.setText("⚠ No course selected. Open this form from a course."); lblError.setVisible(true); ok = false;
+            lblError.setText("⚠ No course selected. Open this form from a course.");
+            lblError.setVisible(true);
+            lblError.setManaged(true);
+            ok = false;
         }
         return ok;
     }
@@ -128,36 +137,59 @@ public class PlanningFormController implements Initializable {
     private boolean validateTitle() {
         String v = txtTitle.getText();
         if (v == null || v.trim().isEmpty()) {
-            errTitle.setText("Title is required."); errTitle.setVisible(true); return false;
+            errTitle.setText("Title is required.");
+            errTitle.setVisible(true);
+            errTitle.setManaged(true);
+            return false;
         }
         if (v.trim().length() < 3) {
-            errTitle.setText("Minimum 3 characters."); errTitle.setVisible(true); return false;
+            errTitle.setText("Minimum 3 characters.");
+            errTitle.setVisible(true);
+            errTitle.setManaged(true);
+            return false;
         }
-        errTitle.setVisible(false); return true;
+        errTitle.setVisible(false);
+        errTitle.setManaged(false);
+        return true;
     }
 
     private boolean validateDate() {
         LocalDate d = dpDate.getValue();
         if (d == null) {
-            errDate.setText("Date is required."); errDate.setVisible(true); return false;
+            errDate.setText("Date is required.");
+            errDate.setVisible(true);
+            errDate.setManaged(true);
+            return false;
         }
         if (!isEdit && d.isBefore(LocalDate.now())) {
-            errDate.setText("Date cannot be in the past."); errDate.setVisible(true); return false;
+            errDate.setText("Date cannot be in the past.");
+            errDate.setVisible(true);
+            errDate.setManaged(true);
+            return false;
         }
-        errDate.setVisible(false); return true;
+        errDate.setVisible(false);
+        errDate.setManaged(false);
+        return true;
     }
 
     private boolean validateTime() {
         String v = txtTime.getText();
         if (v == null || v.trim().isEmpty()) {
-            errTime.setText("Time is required (HH:mm)."); errTime.setVisible(true); return false;
+            errTime.setText("Time is required (HH:mm).");
+            errTime.setVisible(true);
+            errTime.setManaged(true);
+            return false;
         }
         try {
             LocalTime.parse(v.trim());
-            errTime.setVisible(false); return true;
+            errTime.setVisible(false);
+            errTime.setManaged(false);
+            return true;
         } catch (Exception e) {
             errTime.setText("Invalid time format. Use HH:mm (e.g. 09:30).");
-            errTime.setVisible(true); return false;
+            errTime.setVisible(true);
+            errTime.setManaged(true);
+            return false;
         }
     }
 
@@ -165,10 +197,14 @@ public class PlanningFormController implements Initializable {
         try {
             int val = Integer.parseInt(txtDuration.getText().trim());
             if (val <= 0) throw new NumberFormatException();
-            errDuration.setVisible(false); return true;
+            errDuration.setVisible(false);
+            errDuration.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
             errDuration.setText("Must be a positive integer (minutes).");
-            errDuration.setVisible(true); return false;
+            errDuration.setVisible(true);
+            errDuration.setManaged(true);
+            return false;
         }
     }
 
@@ -183,9 +219,12 @@ public class PlanningFormController implements Initializable {
     }
 
     private void clearErrors() {
-        lblError.setVisible(false);
-        errTitle.setVisible(false); errDate.setVisible(false);
-        errTime.setVisible(false); errDuration.setVisible(false); errStatus.setVisible(false);
+        lblError.setVisible(false);     lblError.setManaged(false);
+        errTitle.setVisible(false);     errTitle.setManaged(false);
+        errDate.setVisible(false);      errDate.setManaged(false);
+        errTime.setVisible(false);      errTime.setManaged(false);
+        errDuration.setVisible(false);  errDuration.setManaged(false);
+        errStatus.setVisible(false);    errStatus.setManaged(false);
     }
 
     private void closeWindow() { ((Stage) btnSave.getScene().getWindow()).close(); }
