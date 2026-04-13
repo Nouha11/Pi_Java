@@ -1,6 +1,7 @@
 package models.quiz;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Question {
     private int id;
@@ -11,6 +12,7 @@ public class Question {
     private LocalDateTime updatedAt;
     private int quizId;
     private Integer userId;
+    private List<Choice> choices;
     
     // Constructors
     public Question() {}
@@ -96,6 +98,14 @@ public class Question {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    public List<Choice> getChoices() {
+        return choices;
+    }
+
+    public void setChoices(List<Choice> choices) {
+        this.choices = choices;
     }
 
     @Override

@@ -1,9 +1,12 @@
 package models.quiz;
 
+import java.util.List;
+
 public class Quiz {
     private int id;
     private String title;
     private String description;
+    private List<Question> questions;
 
     // Constructors
     public Quiz() {}
@@ -42,6 +45,14 @@ public class Quiz {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions;
     }
 
     @Override
