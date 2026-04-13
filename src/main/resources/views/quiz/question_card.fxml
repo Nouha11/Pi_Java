@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+  Reusable question card — loaded programmatically by QuizFormController.
+  fx:controller is set at load time via FXMLLoader.setController().
+-->
+<VBox styleClass="question-card"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12">
+
+    <!-- QUESTION HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="question-header">
+        <padding><Insets bottom="8" left="12" right="12" top="8"/></padding>
+        <Label fx:id="lblQuestionNumber" styleClass="question-label" text="Question 1"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnRemoveQuestion" styleClass="btn-danger" text="✕ Remove"/>
+    </HBox>
+
+    <VBox spacing="8">
+        <padding><Insets bottom="12" left="12" right="12" top="10"/></padding>
+
+        <!-- Question text -->
+        <Label styleClass="field-label" text="Question Text *"/>
+        <TextArea fx:id="txtQuestionText" prefRowCount="2" promptText="Enter the question…" wrapText="true"/>
+        <Label fx:id="errQuestionText" managed="false" styleClass="field-error" text=" " visible="false"/>
+
+        <!-- XP + Difficulty -->
+        <HBox spacing="12">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="XP Value *"/>
+                <TextField fx:id="txtXpValue" promptText="e.g. 10"/>
+                <Label fx:id="errXpValue" managed="false" styleClass="field-error" text=" " visible="false"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="field-label" text="Difficulty *"/>
+                <ComboBox fx:id="cbDifficulty" maxWidth="Infinity"/>
+                <Label fx:id="errDifficulty" managed="false" styleClass="field-error" text=" " visible="false"/>
+            </VBox>
+        </HBox>
+
+        <!-- Choices -->
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 6 0 2 0;">
+            <Label styleClass="field-label" text="Answer Choices"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnAddChoice" onAction="#handleAddChoice" styleClass="btn-add-choice" text="＋ Add Choice"/>
+        </HBox>
+        <Label fx:id="errChoices" managed="false" styleClass="field-error" text=" " visible="false"/>
+
+        <!-- Choices injected here -->
+        <VBox fx:id="choicesContainer" spacing="6"/>
+
+    </VBox>
+</VBox>

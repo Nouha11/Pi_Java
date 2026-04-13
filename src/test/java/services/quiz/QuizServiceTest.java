@@ -27,7 +27,7 @@ class QuizServiceTest {
 
     @BeforeAll
     static void setup() {
-        quizService = new QuizService();
+        quizService =   new QuizService();
         questionService = new QuestionService();
         choiceService = new ChoiceService();
     }

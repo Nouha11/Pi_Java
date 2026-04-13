@@ -46,6 +46,16 @@ public class MainFX extends Application {
         gamificationStage.setScene(new Scene(gamificationRoot, 1100, 680));
         gamificationStage.show();
 
+        // --- Quiz module ---
+        FXMLLoader quizLoader = new FXMLLoader(
+                getClass().getResource("/views/quiz/quiz_list.fxml")
+        );
+        Parent quizRoot = quizLoader.load();
+        Stage quizStage = new Stage();
+        quizStage.setTitle("📝 Quiz Manager");
+        quizStage.setScene(new Scene(quizRoot, 900, 600));
+        quizStage.show();
+
         // --- Library module (User flow: Browse → Detail → Borrow/Buy) ---
         FXMLLoader libraryLoader = new FXMLLoader(getClass().getResource("/views/library/BookListView.fxml"));
         Parent libraryRoot = libraryLoader.load();
