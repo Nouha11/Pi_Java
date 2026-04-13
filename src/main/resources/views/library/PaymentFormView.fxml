@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.library.PaymentFormController"
+            style="-fx-background-color: #f8f9fa;">
+
+    <top>
+        <VBox style="-fx-background-color: #cfe2ff; -fx-padding: 20 24 20 24;">
+            <Label fx:id="lblHeader" text="💳 Complete Payment"
+                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+            <Label text="Home › Books › Purchase › Payment"
+                   style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="24" style="-fx-padding: 24;" alignment="TOP_LEFT">
+
+            <!-- LEFT: Payment form -->
+            <VBox spacing="16" HBox.hgrow="ALWAYS">
+                <VBox style="-fx-background-color: white; -fx-background-radius: 8;
+                             -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-padding: 24;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);"
+                      spacing="14">
+
+                    <Label fx:id="lblMethodTitle" text="💳 Credit Card Payment"
+                           style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #212529;
+                                  -fx-padding: 0 0 8 0; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;"/>
+
+                    <!-- Credit card fields (shown for credit_card) -->
+                    <VBox fx:id="cardFields" spacing="14">
+                        <VBox spacing="4">
+                            <Label text="Card Number *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
+                            <TextField fx:id="txtCardNumber" promptText="1234 5678 9012 3456"
+                                       style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                              -fx-background-radius: 6; -fx-padding: 8 10;"/>
+                            <Label fx:id="errCardNumber"
+                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                        </VBox>
+
+                        <VBox spacing="4">
+                            <Label text="Name on Card *"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
+                            <TextField fx:id="txtCardHolder" promptText="John Doe"
+                                       style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                              -fx-background-radius: 6; -fx-padding: 8 10;"/>
+                            <Label fx:id="errCardHolder"
+                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                        </VBox>
+
+                        <HBox spacing="16">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Expiry Date *"
+                                       style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
+                                <TextField fx:id="txtExpiry" promptText="MM/YY"
+                                           style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                                  -fx-background-radius: 6; -fx-padding: 8 10;"/>
+                                <Label fx:id="errExpiry"
+                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                            </VBox>
+                            <VBox spacing="4" prefWidth="130">
+                                <Label text="CVC *"
+                                       style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
+                                <TextField fx:id="txtCvc" promptText="123"
+                                           style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                                  -fx-background-radius: 6; -fx-padding: 8 10;"/>
+                                <Label fx:id="errCvc"
+                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- PayPal message (shown for paypal) -->
+                    <VBox fx:id="paypalFields" alignment="CENTER" spacing="12"
+                          style="-fx-padding: 20;" visible="false" managed="false">
+                        <Label text="🅿" style="-fx-font-size: 60; -fx-text-fill: #0070ba;"/>
+                        <Label text="You will be redirected to PayPal to complete your payment"
+                               style="-fx-font-size: 14; -fx-text-fill: #212529;" wrapText="true"/>
+                        <Label text="Click the button below to proceed with PayPal payment"
+                               style="-fx-font-size: 13; -fx-text-fill: #6c757d;" wrapText="true"/>
+                    </VBox>
+
+                    <!-- Security notice -->
+                    <HBox spacing="12" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #cff4fc; -fx-border-color: #9eeaf9;
+                                 -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 12 16;">
+                        <Label text="🔒" style="-fx-font-size: 18;"/>
+                        <Label text="Your payment info is encrypted. We only store the last 4 digits."
+                               style="-fx-font-size: 12; -fx-text-fill: #055160;" wrapText="true"
+                               HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                    <!-- Error banner -->
+                    <Label fx:id="lblError" text="" wrapText="true"
+                           style="-fx-text-fill: #842029; -fx-background-color: #f8d7da;
+                                  -fx-border-color: #f5c2c7; -fx-border-radius: 6;
+                                  -fx-background-radius: 6; -fx-padding: 10 14; -fx-font-size: 13;"
+                           visible="false"/>
+
+                    <!-- Buttons -->
+                    <HBox spacing="12">
+                        <Button fx:id="btnPay" text="🔒 Complete Payment" onAction="#handlePay"
+                                style="-fx-background-color: #0d6efd; -fx-text-fill: white;
+                                       -fx-font-weight: bold; -fx-font-size: 14; -fx-background-radius: 6;
+                                       -fx-padding: 12 24; -fx-cursor: hand;"/>
+                        <Button text="← Back" onAction="#handleBack"
+                                style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057;
+                                       -fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                       -fx-background-radius: 6; -fx-padding: 12 16; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- RIGHT: Order summary -->
+            <VBox prefWidth="260" spacing="0"
+                  style="-fx-background-color: white; -fx-background-radius: 8;
+                         -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
+
+                <Label text="Order Summary"
+                       style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;
+                              -fx-padding: 16 20; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;"/>
+
+                <VBox spacing="12" style="-fx-padding: 16 20;">
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <Label text="📖" style="-fx-font-size: 24;"/>
+                        <VBox spacing="2">
+                            <Label fx:id="sideBookTitle" wrapText="true"
+                                   style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                            <Label fx:id="sideBookAuthor"
+                                   style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Separator/>
+
+                    <HBox>
+                        <Label text="Book Price" HBox.hgrow="ALWAYS" style="-fx-text-fill: #495057;"/>
+                        <Label fx:id="sidePrice" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                    <HBox>
+                        <Label text="Tax (0%)" HBox.hgrow="ALWAYS" style="-fx-text-fill: #495057;"/>
+                        <Label text="$0.00" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                    <Separator/>
+                    <HBox>
+                        <Label text="Total" HBox.hgrow="ALWAYS"
+                               style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                        <Label fx:id="sideTotal"
+                               style="-fx-font-weight: bold; -fx-font-size: 15; -fx-text-fill: #198754;"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <!-- Payment method badge -->
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-background-radius: 6;">
+                        <Label fx:id="sideMethodIcon" text="💳" style="-fx-font-size: 20;"/>
+                        <VBox spacing="2">
+                            <Label text="Payment Method" style="-fx-font-size: 11; -fx-text-fill: #6c757d;"/>
+                            <Label fx:id="sideMethodName"
+                                   style="-fx-font-weight: bold; -fx-font-size: 13; -fx-text-fill: #212529;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

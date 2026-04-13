@@ -5,52 +5,44 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
-
 import java.io.IOException;
 
 public class NovaDashboardController {
 
-    // This connects to the empty center box in the FXML
+    // The physical box on the main dashboard
     @FXML private StackPane contentArea;
+
+    // A static memory bank so the Home Page cards can safely change the screen!
+    private static StackPane staticContentArea;
 
     @FXML
     public void initialize() {
-        // By default, let's load your teammate's Study Sessions when the app opens
-        loadView("/views/studysession/MainDashboard.fxml");
+        // SAFETY CHECK: Only set up the router if this is the Main Dashboard!
+        if (contentArea != null) {
+            staticContentArea = contentArea;
+            loadPage("/views/home.fxml"); // Load the home page safely
+        }
     }
 
-    @FXML
-    void handleShowStudySessions(ActionEvent event) {
-        // Loads your teammate's module!
-        loadView("/views/studysession/MainDashboard.fxml");
-    }
+    // --- BUTTON CLICKS (Works for the Navbar AND the Home Cards!) ---
+    @FXML void handleShowHome(ActionEvent event) { loadPage("/views/home.fxml"); }
+    @FXML void handleShowStudySessions(ActionEvent event) { loadPage("/views/studysession/MainDashboard.fxml"); }
+    @FXML void handleShowForum(ActionEvent event) { loadPage("/views/forum/forum_feed.fxml"); }
+    @FXML void handleShowGamification(ActionEvent event) { loadPage("/views/gamification/GameDashboard.fxml"); }
+    @FXML void handleShowLibrary(ActionEvent event) { loadPage("/views/library/LibrariesView.fxml"); }
 
-    @FXML
-    void handleShowForum(ActionEvent event) {
-        // Loads YOUR module!
-        loadView("/views/forum_feed.fxml");
-    }
-
-    @FXML
-    void handleShowGamification(ActionEvent event) {
-        // Loads the Games module!
-        loadView("/views/gamification/GameDashboard.fxml");
-    }
-
-    // --- THE ROUTING ENGINE ---
-    private void loadView(String fxmlPath) {
+    // --- THE STATIC ENGINE ---
+    public static void loadPage(String fxmlPath) {
         try {
             System.out.println("Routing to: " + fxmlPath);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            // Notice we use NovaDashboardController.class here now
+            FXMLLoader loader = new FXMLLoader(NovaDashboardController.class.getResource(fxmlPath));
             Parent view = loader.load();
 
-            // Clear out whatever is currently on the screen
-            contentArea.getChildren().clear();
+            staticContentArea.getChildren().clear();
+            staticContentArea.getChildren().add(view);
 
-            // Inject the new screen into the center!
-            contentArea.getChildren().add(view);
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("❌ Failed to load view: " + fxmlPath);
             e.printStackTrace();
         }

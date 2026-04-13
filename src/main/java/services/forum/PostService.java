@@ -5,6 +5,8 @@ import utils.MyConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PostService {
 
@@ -18,134 +20,46 @@ public class PostService {
 
     // --- CREATE (Ajouter) ---
     public void ajouter(Post p) {
-        // REMOVED the 'tags' column from the main Post query
-        String reqPost = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, link, image_name, attachment_name) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // We use ? placeholders to prevent SQL Injection
+        String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
-            // Statement.RETURN_GENERATED_KEYS is crucial! It lets us get the new Post ID back.
-            PreparedStatement ps = cnx.prepareStatement(reqPost, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = cnx.prepareStatement(req);
 
             ps.setString(1, p.getTitle());
             ps.setString(2, p.getContent());
             ps.setInt(3, p.getAuthorId());
 
-            if (p.getSpaceId() != null) { ps.setInt(4, p.getSpaceId()); }
-            else { ps.setNull(4, Types.INTEGER); }
+            // Because space_id can be NULL (as seen in your screenshot)
+            if (p.getSpaceId() != null) {
+                ps.setInt(4, p.getSpaceId());
+            } else {
+                ps.setNull(4, Types.INTEGER);
+            }
 
-            ps.setInt(5, 0);
-            ps.setBoolean(6, false);
-            ps.setDouble(7, 0.0);
-            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
-            ps.setString(9, p.getLink());
-            ps.setString(10, p.getImageName());
-            ps.setString(11, p.getAttachmentName());
+            ps.setInt(5, 0); // Default 0 upvotes for a new post
+            ps.setBoolean(6, false); // Default not locked (tinyint 0)
+            ps.setDouble(7, 0.0); // Default hot_score
+            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis())); // Current time
 
             ps.executeUpdate();
-
-            // --- 1. GET THE NEW POST ID ---
-            ResultSet rsKeys = ps.getGeneratedKeys();
-            int newPostId = -1;
-            if (rsKeys.next()) {
-                newPostId = rsKeys.getInt(1);
-            }
-
-            // --- 2. PROCESS TAGS ---
-            if (newPostId != -1 && p.getTags() != null && !p.getTags().trim().isEmpty()) {
-                // Split the comma-separated string into an array
-                String[] tagsArray = p.getTags().split(",");
-
-                for (String rawTag : tagsArray) {
-                    String tagName = rawTag.trim();
-                    if (tagName.isEmpty()) continue;
-
-                    // Find or create the tag, get its ID
-                    int tagId = getOrCreateTag(tagName);
-
-                    // Link the post and tag in the junction table
-                    if (tagId != -1) {
-                        linkPostAndTag(newPostId, tagId);
-                    }
-                }
-            }
-
-            System.out.println("Post and Tags added successfully.");
+            System.out.println("Post ajouté avec succès ! ✅");
 
         } catch (SQLException e) {
             System.err.println("Erreur lors de l'ajout du post : " + e.getMessage());
         }
     }
 
-    // --- HELPER METHODS FOR TAGS ---
-
-    private int getOrCreateTag(String tagName) throws SQLException {
-        // 1. Check if the tag already exists
-        String checkReq = "SELECT id FROM tag WHERE name = ?";
-        PreparedStatement checkPs = cnx.prepareStatement(checkReq);
-        checkPs.setString(1, tagName);
-        ResultSet rs = checkPs.executeQuery();
-
-        if (rs.next()) {
-            return rs.getInt("id"); // Tag exists, return its ID
-        } else {
-            // 2. Tag doesn't exist, insert it WITH the created_at timestamp!
-            String insertReq = "INSERT INTO tag (name, created_at) VALUES (?, ?)";
-            PreparedStatement insertPs = cnx.prepareStatement(insertReq, Statement.RETURN_GENERATED_KEYS);
-            insertPs.setString(1, tagName);
-            insertPs.setTimestamp(2, new Timestamp(System.currentTimeMillis())); // Supply the missing date
-            insertPs.executeUpdate();
-
-            // 3. Grab the new Tag ID
-            ResultSet newKeys = insertPs.getGeneratedKeys();
-            if (newKeys.next()) {
-                return newKeys.getInt(1);
-            }
-        }
-        return -1;
-    }
-
-    private void linkPostAndTag(int postId, int tagId) throws SQLException {
-        // Note: Assuming your junction table columns are 'post_id' and 'tag_id'.
-        String linkReq = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
-        PreparedStatement linkPs = cnx.prepareStatement(linkReq);
-        linkPs.setInt(1, postId);
-        linkPs.setInt(2, tagId);
-        linkPs.executeUpdate();
-    }
-
-
-    // --- FETCH SPACES DYNAMICALLY ---
-    // Returns a Map where the Key is the Space Name, and the Value is the Space ID
-    public java.util.Map<String, Integer> getSpacesMap() {
-        java.util.Map<String, Integer> map = new java.util.HashMap<>();
-        String req = "SELECT id, name FROM space"; // Assuming your table is named 'space'
-        try {
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery(req);
-            while (rs.next()) {
-                map.put(rs.getString("name"), rs.getInt("id"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la récupération des spaces : " + e.getMessage());
-        }
-        return map;
-    }
-
-
-    // --- READ (Afficher avec Jointure et Tags) ---
+    // --- READ (Afficher avec Jointure) ---
     public List<Post> afficher() {
         List<Post> posts = new ArrayList<>();
 
-        // The Magic Query: Joins User, Space, AND crushes all Tags into a single comma-separated string!
-        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
-                "GROUP_CONCAT(t.name SEPARATOR ',') AS tags_list " +
+        // The magic query that fulfills your "pas d'affichage d'id" requirement!
+        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
                 "FROM post p " +
                 "JOIN user u ON p.author_id = u.id " +
-                "LEFT JOIN space s ON p.space_id = s.id " +
-                "LEFT JOIN post_tags pt ON p.id = pt.post_id " +
-                "LEFT JOIN tag t ON pt.tag_id = t.id " +
-                "GROUP BY p.id " +
-                "ORDER BY p.created_at DESC"; // Newest posts first!
+                "LEFT JOIN space s ON p.space_id = s.id";
 
         try {
             Statement st = cnx.createStatement();
@@ -160,21 +74,16 @@ public class PostService {
                 p.setLocked(rs.getBoolean("is_locked"));
                 p.setHotScore(rs.getDouble("hot_score"));
                 p.setCreatedAt(rs.getTimestamp("created_at"));
-                p.setLink(rs.getString("link"));
-                p.setImageName(rs.getString("image_name"));
-                p.setAttachmentName(rs.getString("attachment_name"));
 
+                // We map the raw IDs just in case we need them for updates/deletes later
                 p.setAuthorId(rs.getInt("author_id"));
                 if (rs.getObject("space_id") != null) {
                     p.setSpaceId(rs.getInt("space_id"));
                 }
 
-                // Map the joined string names
+                // 🔥 HERE IS THE MAGIC: We save the actual names for the JavaFX UI 🔥
                 p.setAuthorName(rs.getString("author_name"));
                 p.setSpaceName(rs.getString("space_name"));
-
-                // Set the tags (It will look like "Science,Math,Exams" or be null)
-                p.setTags(rs.getString("tags_list"));
 
                 posts.add(p);
             }
@@ -184,8 +93,6 @@ public class PostService {
 
         return posts;
     }
-
-
     // --- UPDATE (Modifier) ---
     public void modifier(Post p) {
         // We update the title, content, space_id, and updated_at based on the post ID
@@ -239,6 +146,25 @@ public class PostService {
         } catch (SQLException e) {
             System.err.println("Erreur lors de la suppression du post : " + e.getMessage());
         }
+    }
+    // --- FETCH SPACES FOR DROPDOWN ---
+    public Map<String, Integer> getSpacesMap() {
+        Map<String, Integer> spaces = new HashMap<>();
+        String req = "SELECT id, name FROM space";
+
+        try {
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(req);
+
+            while (rs.next()) {
+                // We put the Name as the Key, and the ID as the Value
+                spaces.put(rs.getString("name"), rs.getInt("id"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération des spaces : " + e.getMessage());
+        }
+
+        return spaces;
     }
 
 }

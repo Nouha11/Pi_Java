@@ -49,7 +49,7 @@ public class CommentService {
         // Joining with the user table to get the author's username
         String req = "SELECT c.*, u.username AS author_name " +
                 "FROM comment c " +
-                "JOIN user u ON c.author_id = u.id";
+                "JOIN users u ON c.author_id = u.id";
 
         try {
             Statement st = cnx.createStatement();
