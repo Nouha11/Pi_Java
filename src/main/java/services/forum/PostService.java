@@ -10,38 +10,36 @@ import java.util.HashMap;
 
 public class PostService {
 
-    // We declare the connection object
     private Connection cnx;
 
     public PostService() {
-        // We get the single connection from our Singleton class
         cnx = MyConnection.getInstance().getCnx();
     }
 
-    // --- CREATE (Ajouter) ---
     public void ajouter(Post p) {
-        // We use ? placeholders to prevent SQL Injection
-        String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        // REMOVED 'tags' from this query so it matches your DB!
+        String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, image_name, link) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
-
             ps.setString(1, p.getTitle());
             ps.setString(2, p.getContent());
             ps.setInt(3, p.getAuthorId());
 
-            // Because space_id can be NULL (as seen in your screenshot)
-            if (p.getSpaceId() != null) {
-                ps.setInt(4, p.getSpaceId());
-            } else {
-                ps.setNull(4, Types.INTEGER);
-            }
+            if (p.getSpaceId() != null) ps.setInt(4, p.getSpaceId());
+            else ps.setNull(4, Types.INTEGER);
 
-            ps.setInt(5, 0); // Default 0 upvotes for a new post
-            ps.setBoolean(6, false); // Default not locked (tinyint 0)
-            ps.setDouble(7, 0.0); // Default hot_score
-            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis())); // Current time
+            ps.setInt(5, 0);
+            ps.setBoolean(6, false);
+            ps.setDouble(7, 0.0);
+            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+
+            if (p.getImageName() != null) ps.setString(9, p.getImageName());
+            else ps.setNull(9, Types.VARCHAR);
+
+            if (p.getLink() != null) ps.setString(10, p.getLink());
+            else ps.setNull(10, Types.VARCHAR);
 
             ps.executeUpdate();
             System.out.println("Post ajouté avec succès ! ✅");
@@ -51,15 +49,14 @@ public class PostService {
         }
     }
 
-    // --- READ (Afficher avec Jointure) ---
     public List<Post> afficher() {
         List<Post> posts = new ArrayList<>();
-
-        // The magic query that fulfills your "pas d'affichage d'id" requirement!
+        // LEFT JOIN ensures posts show up even if the user/space doesn't perfectly exist!
         String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
                 "FROM post p " +
-                "JOIN user u ON p.author_id = u.id " +
-                "LEFT JOIN space s ON p.space_id = s.id";
+                "LEFT JOIN user u ON p.author_id = u.id " +
+                "LEFT JOIN space s ON p.space_id = s.id " +
+                "ORDER BY p.created_at DESC";
 
         try {
             Statement st = cnx.createStatement();
@@ -72,99 +69,61 @@ public class PostService {
                 p.setContent(rs.getString("content"));
                 p.setUpvotes(rs.getInt("upvotes"));
                 p.setLocked(rs.getBoolean("is_locked"));
-                p.setHotScore(rs.getDouble("hot_score"));
+
+                try { p.setHotScore(rs.getDouble("hot_score")); } catch (Exception e) {}
+
                 p.setCreatedAt(rs.getTimestamp("created_at"));
-
-                // We map the raw IDs just in case we need them for updates/deletes later
                 p.setAuthorId(rs.getInt("author_id"));
-                if (rs.getObject("space_id") != null) {
-                    p.setSpaceId(rs.getInt("space_id"));
-                }
 
-                // 🔥 HERE IS THE MAGIC: We save the actual names for the JavaFX UI 🔥
+                if (rs.getObject("space_id") != null) p.setSpaceId(rs.getInt("space_id"));
+
                 p.setAuthorName(rs.getString("author_name"));
                 p.setSpaceName(rs.getString("space_name"));
+
+                try {
+                    p.setImageName(rs.getString("image_name"));
+                    p.setLink(rs.getString("link"));
+                } catch (SQLException ignore) {}
 
                 posts.add(p);
             }
         } catch (SQLException e) {
             System.err.println("Erreur lors de l'affichage des posts : " + e.getMessage());
         }
-
         return posts;
     }
-    // --- UPDATE (Modifier) ---
-    public void modifier(Post p) {
-        // We update the title, content, space_id, and updated_at based on the post ID
-        String req = "UPDATE post SET title = ?, content = ?, space_id = ?, updated_at = ? WHERE id = ?";
 
+    public void modifier(Post p) {
+        String req = "UPDATE post SET title = ?, content = ?, space_id = ?, updated_at = ? WHERE id = ?";
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
-
             ps.setString(1, p.getTitle());
             ps.setString(2, p.getContent());
-
-            if (p.getSpaceId() != null) {
-                ps.setInt(3, p.getSpaceId());
-            } else {
-                ps.setNull(3, Types.INTEGER);
-            }
-
-            // Set the current time for the updated_at column
+            if (p.getSpaceId() != null) ps.setInt(3, p.getSpaceId());
+            else ps.setNull(3, Types.INTEGER);
             ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-
-            // The ID of the post we want to update
             ps.setInt(5, p.getId());
-
-            int rowsUpdated = ps.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("Post modifié avec succès !");
-            } else {
-                System.out.println("Aucun post trouvé avec cet ID pour la modification.");
-            }
-
+            ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la modification du post : " + e.getMessage());
+            System.err.println("Erreur: " + e.getMessage());
         }
     }
 
-    // --- DELETE (Supprimer) ---
     public void supprimer(int id) {
         String req = "DELETE FROM post WHERE id = ?";
-
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
             ps.setInt(1, id);
-
-            int rowsDeleted = ps.executeUpdate();
-            if (rowsDeleted > 0) {
-                System.out.println("Post supprimé avec succès ! 🗑️");
-            } else {
-                System.out.println("Aucun post trouvé avec cet ID pour la suppression.");
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la suppression du post : " + e.getMessage());
-        }
+            ps.executeUpdate();
+        } catch (SQLException e) {}
     }
-    // --- FETCH SPACES FOR DROPDOWN ---
+
     public Map<String, Integer> getSpacesMap() {
         Map<String, Integer> spaces = new HashMap<>();
-        String req = "SELECT id, name FROM space";
-
         try {
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery(req);
-
-            while (rs.next()) {
-                // We put the Name as the Key, and the ID as the Value
-                spaces.put(rs.getString("name"), rs.getInt("id"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la récupération des spaces : " + e.getMessage());
-        }
-
+            ResultSet rs = cnx.createStatement().executeQuery("SELECT id, name FROM space");
+            while (rs.next()) spaces.put(rs.getString("name"), rs.getInt("id"));
+        } catch (SQLException e) {}
         return spaces;
     }
-
 }

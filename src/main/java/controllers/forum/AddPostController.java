@@ -25,7 +25,6 @@ public class AddPostController {
 
     private PostService postService = new PostService();
 
-    // FIXED: Added both variables here!
     private String selectedFileName = null;
     private String selectedFilePath = null;
 
@@ -44,7 +43,7 @@ public class AddPostController {
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null) {
             selectedFileName = selectedFile.getName();
-            selectedFilePath = selectedFile.getAbsolutePath(); // FIXED: We save the path now!
+            selectedFilePath = selectedFile.getAbsolutePath();
             fileNameLabel.setText(selectedFileName);
         }
     }
@@ -71,14 +70,17 @@ public class AddPostController {
         newPost.setTags(tags);
         if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
 
-        // --- THE HTDOCS FILE COPY MAGIC ---
+        // --- THE NESTED SYMFONY FILE COPY MAGIC ---
         if (selectedFileName != null && selectedFilePath != null) {
             try {
                 java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedFilePath);
 
-                // IMPORTANT: Ensure C:/xampp/htdocs/uploads/ exists on your computer!
-                String xamppPath = "C:/xampp/htdocs/uploads/" + selectedFileName;
+                // 🔥 UPDATED: Added /Pi_web/ to the path!
+                String xamppPath = "C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + selectedFileName;
                 java.nio.file.Path destPath = java.nio.file.Paths.get(xamppPath);
+
+                // SAFETY: Ensures the folder structure exists
+                java.nio.file.Files.createDirectories(destPath.getParent());
 
                 java.nio.file.Files.copy(sourcePath, destPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
@@ -86,7 +88,7 @@ public class AddPostController {
                 newPost.setImageName(selectedFileName);
 
             } catch (java.io.IOException e) {
-                System.err.println("Failed to copy file to XAMPP!");
+                System.err.println("Failed to copy file to Symfony folder!");
                 e.printStackTrace();
             }
         }
