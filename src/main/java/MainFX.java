@@ -10,6 +10,8 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        // --- Forum (original) ---
         URL fxmlLocation = getClass().getResource("/views/forum_feed.fxml");
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
 
@@ -33,6 +35,16 @@ public class MainFX extends Application {
         studyStage.setTitle("📚 Study Session Manager");
         studyStage.setScene(new Scene(studyRoot, 1100, 740));
         studyStage.show();
+
+        // --- Gamification module ---
+        FXMLLoader gamificationLoader = new FXMLLoader(
+                getClass().getResource("/views/gamification/GameDashboard.fxml")
+        );
+        Parent gamificationRoot = gamificationLoader.load();
+        Stage gamificationStage = new Stage();
+        gamificationStage.setTitle("🎮 NOVA — Gamification");
+        gamificationStage.setScene(new Scene(gamificationRoot, 1100, 680));
+        gamificationStage.show();
 
         // --- Library module (User flow: Browse → Detail → Borrow/Buy) ---
         FXMLLoader libraryLoader = new FXMLLoader(getClass().getResource("/views/library/BookListView.fxml"));

@@ -86,18 +86,20 @@ public class CourseFormController implements Initializable {
         if (validationError != null) {
             lblError.setText("⚠ " + validationError);
             lblError.setVisible(true);
+            lblError.setManaged(true);
             return;
         }
 
         try {
             if (isEdit) courseService.update(course);
             else courseService.create(course);
-
             if (onSaveCallback != null) onSaveCallback.run();
             closeWindow();
         } catch (SQLException e) {
             lblError.setText("⚠ Database error: " + e.getMessage());
             lblError.setVisible(true);
+            lblError.setManaged(true);
+            e.printStackTrace();
         }
     }
 
@@ -118,10 +120,22 @@ public class CourseFormController implements Initializable {
         if (!validateProgress()) ok = false;
         if (!validateMaxStudents()) ok = false;
         if (cbDifficulty.getValue() == null) {
-            errDifficulty.setText("Difficulty is required."); errDifficulty.setVisible(true); ok = false;
+            errDifficulty.setText("Difficulty is required.");
+            errDifficulty.setVisible(true);
+            errDifficulty.setManaged(true);
+            ok = false;
+        } else {
+            errDifficulty.setVisible(false);
+            errDifficulty.setManaged(false);
         }
         if (cbStatus.getValue() == null) {
-            errStatus.setText("Status is required."); errStatus.setVisible(true); ok = false;
+            errStatus.setText("Status is required.");
+            errStatus.setVisible(true);
+            errStatus.setManaged(true);
+            ok = false;
+        } else {
+            errStatus.setVisible(false);
+            errStatus.setManaged(false);
         }
         return ok;
     }
@@ -129,62 +143,101 @@ public class CourseFormController implements Initializable {
     private boolean validateName() {
         String v = txtName.getText();
         if (v == null || v.trim().isEmpty()) {
-            errName.setText("Course name is required."); errName.setVisible(true); return false;
+            errName.setText("Course name is required.");
+            errName.setVisible(true);
+            errName.setManaged(true);
+            return false;
         }
         if (v.trim().length() < 3) {
-            errName.setText("Minimum 3 characters."); errName.setVisible(true); return false;
+            errName.setText("Minimum 3 characters.");
+            errName.setVisible(true);
+            errName.setManaged(true);
+            return false;
         }
         if (v.trim().length() > 255) {
-            errName.setText("Maximum 255 characters."); errName.setVisible(true); return false;
+            errName.setText("Maximum 255 characters.");
+            errName.setVisible(true);
+            errName.setManaged(true);
+            return false;
         }
-        errName.setVisible(false); return true;
+        errName.setVisible(false);
+        errName.setManaged(false);
+        return true;
     }
 
     private boolean validateCategory() {
         String v = txtCategory.getText();
         if (v == null || v.trim().isEmpty()) {
-            errCategory.setText("Category is required."); errCategory.setVisible(true); return false;
+            errCategory.setText("Category is required.");
+            errCategory.setVisible(true);
+            errCategory.setManaged(true);
+            return false;
         }
         if (v.trim().length() < 3) {
-            errCategory.setText("Minimum 3 characters."); errCategory.setVisible(true); return false;
+            errCategory.setText("Minimum 3 characters.");
+            errCategory.setVisible(true);
+            errCategory.setManaged(true);
+            return false;
         }
-        errCategory.setVisible(false); return true;
+        errCategory.setVisible(false);
+        errCategory.setManaged(false);
+        return true;
     }
 
     private boolean validateDuration() {
         try {
             int val = Integer.parseInt(txtDuration.getText().trim());
             if (val <= 0) throw new NumberFormatException();
-            errDuration.setVisible(false); return true;
+            errDuration.setVisible(false);
+            errDuration.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
             errDuration.setText("Must be a positive integer (minutes).");
-            errDuration.setVisible(true); return false;
+            errDuration.setVisible(true);
+            errDuration.setManaged(true);
+            return false;
         }
     }
 
     private boolean validateProgress() {
         if (txtProgress.getText() == null || txtProgress.getText().trim().isEmpty()) {
-            errProgress.setVisible(false); return true; // optional default 0
+            errProgress.setVisible(false);
+            errProgress.setManaged(false);
+            return true;
         }
         try {
             int val = Integer.parseInt(txtProgress.getText().trim());
             if (val < 0 || val > 100) throw new NumberFormatException();
-            errProgress.setVisible(false); return true;
+            errProgress.setVisible(false);
+            errProgress.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
-            errProgress.setText("Must be 0–100."); errProgress.setVisible(true); return false;
+            errProgress.setText("Must be 0–100.");
+            errProgress.setVisible(true);
+            errProgress.setManaged(true);
+            return false;
         }
     }
 
+
     private boolean validateMaxStudents() {
         String v = txtMaxStudents.getText();
-        if (v == null || v.trim().isEmpty()) { errMaxStudents.setVisible(false); return true; }
+        if (v == null || v.trim().isEmpty()) {
+            errMaxStudents.setVisible(false);
+            errMaxStudents.setManaged(false);
+            return true;
+        }
         try {
             int val = Integer.parseInt(v.trim());
             if (val <= 0) throw new NumberFormatException();
-            errMaxStudents.setVisible(false); return true;
+            errMaxStudents.setVisible(false);
+            errMaxStudents.setManaged(false);
+            return true;
         } catch (NumberFormatException e) {
             errMaxStudents.setText("Must be a positive integer.");
-            errMaxStudents.setVisible(true); return false;
+            errMaxStudents.setVisible(true);
+            errMaxStudents.setManaged(true);
+            return false;
         }
     }
 
@@ -204,10 +257,21 @@ public class CourseFormController implements Initializable {
 
     private void clearErrors() {
         lblError.setVisible(false);
-        errName.setVisible(false); errCategory.setVisible(false);
-        errDifficulty.setVisible(false); errDuration.setVisible(false);
-        errProgress.setVisible(false); errStatus.setVisible(false);
+        lblError.setManaged(false);
+        errName.setVisible(false);
+        errName.setManaged(false);
+        errCategory.setVisible(false);
+        errCategory.setManaged(false);
+        errDifficulty.setVisible(false);
+        errDifficulty.setManaged(false);
+        errDuration.setVisible(false);
+        errDuration.setManaged(false);
+        errProgress.setVisible(false);
+        errProgress.setManaged(false);
+        errStatus.setVisible(false);
+        errStatus.setManaged(false);
         errMaxStudents.setVisible(false);
+        errMaxStudents.setManaged(false);
     }
 
     private void closeWindow() {

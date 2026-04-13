@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.gamification.StatsController"
+            stylesheets="@/css/gamification.css"
+            style="-fx-background-color: #1a1a2e;">
+
+    <top>
+        <VBox style="-fx-background-color: #16213e; -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.5),10,0,0,3);">
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 16 20 14 20;">
+                <Label text="📊 STATISTICS  —  NOVA"
+                       style="-fx-text-fill: #e94560; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Consolas';"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: #1a1a2e; -fx-background: #1a1a2e;">
+            <VBox spacing="20" style="-fx-padding: 20;">
+
+                <!-- Summary Cards -->
+                <HBox spacing="14">
+                    <!-- Total Games -->
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="🕹 TOTAL GAMES" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="totalGamesLabel" text="—" style="-fx-text-fill: #e94560; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Active Games -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="✅ ACTIVE GAMES" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="activeGamesLabel" text="—" style="-fx-text-fill: #4caf50; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Total Rewards -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="🏆 TOTAL REWARDS" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="totalRewardsLabel" text="—" style="-fx-text-fill: #e94560; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Active Rewards -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="✅ ACTIVE REWARDS" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="activeRewardsLabel" text="—" style="-fx-text-fill: #4caf50; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Total XP -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="⭐ TOTAL XP POOL" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="totalXPLabel" text="—" style="-fx-text-fill: #f0c040; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <!-- Total Tokens -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16 20; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="🪙 TOTAL TOKENS" style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label fx:id="totalTokensLabel" text="—" style="-fx-text-fill: #f0c040; -fx-font-family: 'Consolas'; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Charts Row -->
+                <HBox spacing="14">
+                    <!-- Game Type Pie -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="GAMES BY TYPE" style="-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 8 0;"/>
+                        <PieChart fx:id="gameTypePie" prefHeight="220" legendVisible="true"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+                    <!-- Reward Type Pie -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="REWARDS BY TYPE" style="-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 8 0;"/>
+                        <PieChart fx:id="rewardTypePie" prefHeight="220" legendVisible="true"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+                    <!-- Difficulty Bar -->
+                    <VBox HBox.hgrow="ALWAYS"
+                          style="-fx-background-color: #16213e; -fx-padding: 16; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                        <Label text="GAMES BY DIFFICULTY" style="-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 8 0;"/>
+                        <BarChart fx:id="difficultyBar" prefHeight="220" legendVisible="false"
+                                  style="-fx-background-color: transparent;">
+                            <xAxis><CategoryAxis style="-fx-tick-label-fill: #a0a0c0;"/></xAxis>
+                            <yAxis><NumberAxis style="-fx-tick-label-fill: #a0a0c0;"/></yAxis>
+                        </BarChart>
+                    </VBox>
+                </HBox>
+
+                <!-- Top Rewards -->
+                <VBox style="-fx-background-color: #16213e; -fx-padding: 16; -fx-border-radius: 6; -fx-background-radius: 6; -fx-border-color: #0f3460; -fx-border-width: 1;">
+                    <Label text="🏅 TOP 5 REWARDS BY VALUE" style="-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
+                    <VBox fx:id="topRewardsBox" spacing="6"/>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

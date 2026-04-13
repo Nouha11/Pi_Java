@@ -3,9 +3,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controllers.studysession.PlanningFormController"
-      spacing="0" styleClass="form-pane" prefWidth="480" prefHeight="560">
+
+<VBox spacing="0" styleClass="form-pane" prefWidth="480" prefHeight="560"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.PlanningFormController">
+
+
 
     <!-- HEADER -->
     <HBox styleClass="form-header" alignment="CENTER_LEFT">
@@ -19,7 +24,7 @@
 
     <!-- GLOBAL ERROR -->
     <Label fx:id="lblError" styleClass="error-banner" wrapText="true"
-           visible="false" managed="false" maxWidth="440">
+           visible="false" managed="true" maxWidth="440">
         <VBox.margin><Insets left="20" right="20" top="10"/></VBox.margin>
     </Label>
 

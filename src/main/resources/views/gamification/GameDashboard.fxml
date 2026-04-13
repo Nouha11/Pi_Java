@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.gamification.GameDashboardController"
+            prefWidth="1100" prefHeight="680"
+            style="-fx-background-color: #1a1a2e;">
+
+    <!-- SIDEBAR -->
+    <left>
+        <VBox spacing="4"
+              style="-fx-background-color: #16213e;
+                     -fx-padding: 20 0;
+                     -fx-min-width: 200px;">
+
+            <Label text="🎮 NOVA"
+                   style="-fx-text-fill: #e94560;
+                          -fx-font-size: 20px;
+                          -fx-font-weight: bold;
+                          -fx-font-family: 'Consolas';
+                          -fx-padding: 0 20 20 20;"/>
+
+            <Button text="🕹  Games"
+                    onAction="#showGames"
+                    maxWidth="Infinity"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #e0e0f0;
+                           -fx-font-family: 'Consolas';
+                           -fx-font-size: 13px;
+                           -fx-padding: 12 20;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-cursor: hand;"/>
+
+            <Button text="🏆  Rewards"
+                    onAction="#showRewards"
+                    maxWidth="Infinity"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #e0e0f0;
+                           -fx-font-family: 'Consolas';
+                           -fx-font-size: 13px;
+                           -fx-padding: 12 20;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-cursor: hand;"/>
+
+            <Button text="📊  Statistics"
+                    onAction="#showStats"
+                    maxWidth="Infinity"
+                    style="-fx-background-color: transparent;
+                           -fx-text-fill: #e0e0f0;
+                           -fx-font-family: 'Consolas';
+                           -fx-font-size: 13px;
+                           -fx-padding: 12 20;
+                           -fx-alignment: CENTER_LEFT;
+                           -fx-cursor: hand;"/>
+        </VBox>
+    </left>
+
+    <!-- CONTENT AREA — swapped on navigation -->
+    <center>
+        <StackPane fx:id="contentArea"
+                   style="-fx-background-color: #1a1a2e;"/>
+    </center>
+
+</BorderPane>

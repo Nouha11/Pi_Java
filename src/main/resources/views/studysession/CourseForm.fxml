@@ -1,124 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controllers.studysession.CourseFormController"
-      spacing="0" styleClass="form-pane" prefWidth="530" prefHeight="650">
+<VBox prefHeight="650" prefWidth="530" spacing="0" styleClass="form-pane"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.CourseFormController">
 
     <!-- HEADER -->
-    <HBox styleClass="form-header" alignment="CENTER_LEFT">
-        <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-        <Label fx:id="formTitle" text="Course" styleClass="form-title"/>
+    <HBox alignment="CENTER_LEFT" styleClass="form-header">
+        <padding><Insets bottom="16" left="20" right="20" top="16" /></padding>
+        <Label fx:id="formTitle" styleClass="form-title" text="Course" />
     </HBox>
 
     <!-- GLOBAL ERROR BANNER -->
-    <Label fx:id="lblError" styleClass="error-banner" wrapText="true"
-           visible="false" managed="false"
-           maxWidth="490">
-        <VBox.margin><Insets left="20" right="20" top="10"/></VBox.margin>
+    <Label fx:id="lblError" managed="true" maxWidth="490" styleClass="error-banner" visible="false" wrapText="true">
+        <VBox.margin><Insets left="20" right="20" top="10" /></VBox.margin>
     </Label>
 
     <!-- SCROLLABLE FIELDS -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                style="-fx-background-color:transparent; -fx-background:transparent;">
-        <GridPane hgap="14" vgap="2"
-                  style="-fx-background-color:white; -fx-background-radius:8px;
-                         -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),8,0,0,2);">
-            <padding><Insets top="18" right="22" bottom="18" left="22"/></padding>
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color:transparent; -fx-background:transparent;" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+        <GridPane hgap="14" style="-fx-background-color:white; -fx-background-radius:8px;                          -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),8,0,0,2);" vgap="2">
+            <padding><Insets bottom="18" left="22" right="22" top="18" /></padding>
 
             <!-- Row 0-2: Course Name -->
-            <Label text="Course Name *" styleClass="field-label"
-                   GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
-            <TextField fx:id="txtName" promptText="e.g. Introduction to Java  (min 3 chars)"
-                       GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2"
-                       maxWidth="Infinity"/>
-            <Label fx:id="errName" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label styleClass="field-label" text="Course Name *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
+            <TextField fx:id="txtName" maxWidth="Infinity" promptText="e.g. Introduction to Java  (min 3 chars)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+            <Label fx:id="errName" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
 
             <!-- Row 3-5: Category -->
-            <Label text="Category *" styleClass="field-label"
-                   GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
-            <TextField fx:id="txtCategory" promptText="e.g. Programming"
-                       GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2"
-                       maxWidth="Infinity"/>
-            <Label fx:id="errCategory" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label styleClass="field-label" text="Category *" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+            <TextField fx:id="txtCategory" maxWidth="Infinity" promptText="e.g. Programming" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="4" />
+            <Label fx:id="errCategory" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
 
             <!-- Row 6-8: Difficulty -->
-            <Label text="Difficulty *" styleClass="field-label"
-                   GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-            <Label text="Status *" styleClass="field-label"
-                   GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-            <ComboBox fx:id="cbDifficulty" maxWidth="Infinity"
-                      GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbStatus" maxWidth="Infinity"
-                      GridPane.rowIndex="7" GridPane.columnIndex="1"/>
-            <Label fx:id="errDifficulty" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-            <Label fx:id="errStatus" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+            <Label styleClass="field-label" text="Difficulty *" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+            <Label styleClass="field-label" text="Status *" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ComboBox fx:id="cbDifficulty" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+            <ComboBox fx:id="cbStatus" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+            <Label fx:id="errDifficulty" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+            <Label fx:id="errStatus" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="1" GridPane.rowIndex="8" />
 
             <!-- Row 9-11: Duration | Progress -->
-            <Label text="Estimated Duration (min) *" styleClass="field-label"
-                   GridPane.rowIndex="9" GridPane.columnIndex="0"/>
-            <Label text="Progress % (0–100)" styleClass="field-label"
-                   GridPane.rowIndex="9" GridPane.columnIndex="1"/>
-            <TextField fx:id="txtDuration" promptText="e.g. 120"
-                       GridPane.rowIndex="10" GridPane.columnIndex="0" maxWidth="Infinity"/>
-            <TextField fx:id="txtProgress" promptText="0"
-                       GridPane.rowIndex="10" GridPane.columnIndex="1" maxWidth="Infinity"/>
-            <Label fx:id="errDuration" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="11" GridPane.columnIndex="0"/>
-            <Label fx:id="errProgress" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+            <Label styleClass="field-label" text="Estimated Duration (min) *" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+            <Label styleClass="field-label" text="Progress % (0–100)" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+            <TextField fx:id="txtDuration" maxWidth="Infinity" promptText="e.g. 120" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+            <TextField fx:id="txtProgress" maxWidth="Infinity" promptText="0" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+            <Label fx:id="errDuration" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+            <Label fx:id="errProgress" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="1" GridPane.rowIndex="11" />
 
             <!-- Row 12-14: Max Students -->
-            <Label text="Max Students (optional)" styleClass="field-label"
-                   GridPane.rowIndex="12" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
-            <TextField fx:id="txtMaxStudents" promptText="Leave empty = unlimited"
-                       GridPane.rowIndex="13" GridPane.columnIndex="0" GridPane.columnSpan="2"
-                       maxWidth="Infinity"/>
-            <Label fx:id="errMaxStudents" styleClass="field-error" text=" "
-                   visible="false" managed="false"
-                   GridPane.rowIndex="14" GridPane.columnIndex="0"/>
+            <Label styleClass="field-label" text="Max Students (optional)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="12" />
+            <TextField fx:id="txtMaxStudents" maxWidth="Infinity" promptText="Leave empty = unlimited" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="13" />
+            <Label fx:id="errMaxStudents" managed="false" styleClass="field-error" text=" " visible="false" GridPane.columnIndex="0" GridPane.rowIndex="14" />
 
             <!-- Row 15-16: Description -->
-            <Label text="Description (optional)" styleClass="field-label"
-                   GridPane.rowIndex="15" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
-            <TextArea fx:id="txtDescription" promptText="Brief course description…"
-                      prefRowCount="3" wrapText="true"
-                      GridPane.rowIndex="16" GridPane.columnIndex="0" GridPane.columnSpan="2"
-                      maxWidth="Infinity"/>
+            <Label styleClass="field-label" text="Description (optional)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="15" />
+            <TextArea fx:id="txtDescription" maxWidth="Infinity" prefRowCount="3" promptText="Brief course description…" wrapText="true" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="16" />
 
             <!-- Row 17: Published -->
-            <CheckBox fx:id="chkPublished" text="✅ Published (visible to students)"
-                      style="-fx-font-weight:bold;"
-                      GridPane.rowIndex="17" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                <GridPane.margin><Insets top="6"/></GridPane.margin>
+            <CheckBox fx:id="chkPublished" style="-fx-font-weight:bold;" text="✅ Published (visible to students)" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="17">
+                <GridPane.margin><Insets top="6" /></GridPane.margin>
             </CheckBox>
 
             <columnConstraints>
-                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
-                <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
             </columnConstraints>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         </rowConstraints>
         </GridPane>
     </ScrollPane>
 
     <!-- FOOTER BUTTONS -->
-    <HBox styleClass="form-footer" alignment="CENTER_RIGHT" spacing="10">
-        <padding><Insets top="12" right="20" bottom="14" left="20"/></padding>
-        <Button text="Cancel" styleClass="btn-ghost" onAction="#handleCancel" cancelButton="true"/>
-        <Button fx:id="btnSave" text="💾 Save Course" styleClass="btn-primary"
-                onAction="#handleSave" defaultButton="true"/>
+    <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="form-footer">
+        <padding><Insets bottom="14" left="20" right="20" top="12" /></padding>
+        <Button cancelButton="true" onAction="#handleCancel" styleClass="btn-ghost" text="Cancel" />
+        <Button fx:id="btnSave" defaultButton="true" onAction="#handleSave" styleClass="btn-primary" text="💾 Save Course" />
     </HBox>
 
 </VBox>
