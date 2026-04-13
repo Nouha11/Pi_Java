@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.gamification.RewardFormController"
+            stylesheets="@/css/gamification.css"
+            prefWidth="580" prefHeight="760"
+            style="-fx-background-color: #1a1a2e;">
+
+    <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="0">
+
+        <!-- HEADER -->
+        <VBox style="-fx-background-color: #16213e; -fx-padding: 20 24 16 24;
+                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.4),8,0,0,2);">
+            <Label text="🏆 REWARD FORM"
+                   style="-fx-text-fill: #e94560; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Consolas';"/>
+            <Label text="Fields marked * are required"
+                   style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 12px;"/>
+        </VBox>
+
+        <!-- ERROR -->
+        <Label fx:id="errorLabel" text="" wrapText="true"
+               style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-padding: 8 24 0 24;"/>
+
+        <!-- FIELDS -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: #1a1a2e;">
+            <GridPane hgap="14" vgap="14" style="-fx-padding: 20 24;">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="130" prefWidth="140"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <!-- Name -->
+                <Label text="* Name" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                  -fx-prompt-text-fill: #5050a0; -fx-border-color: #2a2a5e;
+                                  -fx-border-radius: 4; -fx-background-radius: 4;
+                                  -fx-padding: 8 10; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Description -->
+                <Label text="Description" GridPane.rowIndex="1" GridPane.columnIndex="0"
+                       GridPane.valignment="TOP"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <TextArea fx:id="descriptionArea" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                          prefRowCount="3" wrapText="true"
+                          style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                 -fx-prompt-text-fill: #5050a0; -fx-border-color: #2a2a5e;
+                                 -fx-border-radius: 4; -fx-background-radius: 4;
+                                 -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Type -->
+                <Label text="* Type" GridPane.rowIndex="2" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="typeCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                          maxWidth="Infinity"
+                          style="-fx-background-color: #0d2137; -fx-border-color: #2a2a5e;
+                                 -fx-border-radius: 4; -fx-background-radius: 4;
+                                 -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Value -->
+                <Label text="* Value" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <TextField fx:id="valueField" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                           promptText="e.g. 100"
+                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                  -fx-prompt-text-fill: #5050a0; -fx-border-color: #2a2a5e;
+                                  -fx-border-radius: 4; -fx-background-radius: 4;
+                                  -fx-padding: 8 10; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Requirement -->
+                <Label text="Requirement" GridPane.rowIndex="4" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <TextField fx:id="requirementField" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                           promptText="e.g. Complete 10 posts"
+                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                  -fx-prompt-text-fill: #5050a0; -fx-border-color: #2a2a5e;
+                                  -fx-border-radius: 4; -fx-background-radius: 4;
+                                  -fx-padding: 8 10; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Icon picker -->
+                <Label text="Icon" GridPane.rowIndex="5" GridPane.columnIndex="0"
+                       GridPane.valignment="TOP"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <VBox GridPane.rowIndex="5" GridPane.columnIndex="1" spacing="8">
+                    <!-- Preview box -->
+                    <HBox spacing="14" alignment="CENTER_LEFT">
+                        <StackPane style="-fx-background-color: #0d2137; -fx-border-color: #2a2a5e;
+                                          -fx-border-radius: 6; -fx-background-radius: 6;"
+                                   minWidth="96" minHeight="96" maxWidth="96" maxHeight="96">
+                            <ImageView fx:id="iconPreview"
+                                       fitWidth="90" fitHeight="90"
+                                       preserveRatio="true" smooth="true"/>
+                        </StackPane>
+                        <VBox spacing="6">
+                            <Button fx:id="pickIconBtn" text="📂  Choose Image"
+                                    onAction="#handlePickIcon"
+                                    style="-fx-background-color: #0d2137; -fx-text-fill: #a0c0e0;
+                                           -fx-border-color: #2a4a6e; -fx-border-radius: 4;
+                                           -fx-background-radius: 4; -fx-font-family: 'Consolas';
+                                           -fx-font-size: 12px; -fx-padding: 7 14; -fx-cursor: hand;"/>
+                            <Label fx:id="iconPathLabel" text="No image selected"
+                                   wrapText="true" maxWidth="220"
+                                   style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Required Level -->
+                <Label text="Required Level" GridPane.rowIndex="6" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <TextField fx:id="requiredLevelField" GridPane.rowIndex="6" GridPane.columnIndex="1"
+                           promptText="Leave blank if none"
+                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                  -fx-prompt-text-fill: #5050a0; -fx-border-color: #2a2a5e;
+                                  -fx-border-radius: 4; -fx-background-radius: 4;
+                                  -fx-padding: 8 10; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Active -->
+                <Label text="Active" GridPane.rowIndex="7" GridPane.columnIndex="0"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <CheckBox fx:id="isActiveCheck" GridPane.rowIndex="7" GridPane.columnIndex="1"
+                          text="Reward is active"
+                          style="-fx-text-fill: #e0e0f0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+
+                <!-- Link Games -->
+                <Label text="Link Games" GridPane.rowIndex="8" GridPane.columnIndex="0"
+                       GridPane.valignment="TOP"
+                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <VBox GridPane.rowIndex="8" GridPane.columnIndex="1" spacing="4">
+                    <Label text="Hold Ctrl to select multiple games"
+                           style="-fx-text-fill: #5050a0; -fx-font-family: 'Consolas'; -fx-font-size: 11px;"/>
+                    <ListView fx:id="gamesList" prefHeight="130"
+                              style="-fx-background-color: #0d2137; -fx-border-color: #2a2a5e;
+                                     -fx-border-radius: 4; -fx-background-radius: 4;
+                                     -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                </VBox>
+            </GridPane>
+        </ScrollPane>
+
+        <!-- BUTTONS -->
+        <HBox spacing="12" alignment="CENTER_RIGHT"
+              style="-fx-background-color: #16213e; -fx-padding: 14 24;
+                     -fx-border-color: #0f3460; -fx-border-width: 1 0 0 0;">
+            <Button text="CANCEL" onAction="#handleCancel"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a0a0c0;
+                           -fx-border-color: #a0a0c0; -fx-border-radius: 4; -fx-background-radius: 4;
+                           -fx-font-family: 'Consolas'; -fx-font-size: 13px;
+                           -fx-padding: 8 20; -fx-cursor: hand;"/>
+            <Button fx:id="saveBtn" text="💾  SAVE REWARD" onAction="#handleSave"
+                    style="-fx-background-color: #e94560; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-font-family: 'Consolas'; -fx-font-size: 13px;
+                           -fx-padding: 8 24; -fx-border-radius: 4; -fx-background-radius: 4; -fx-cursor: hand;"/>
+        </HBox>
+    </VBox>
+</AnchorPane>

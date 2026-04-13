@@ -4,14 +4,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import models.gamification.Game;
 import models.gamification.Reward;
 import services.gamification.GameService;
 import services.gamification.RewardService;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.List;
 
 public class GameRewardController {
@@ -19,8 +26,7 @@ public class GameRewardController {
     @FXML private TableView<Reward>            rewardsTable;
     @FXML private TableColumn<Reward, String>  nameCol, typeCol;
     @FXML private TableColumn<Reward, Integer> valueCol;
-    @FXML private TableColumn<Reward, Boolean> activeCol;
-    @FXML private TableColumn<Reward, Void>    actionsCol;
+    @FXML private TableColumn<Reward, Void>    iconCol, actionsCol;
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> typeFilter;
     @FXML private Label            statusLabel;
@@ -34,8 +40,8 @@ public class GameRewardController {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
-        activeCol.setCellValueFactory(new PropertyValueFactory<>("active"));
 
+        setupIconColumn();
         setupActionsColumn();
 
         typeFilter.setItems(FXCollections.observableArrayList(
@@ -47,24 +53,60 @@ public class GameRewardController {
         loadRewards();
     }
 
+    private void setupIconColumn() {
+        iconCol.setCellFactory(col -> new TableCell<>() {
+            private final ImageView iv = new ImageView();
+            { iv.setFitWidth(36); iv.setFitHeight(36); iv.setPreserveRatio(true); iv.setSmooth(true); }
+
+            @Override protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) { setGraphic(null); return; }
+                Reward r = getTableView().getItems().get(getIndex());
+                iv.setImage(loadImage(r.getIcon(), 36));
+                setGraphic(iv);
+                setAlignment(Pos.CENTER);
+                setStyle("-fx-background-color: transparent;");
+            }
+        });
+    }
+
+    private Image loadImage(String nameOrPath, double size) {
+        if (nameOrPath == null || nameOrPath.isBlank()) return null;
+        try {
+            // 1. Try as classpath resource (filename stored in DB)
+            var stream = getClass().getResourceAsStream("/images/rewards/" + nameOrPath);
+            if (stream != null) return new Image(stream, size, size, true, true);
+            // 2. Try as absolute path (legacy entries)
+            File f = new File(nameOrPath);
+            if (f.exists()) return new Image(f.toURI().toString(), size, size, true, true);
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     private void setupActionsColumn() {
         actionsCol.setCellFactory(col -> new TableCell<>() {
             private final Button viewBtn   = styledBtn("👁 View",   "#0f3460", "#c0c0e0");
             private final Button editBtn   = styledBtn("✏ Edit",   "#0f3460", "#c0c0e0");
-            private final Button deleteBtn = styledBtn("🗑 Delete", "transparent", "#e94560");
-            private final HBox   box       = new HBox(6, viewBtn, editBtn, deleteBtn);
+            private final Button toggleBtn = styledBtn("⏸",        "#0f3460", "#f0c040");
+            private final Button deleteBtn = styledBtn("🗑",        "transparent", "#e94560");
+            private final HBox   box       = new HBox(5, viewBtn, editBtn, toggleBtn, deleteBtn);
             { box.setPadding(new Insets(2, 0, 2, 0));
               deleteBtn.setStyle(deleteBtn.getStyle() + "-fx-border-color: #e94560;"); }
 
             {
                 viewBtn.setOnAction(e   -> showRewardDetails(getTableView().getItems().get(getIndex())));
                 editBtn.setOnAction(e   -> openRewardForm(getTableView().getItems().get(getIndex())));
+                toggleBtn.setOnAction(e -> handleToggleActive(getTableView().getItems().get(getIndex())));
                 deleteBtn.setOnAction(e -> handleDelete(getTableView().getItems().get(getIndex())));
             }
 
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : box);
+                if (empty) { setGraphic(null); return; }
+                Reward r = getTableView().getItems().get(getIndex());
+                toggleBtn.setText(r.isActive() ? "⏸ Deactivate" : "▶ Activate");
+                toggleBtn.setStyle(styledBtn("", "#0f3460", r.isActive() ? "#f0c040" : "#4caf50").getStyle());
+                setGraphic(box);
                 setStyle("-fx-background-color: transparent;");
             }
         });
@@ -99,6 +141,36 @@ public class GameRewardController {
 
     @FXML private void handleAddReward() { openRewardForm(null); }
 
+    @FXML
+    private void handleExportCSV() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Export Rewards to CSV");
+        fc.setInitialFileName("rewards_export.csv");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = fc.showSaveDialog(rewardsTable.getScene().getWindow());
+        if (file == null) return;
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
+            pw.println("Name,Type,Value,Requirement,RequiredLevel,Active");
+            for (Reward r : rewardsTable.getItems()) {
+                pw.printf("\"%s\",%s,%d,\"%s\",%s,%s%n",
+                        r.getName(), r.getType(), r.getValue(),
+                        r.getRequirement() != null ? r.getRequirement() : "",
+                        r.getRequiredLevel() != null ? r.getRequiredLevel() : "",
+                        r.isActive());
+            }
+            showStatus("Exported " + rewardsTable.getItems().size() + " rewards to " + file.getName(), false);
+        } catch (Exception e) { showStatus("Export error: " + e.getMessage(), true); }
+    }
+
+    private void handleToggleActive(Reward r) {
+        try {
+            r.setActive(!r.isActive());
+            rewardService.updateReward(r);
+            loadRewards();
+            showStatus(r.getName() + " is now " + (r.isActive() ? "active" : "inactive") + ".", false);
+        } catch (Exception e) { showStatus("Toggle error: " + e.getMessage(), true); }
+    }
+
     private void handleDelete(Reward r) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,
                 "Delete '" + r.getName() + "'? This removes it from all linked games.",
@@ -123,14 +195,29 @@ public class GameRewardController {
             root.setStyle("-fx-background-color: #1a1a2e;");
             root.setPrefWidth(500);
 
-            // Header
+            // Header — with icon if available
             VBox header = new VBox(4);
             header.setStyle("-fx-background-color: #16213e; -fx-padding: 20 24 16 24;");
+
+            HBox titleRow = new HBox(14);
+            titleRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+            Image img = loadImage(r.getIcon(), 56);
+            if (img != null) {
+                ImageView iv = new ImageView(img);
+                iv.setFitWidth(56); iv.setFitHeight(56); iv.setPreserveRatio(true);
+                iv.setStyle("-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.5),6,0,0,2);");
+                titleRow.getChildren().add(iv);
+            }
+
+            VBox titleText = new VBox(2);
             Label title = new Label("🏆  " + r.getName());
             title.setStyle("-fx-text-fill: #e94560; -fx-font-size: 18px; -fx-font-weight: bold; -fx-font-family: 'Consolas';");
             Label sub = new Label(r.getType() + "  ·  Value: " + r.getValue());
             sub.setStyle("-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 12px;");
-            header.getChildren().addAll(title, sub);
+            titleText.getChildren().addAll(title, sub);
+            titleRow.getChildren().add(titleText);
+            header.getChildren().add(titleRow);
 
             // Stats row
             HBox stats = new HBox(0);
