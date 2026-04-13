@@ -54,10 +54,9 @@ public class PostService {
         List<Post> posts = new ArrayList<>();
 
         // The magic query that fulfills your "pas d'affichage d'id" requirement!
-        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
+        String req = "SELECT p.*, u.username AS author_name " +
                 "FROM post p " +
-                "JOIN user u ON p.author_id = u.id " +
-                "LEFT JOIN space s ON p.space_id = s.id";
+                "JOIN users u ON p.author_id = u.id";
 
         try {
             Statement st = cnx.createStatement();

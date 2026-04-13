@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.library.PurchaseController"
+            style="-fx-background-color: #f8f9fa;">
+
+    <top>
+        <VBox style="-fx-background-color: #cfe2ff; -fx-padding: 20 24 20 24;">
+            <Label text="🛒 Purchase Digital Book"
+                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+            <Label text="Home › Books › Purchase"
+                   style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="24" style="-fx-padding: 24;" alignment="TOP_LEFT">
+
+            <!-- LEFT: Purchase form -->
+            <VBox spacing="16" HBox.hgrow="ALWAYS">
+
+                <!-- Book info -->
+                <HBox spacing="16" alignment="CENTER_LEFT"
+                      style="-fx-background-color: white; -fx-padding: 16 20; -fx-background-radius: 8;
+                             -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);">
+                    <Label text="📖" style="-fx-font-size: 40;"/>
+                    <VBox spacing="4">
+                        <Label fx:id="lblBookTitle"
+                               style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                        <Label fx:id="lblBookAuthor" style="-fx-font-size: 13; -fx-text-fill: #6c757d;"/>
+                        <Label text="Digital Book (PDF)"
+                               style="-fx-background-color: #d1e7dd; -fx-text-fill: #0a3622;
+                                      -fx-padding: 2 10; -fx-background-radius: 20; -fx-font-size: 11;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Payment method selection -->
+                <VBox style="-fx-background-color: white; -fx-background-radius: 8;
+                             -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-padding: 24;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);"
+                      spacing="16">
+
+                    <Label text="Select Payment Method"
+                           style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #212529;
+                                  -fx-padding: 0 0 8 0; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;"/>
+
+                    <!-- Two big clickable cards -->
+                    <HBox spacing="16">
+                        <!-- Credit Card -->
+                        <VBox fx:id="cardCreditCard" alignment="CENTER" spacing="8"
+                              onMouseClicked="#selectCreditCard"
+                              style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;
+                                     -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8;
+                                     -fx-padding: 24; -fx-cursor: hand;"
+                              HBox.hgrow="ALWAYS">
+                            <Label text="💳" style="-fx-font-size: 40;"/>
+                            <Label text="Credit Card"
+                                   style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                            <Label text="Visa, Mastercard, Amex"
+                                   style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                        </VBox>
+
+                        <!-- PayPal -->
+                        <VBox fx:id="cardPayPal" alignment="CENTER" spacing="8"
+                              onMouseClicked="#selectPayPal"
+                              style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;
+                                     -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8;
+                                     -fx-padding: 24; -fx-cursor: hand;"
+                              HBox.hgrow="ALWAYS">
+                            <Label text="🅿" style="-fx-font-size: 40; -fx-text-fill: #0070ba;"/>
+                            <Label text="PayPal"
+                                   style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                            <Label text="Fast &amp; Secure"
+                                   style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Security notice -->
+                    <HBox spacing="12" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #cff4fc; -fx-border-color: #9eeaf9;
+                                 -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 12 16;">
+                        <Label text="🔒" style="-fx-font-size: 20;"/>
+                        <VBox spacing="2">
+                            <Label text="Secure Payment"
+                                   style="-fx-font-weight: bold; -fx-font-size: 13; -fx-text-fill: #055160;"/>
+                            <Label text="Your payment information is encrypted. We never store your card details."
+                                   style="-fx-font-size: 12; -fx-text-fill: #055160;" wrapText="true"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Buttons -->
+                    <HBox spacing="12">
+                        <Button fx:id="btnProceed" text="🔒 Complete Purchase" onAction="#handleProceed"
+                                style="-fx-background-color: #198754; -fx-text-fill: white;
+                                       -fx-font-weight: bold; -fx-font-size: 14; -fx-background-radius: 6;
+                                       -fx-padding: 12 24; -fx-cursor: hand;"/>
+                        <Button text="← Cancel" onAction="#handleBack"
+                                style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057;
+                                       -fx-border-color: #dee2e6; -fx-border-radius: 6;
+                                       -fx-background-radius: 6; -fx-padding: 12 16; -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- RIGHT: Order summary -->
+            <VBox prefWidth="260" spacing="0"
+                  style="-fx-background-color: white; -fx-background-radius: 8;
+                         -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
+
+                <Label text="Order Summary"
+                       style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;
+                              -fx-padding: 16 20; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;"/>
+
+                <VBox spacing="12" style="-fx-padding: 16 20;">
+                    <HBox>
+                        <Label text="Book Price" HBox.hgrow="ALWAYS" style="-fx-text-fill: #495057;"/>
+                        <Label fx:id="lblPrice" style="-fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    </HBox>
+                    <HBox>
+                        <Label text="Tax (0%)" HBox.hgrow="ALWAYS" style="-fx-text-fill: #495057;"/>
+                        <Label text="$0.00" style="-fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    </HBox>
+                    <Separator/>
+                    <HBox>
+                        <Label text="Total" HBox.hgrow="ALWAYS"
+                               style="-fx-font-weight: bold; -fx-font-size: 15; -fx-text-fill: #212529;"/>
+                        <Label fx:id="lblTotal"
+                               style="-fx-font-weight: bold; -fx-font-size: 15; -fx-text-fill: #198754;"/>
+                    </HBox>
+
+                    <Separator/>
+
+                    <VBox spacing="6"
+                          style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-background-radius: 6;">
+                        <Label text="What you'll get:"
+                               style="-fx-font-weight: bold; -fx-font-size: 13; -fx-text-fill: #212529;"/>
+                        <Label text="✅  Instant digital download" style="-fx-font-size: 12;"/>
+                        <Label text="✅  Lifetime access" style="-fx-font-size: 12;"/>
+                        <Label text="✅  Read on any device" style="-fx-font-size: 12;"/>
+                        <Label text="✅  Money-back guarantee" style="-fx-font-size: 12;"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
