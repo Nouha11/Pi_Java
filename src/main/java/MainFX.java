@@ -10,7 +10,7 @@ public class MainFX extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        String path = "views/forum/student/add_post.fxml";
+        String path = "/views/forum/forum_feed.fxml";
         URL fxmlLocation = getClass().getResource(path);
 
         // --- OUR TRIPWIRE ---

@@ -24,17 +24,16 @@ public class AddPostController {
     @FXML private Label fileNameLabel;
 
     private PostService postService = new PostService();
-    private String selectedFileName = null;
 
-    // This map stores the real Spaces from your Database! (Name -> ID)
+    // FIXED: Added both variables here!
+    private String selectedFileName = null;
+    private String selectedFilePath = null;
+
     private Map<String, Integer> databaseSpaces;
 
     @FXML
     public void initialize() {
-        // 1. Fetch real spaces from the database
         databaseSpaces = postService.getSpacesMap();
-
-        // 2. Put only the Names into the dropdown for the user to see
         spaceCombo.getItems().addAll(databaseSpaces.keySet());
     }
 
@@ -45,6 +44,7 @@ public class AddPostController {
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null) {
             selectedFileName = selectedFile.getName();
+            selectedFilePath = selectedFile.getAbsolutePath(); // FIXED: We save the path now!
             fileNameLabel.setText(selectedFileName);
         }
     }
@@ -62,24 +62,37 @@ public class AddPostController {
             return;
         }
 
-        // Get the real Database ID for the selected Space using our Map
         Integer spaceId = null;
         if (spaceSelection != null) {
             spaceId = databaseSpaces.get(spaceSelection);
         }
 
-        // Create the Post (Author = 1 for now)
         Post newPost = new Post(title, content, 1, spaceId);
         newPost.setTags(tags);
-
         if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
-        if (selectedFileName != null) {
-            newPost.setAttachmentName(selectedFileName);
-            newPost.setImageName(selectedFileName);
+
+        // --- THE HTDOCS FILE COPY MAGIC ---
+        if (selectedFileName != null && selectedFilePath != null) {
+            try {
+                java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedFilePath);
+
+                // IMPORTANT: Ensure C:/xampp/htdocs/uploads/ exists on your computer!
+                String xamppPath = "C:/xampp/htdocs/uploads/" + selectedFileName;
+                java.nio.file.Path destPath = java.nio.file.Paths.get(xamppPath);
+
+                java.nio.file.Files.copy(sourcePath, destPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                newPost.setAttachmentName(selectedFileName);
+                newPost.setImageName(selectedFileName);
+
+            } catch (java.io.IOException e) {
+                System.err.println("Failed to copy file to XAMPP!");
+                e.printStackTrace();
+            }
         }
 
         postService.ajouter(newPost);
-        showAlert("Success", "Post created successfully and synced with DB!", Alert.AlertType.INFORMATION);
+        showAlert("Success", "Post created and image uploaded to server!", Alert.AlertType.INFORMATION);
 
         titleField.clear();
         contentArea.clear();
@@ -88,6 +101,7 @@ public class AddPostController {
         spaceCombo.setValue(null);
         fileNameLabel.setText("No file selected");
         selectedFileName = null;
+        selectedFilePath = null;
     }
 
     private void showAlert(String title, String message, Alert.AlertType type) {

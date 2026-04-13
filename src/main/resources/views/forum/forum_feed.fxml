@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
+<AnchorPane prefHeight="700.0" prefWidth="750.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
     <children>
-        <ListView fx:id="postListView" prefHeight="341.0" prefWidth="600.0" />
-        <Button layoutX="500.0" layoutY="352.0" mnemonicParsing="false" text="New Post" />
+        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" spacing="15.0">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <children>
+
+                <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;">
+                    <children>
+                        <Label style="-fx-background-color: #1976d2; -fx-text-fill: white; -fx-background-radius: 15; -fx-min-width: 30; -fx-min-height: 30; -fx-alignment: center;" text="👤" />
+                        <TextField fx:id="quickPostField" promptText="Create Post" style="-fx-background-color: transparent; -fx-border-color: #e2e8f0; -fx-border-radius: 5; -fx-pref-height: 35;" HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" onAction="#handleGoToCreatePost" style="-fx-background-color: transparent; -fx-cursor: hand;" text="📷" />
+                        <Button mnemonicParsing="false" onAction="#handleGoToCreatePost" style="-fx-background-color: transparent; -fx-cursor: hand;" text="🔗" />
+                    </children>
+                </HBox>
+
+                <HBox spacing="20.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 5; -fx-padding: 10 15 10 15;">
+                    <children>
+                        <Label style="-fx-text-fill: #1976d2; -fx-font-weight: bold; -fx-cursor: hand;" text="🔥 Hot" />
+                        <Label style="-fx-text-fill: #718096; -fx-font-weight: bold; -fx-cursor: hand;" text="✨ New" />
+                        <Label style="-fx-text-fill: #718096; -fx-font-weight: bold; -fx-cursor: hand;" text="📈 Top" />
+                    </children>
+                </HBox>
+
+                <ListView fx:id="postsListView" style="-fx-background-color: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS" />
+            </children>
+        </VBox>
     </children>
 </AnchorPane>
