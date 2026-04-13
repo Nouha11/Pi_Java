@@ -3,9 +3,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="controllers.studysession.StudySessionFormController"
-      spacing="0" styleClass="form-pane" prefWidth="500" prefHeight="620">
+
+<VBox spacing="0" styleClass="form-pane" prefWidth="500" prefHeight="620"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.StudySessionFormController">
+
 
     <!-- HEADER -->
     <HBox styleClass="form-header" alignment="CENTER_LEFT">
@@ -15,7 +19,7 @@
 
     <!-- GLOBAL ERROR -->
     <Label fx:id="lblError" styleClass="error-banner" wrapText="true"
-           visible="false" managed="false" maxWidth="460">
+           visible="false" managed="true" maxWidth="460">
         <VBox.margin><Insets left="20" right="20" top="10"/></VBox.margin>
     </Label>
 

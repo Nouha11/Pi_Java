@@ -3,31 +3,24 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import java.net.URL;
 
 public class MainFX extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
-        String path = "/views/forum/forum_feed.fxml";
-        URL fxmlLocation = getClass().getResource(path);
-
-        // --- OUR TRIPWIRE ---
-        if (fxmlLocation == null) {
-            System.out.println("❌ CRITICAL ERROR ❌");
-            System.out.println("Java cannot find the file at path: " + path);
-            System.out.println("Check the 'target/classes' folder to see if it actually compiled!");
-            System.exit(1);
-        }
-        // --------------------
-
+        URL fxmlLocation = getClass().getResource("/views/forum_feed.fxml");
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
+
         Parent root = loader.load();
 
+        // 2. Set the window size and title
         Scene scene = new Scene(root, 800, 600);
-        primaryStage.setTitle("Forum Application - Add Post Test");
+        primaryStage.setTitle("Forum Application");
         primaryStage.setScene(scene);
+
+        // 3. Show the window!
         primaryStage.show();
 
 
@@ -43,18 +36,6 @@ public class MainFX extends Application {
     }
 
     public static void main(String[] args) {
-        // TEMPORARY TEST
-        services.forum.PostService service = new services.forum.PostService();
-        java.util.List<models.forum.Post> myPosts = service.afficher();
-
-        System.out.println("--- FORUM FEED TEST ---");
-        for (models.forum.Post p : myPosts) {
-            System.out.println("Title: " + p.getTitle());
-            System.out.println("Author: " + p.getAuthorName() + " | Space: " + p.getSpaceName());
-            System.out.println("Tags: " + p.getTags());
-            System.out.println("-----------------------");
-        }
-
         launch(args);
     }
 }

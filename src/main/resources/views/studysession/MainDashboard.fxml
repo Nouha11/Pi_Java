@@ -14,7 +14,7 @@
             <Label text="📚" style="-fx-font-size:26px;"/>
             <Label text="Study Session Manager" styleClass="app-title"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="Nova University" styleClass="top-subtitle"/>
+            <Label text="Nova Application" styleClass="top-subtitle"/>
         </HBox>
     </top>
 
