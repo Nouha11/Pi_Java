@@ -33,6 +33,32 @@ public class MainFX extends Application {
         studyStage.setTitle("📚 Study Session Manager");
         studyStage.setScene(new Scene(studyRoot, 1100, 740));
         studyStage.show();
+
+        // --- Library module (User flow: Browse → Detail → Borrow/Buy) ---
+        FXMLLoader libraryLoader = new FXMLLoader(getClass().getResource("/views/library/BookListView.fxml"));
+        Parent libraryRoot = libraryLoader.load();
+        Stage libraryStage = new Stage();
+        libraryStage.setTitle("📖 Library — Books");
+        libraryStage.setScene(new Scene(libraryRoot, 1050, 720));
+        libraryStage.show();
+
+        // --- Library Admin (Books CRUD + Loan Management + Payments) ---
+        javafx.scene.control.TabPane adminTabs = new javafx.scene.control.TabPane();
+        adminTabs.setTabClosingPolicy(javafx.scene.control.TabPane.TabClosingPolicy.UNAVAILABLE);
+
+        FXMLLoader adminBookLoader = new FXMLLoader(getClass().getResource("/views/library/BookView.fxml"));
+        adminTabs.getTabs().add(new javafx.scene.control.Tab("📚 Books", adminBookLoader.load()));
+
+        FXMLLoader adminLoanLoader = new FXMLLoader(getClass().getResource("/views/library/LoanView.fxml"));
+        adminTabs.getTabs().add(new javafx.scene.control.Tab("📋 Loans", adminLoanLoader.load()));
+
+        FXMLLoader adminPaymentLoader = new FXMLLoader(getClass().getResource("/views/library/PaymentView.fxml"));
+        adminTabs.getTabs().add(new javafx.scene.control.Tab("💳 Payments", adminPaymentLoader.load()));
+
+        Stage adminStage = new Stage();
+        adminStage.setTitle("⚙️ Library Admin");
+        adminStage.setScene(new Scene(adminTabs, 1050, 720));
+        adminStage.show();
     }
 
     public static void main(String[] args) {
