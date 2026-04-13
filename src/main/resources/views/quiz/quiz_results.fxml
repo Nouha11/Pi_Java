@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="540" prefWidth="500" styleClass="page-root"
+      stylesheets="@../../css/quiz.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.quiz.QuizResultsController">
+
+    <!-- NAV BAR -->
+    <HBox alignment="CENTER" styleClass="nav-bar" maxWidth="Infinity">
+        <padding><Insets bottom="14" left="24" right="24" top="14"/></padding>
+        <Label style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#111827;"
+               text="Quiz Complete 🎉"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane"
+                vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+        <VBox spacing="20" alignment="CENTER">
+            <padding><Insets bottom="28" left="32" right="32" top="28"/></padding>
+
+            <!-- SCORE CIRCLE -->
+            <StackPane>
+                <VBox alignment="CENTER" spacing="2" styleClass="score-circle">
+                    <Label fx:id="lblScorePercent" styleClass="score-pct" text="0%"/>
+                    <Label style="-fx-font-size:11px;-fx-text-fill:#6b7280;" text="Score"/>
+                </VBox>
+            </StackPane>
+
+            <!-- STATS ROW -->
+            <HBox alignment="CENTER" spacing="16">
+                <!-- Correct card -->
+                <VBox alignment="CENTER" spacing="4" styleClass="card"
+                      style="-fx-padding:14 24 14 24;-fx-min-width:120;">
+                    <Label fx:id="lblScoreDetail"
+                           style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#6366f1;"
+                           text="0 / 0"/>
+                    <Label style="-fx-font-size:11px;-fx-text-fill:#9ca3af;" text="Correct"/>
+                </VBox>
+                <!-- XP card -->
+                <VBox alignment="CENTER" spacing="4" styleClass="card"
+                      style="-fx-padding:14 24 14 24;-fx-min-width:120;">
+                    <Label fx:id="lblXpEarned"
+                           style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#ca8a04;"
+                           text="⭐ 0"/>
+                    <Label style="-fx-font-size:11px;-fx-text-fill:#9ca3af;" text="XP Earned"/>
+                </VBox>
+            </HBox>
+
+            <!-- OUTCOME MESSAGE -->
+            <Label fx:id="lblOutcome" wrapText="true" maxWidth="380"
+                   style="-fx-font-size:13px;-fx-text-fill:#6b7280;-fx-text-alignment:center;"
+                   text=""/>
+
+            <!-- PER-QUESTION SUMMARY -->
+            <VBox spacing="0" styleClass="card" maxWidth="Infinity"
+                  style="-fx-padding:0;-fx-background-radius:14;">
+                <Label style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#374151;
+                              -fx-padding:14 16 10 16;" text="Question Summary"/>
+                <Separator style="-fx-background-color:#f3f4f6;"/>
+                <ScrollPane fitToWidth="true" prefHeight="160" styleClass="scroll-pane"
+                            style="-fx-background-radius:0 0 14 14;">
+                    <VBox fx:id="summaryContainer" spacing="0"/>
+                </ScrollPane>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- FOOTER -->
+    <HBox alignment="CENTER" spacing="12"
+          style="-fx-background-color:white;-fx-border-color:#e5e7eb;-fx-border-width:1 0 0 0;">
+        <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
+        <Button onAction="#handleClose"  styleClass="btn-ghost"   text="Close"/>
+        <Button onAction="#handleRetake" styleClass="btn-primary" text="🔄 Retake Quiz"/>
+    </HBox>
+
+</VBox>

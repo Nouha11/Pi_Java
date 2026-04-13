@@ -4,35 +4,62 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="600" prefWidth="800" styleClass="module-pane"
+<VBox prefHeight="660" prefWidth="860" styleClass="page-root"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="controllers.quiz.QuizListController">
 
-    <!-- TOOLBAR -->
-    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar">
-        <padding><Insets bottom="12" left="16" right="16" top="12"/></padding>
-        <Label style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a237e;" text="📝 Quizzes"/>
+    <!-- NAV BAR -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-bar">
+        <padding><Insets bottom="14" left="28" right="28" top="14"/></padding>
+        <VBox>
+            <Label styleClass="nav-title" text="📝 Smart Quizzes"/>
+            <Label styleClass="nav-subtitle" text="Test your knowledge instantly"/>
+        </VBox>
         <Region HBox.hgrow="ALWAYS"/>
         <Button onAction="#handleCreate" styleClass="btn-primary" text="＋ New Quiz"/>
     </HBox>
 
-    <!-- TABLE -->
-    <TableView fx:id="quizTable" styleClass="data-table" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colId"          prefWidth="60"  text="ID"/>
-            <TableColumn fx:id="colTitle"        prefWidth="300" text="Title"/>
-            <TableColumn fx:id="colDescription"  prefWidth="340" text="Description"/>
-            <TableColumn fx:id="colActions"      prefWidth="160" text="Actions"/>
-        </columns>
-        <placeholder><Label text="No quizzes yet. Click '＋ New Quiz' to get started."/></placeholder>
-    </TableView>
+    <!-- HERO BANNER -->
+    <VBox alignment="CENTER" spacing="6"
+          style="-fx-background-color:linear-gradient(to right,#eef2ff,#f5f3ff);
+                 -fx-padding:32 28 28 28;">
+        <Label styleClass="section-heading" text="The Complete Quiz Experience"/>
+        <Label styleClass="section-subheading"
+               text="Create, manage and take quizzes — track your XP and level up."/>
+    </VBox>
 
-    <!-- STATUS BAR -->
-    <HBox styleClass="toolbar">
-        <padding><Insets bottom="6" left="16" right="16" top="6"/></padding>
-        <Label fx:id="lblStatus" style="-fx-text-fill:#546e7a; -fx-font-size:12px;" text=""/>
-    </HBox>
+    <!-- QUIZ GRID (injected dynamically) -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                styleClass="scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox spacing="0">
+            <padding><Insets bottom="24" left="28" right="28" top="24"/></padding>
+
+            <!-- Row label -->
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <padding><Insets bottom="16"/></padding>
+                <Label style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#111827;"
+                       text="Available Quizzes"/>
+                <Label fx:id="lblStatus"
+                       style="-fx-background-color:#eef2ff;-fx-text-fill:#6366f1;
+                              -fx-background-radius:20;-fx-padding:2 10 2 10;
+                              -fx-font-size:11px;-fx-font-weight:bold;" text="0"/>
+            </HBox>
+
+            <!-- Cards injected here by controller -->
+            <FlowPane fx:id="quizGrid" hgap="18" vgap="18" prefWrapLength="800"/>
+
+            <!-- Empty state -->
+            <VBox fx:id="emptyState" alignment="CENTER" spacing="10"
+                  style="-fx-padding:60 0 60 0;">
+                <Label style="-fx-font-size:40px;" text="📋"/>
+                <Label style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#374151;"
+                       text="No quizzes yet"/>
+                <Label style="-fx-font-size:13px;-fx-text-fill:#9ca3af;"
+                       text="Click '＋ New Quiz' to create your first quiz."/>
+            </VBox>
+        </VBox>
+    </ScrollPane>
 
 </VBox>

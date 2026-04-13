@@ -4,67 +4,95 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="700" prefWidth="680" styleClass="form-pane"
+<VBox prefHeight="720" prefWidth="700" styleClass="form-root"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="controllers.quiz.QuizFormController">
 
-    <!-- HEADER -->
-    <HBox alignment="CENTER_LEFT" styleClass="form-header">
-        <padding><Insets bottom="16" left="20" right="20" top="16"/></padding>
+    <!-- NAV BAR -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-bar">
+        <padding><Insets bottom="14" left="24" right="24" top="14"/></padding>
         <Label fx:id="formTitle" styleClass="form-title" text="New Quiz"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label styleClass="form-subtitle" text="Fill in the details below"/>
     </HBox>
 
     <!-- ERROR BANNER -->
-    <Label fx:id="lblError" managed="false" maxWidth="640" styleClass="error-banner" visible="false" wrapText="true">
-        <VBox.margin><Insets left="20" right="20" top="10"/></VBox.margin>
+    <Label fx:id="lblError" managed="false" maxWidth="660" styleClass="error-banner"
+           visible="false" wrapText="true">
+        <VBox.margin><Insets left="20" right="20" top="12"/></VBox.margin>
     </Label>
 
-    <!-- SCROLLABLE BODY -->
-    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color:transparent;-fx-background:transparent;" vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
-        <VBox spacing="14">
-            <padding><Insets bottom="16" left="20" right="20" top="16"/></padding>
+    <!-- BODY -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane"
+                vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+        <VBox spacing="18">
+            <padding><Insets bottom="24" left="24" right="24" top="20"/></padding>
 
-            <!-- ── QUIZ INFO CARD ── -->
-            <VBox spacing="10" styleClass="section-card">
-                <padding><Insets bottom="16" left="16" right="16" top="14"/></padding>
+            <!-- QUIZ DETAILS CARD -->
+            <VBox spacing="12" styleClass="form-card">
+                <padding><Insets bottom="20" left="20" right="20" top="18"/></padding>
 
-                <Label styleClass="section-title" text="Quiz Details"/>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label style="-fx-background-color:#eef2ff;-fx-background-radius:10;
+                                  -fx-padding:6 10 6 10;-fx-font-size:18px;" text="📝"/>
+                    <VBox>
+                        <Label style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#111827;"
+                               text="Quiz Details"/>
+                        <Label style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"
+                               text="Give your quiz a clear title and description"/>
+                    </VBox>
+                </HBox>
+
+                <Separator style="-fx-background-color:#f3f4f6;"/>
 
                 <Label styleClass="field-label" text="Title *"/>
-                <TextField fx:id="txtTitle" maxWidth="Infinity" promptText="e.g. Java Basics Quiz  (3–255 chars)"/>
-                <Label fx:id="errTitle" managed="false" styleClass="field-error" text=" " visible="false"/>
+                <TextField fx:id="txtTitle" maxWidth="Infinity"
+                           promptText="e.g. Java Basics Quiz  (3–255 chars)"/>
+                <Label fx:id="errTitle" managed="false" styleClass="field-error"
+                       text=" " visible="false"/>
 
                 <Label styleClass="field-label" text="Description (optional)"/>
                 <TextArea fx:id="txtDescription" maxWidth="Infinity" prefRowCount="3"
                           promptText="Brief description of this quiz…" wrapText="true"/>
-                <Label fx:id="errDescription" managed="false" styleClass="field-error" text=" " visible="false"/>
+                <Label fx:id="errDescription" managed="false" styleClass="field-error"
+                       text=" " visible="false"/>
             </VBox>
 
-            <!-- ── QUESTIONS SECTION ── -->
-            <VBox spacing="10">
+            <!-- QUESTIONS SECTION -->
+            <VBox spacing="12">
                 <HBox alignment="CENTER_LEFT">
-                    <Label style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1a237e;" text="Questions"/>
+                    <Label style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#111827;"
+                           text="Questions"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#handleAddQuestion" styleClass="btn-add-question" text="＋ Add Question"/>
+                    <Button onAction="#handleAddQuestion" styleClass="btn-add-question"
+                            text="＋ Add Question"/>
                 </HBox>
 
-                <!-- Questions are injected here dynamically -->
-                <VBox fx:id="questionsContainer" spacing="12"/>
+                <VBox fx:id="questionsContainer" spacing="14"/>
 
-                <Label fx:id="lblNoQuestions" style="-fx-text-fill:#90a4ae; -fx-font-style:italic;"
-                       text="No questions yet — click '＋ Add Question' to begin."/>
+                <VBox fx:id="lblNoQuestions" alignment="CENTER" spacing="8"
+                      style="-fx-background-color:white;-fx-background-radius:14;
+                             -fx-padding:32;-fx-border-color:#e5e7eb;
+                             -fx-border-radius:14;-fx-border-width:1.5;
+                             -fx-border-style:dashed;">
+                    <Label style="-fx-font-size:28px;" text="❓"/>
+                    <Label style="-fx-font-size:13px;-fx-text-fill:#9ca3af;"
+                           text="No questions yet — click '＋ Add Question' to begin."/>
+                </VBox>
             </VBox>
 
         </VBox>
     </ScrollPane>
 
     <!-- FOOTER -->
-    <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="form-footer">
-        <padding><Insets bottom="14" left="20" right="20" top="12"/></padding>
+    <HBox alignment="CENTER_RIGHT" spacing="10"
+          style="-fx-background-color:white;-fx-border-color:#e5e7eb;-fx-border-width:1 0 0 0;">
+        <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
         <Button cancelButton="true" onAction="#handleCancel" styleClass="btn-ghost" text="Cancel"/>
-        <Button fx:id="btnSave" defaultButton="true" onAction="#handleSave" styleClass="btn-primary" text="💾 Save Quiz"/>
+        <Button fx:id="btnSave" defaultButton="true" onAction="#handleSave"
+                styleClass="btn-primary" text="💾 Save Quiz"/>
     </HBox>
 
 </VBox>

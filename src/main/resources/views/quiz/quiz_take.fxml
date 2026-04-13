@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="580" prefWidth="640" styleClass="page-root"
+      stylesheets="@../../css/quiz.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.quiz.QuizTakeController">
+
+    <!-- NAV BAR -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="nav-bar">
+        <padding><Insets bottom="14" left="24" right="24" top="14"/></padding>
+        <VBox HBox.hgrow="ALWAYS">
+            <Label fx:id="lblQuizTitle"
+                   style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#111827;"
+                   text="Quiz"/>
+            <Label fx:id="lblProgress"
+                   style="-fx-font-size:11px;-fx-text-fill:#9ca3af;" text="Question 1 of 1"/>
+        </VBox>
+        <!-- XP counter -->
+        <Label fx:id="lblXp"
+               style="-fx-background-color:#fefce8;-fx-text-fill:#ca8a04;
+                      -fx-background-radius:20;-fx-padding:5 14 5 14;
+                      -fx-font-weight:bold;-fx-font-size:13px;" text="⭐ 0 XP"/>
+    </HBox>
+
+    <!-- PROGRESS BAR -->
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="6"
+                 progress="0" styleClass="quiz-progress"/>
+
+    <!-- QUESTION CARD -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane"
+                vbarPolicy="AS_NEEDED" VBox.vgrow="ALWAYS">
+        <VBox spacing="20">
+            <padding><Insets bottom="28" left="32" right="32" top="28"/></padding>
+
+            <!-- Meta badges -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label fx:id="lblDifficulty" styleClass="badge-easy" text="EASY"/>
+                <Label fx:id="lblXpValue"    styleClass="badge-xp"   text="+10 XP"/>
+            </HBox>
+
+            <!-- Question text -->
+            <Label fx:id="lblQuestionText" maxWidth="Infinity" wrapText="true"
+                   style="-fx-font-size:17px;-fx-font-weight:bold;-fx-text-fill:#111827;
+                          -fx-line-spacing:4;" text=""/>
+
+            <!-- Feedback -->
+            <Label fx:id="lblFeedback" managed="false" visible="false"
+                   maxWidth="Infinity" wrapText="true"
+                   style="-fx-font-size:13px;-fx-background-radius:10;-fx-padding:12 16 12 16;"/>
+
+            <!-- Choice buttons -->
+            <VBox fx:id="choicesContainer" spacing="10"/>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- FOOTER -->
+    <HBox alignment="CENTER_RIGHT" spacing="10"
+          style="-fx-background-color:white;-fx-border-color:#e5e7eb;-fx-border-width:1 0 0 0;">
+        <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
+        <Button onAction="#handleQuit" styleClass="btn-ghost" text="✕ Quit"/>
+        <Button fx:id="btnNext" disable="true" onAction="#handleNext"
+                styleClass="btn-primary" text="Next →"/>
+    </HBox>
+
+</VBox>
