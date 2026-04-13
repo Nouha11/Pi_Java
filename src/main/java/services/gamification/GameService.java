@@ -160,5 +160,26 @@ public class GameService {
         return list;
     }
 
+    // ===== REWARD → GAMES (reverse lookup) =====
+    public List<models.gamification.Game> getGamesForReward(int rewardId) throws SQLException {
+        List<models.gamification.Game> list = new ArrayList<>();
+        String sql = "SELECT g.* FROM game g" +
+                " JOIN game_rewards gr ON g.id = gr.game_id" +
+                " WHERE gr.reward_id = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, rewardId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new Game(rs.getInt("id"), rs.getString("name"),
+                    rs.getString("description"), rs.getString("type"),
+                    rs.getString("difficulty"), rs.getString("category"),
+                    rs.getInt("token_cost"), rs.getInt("reward_tokens"),
+                    rs.getInt("reward_xp"),
+                    rs.getObject("energy_points") != null ? rs.getInt("energy_points") : null,
+                    rs.getBoolean("is_active")));
+        }
+        return list;
+    }
+
 
     }
