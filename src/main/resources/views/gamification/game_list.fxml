@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.gamification.GameController"
+            stylesheets="@/css/gamification.css"
+            style="-fx-background-color: #1a1a2e;">
+    <top>
+        <VBox style="-fx-background-color: #16213e; -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.5),10,0,0,3);">
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 16 20 8 20;">
+                <Label text="🎮 GAME MANAGEMENT  —  NOVA"
+                       style="-fx-text-fill: #e94560; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Consolas';"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 20 14 20;">
+                <TextField fx:id="searchField" promptText="🔍  Search name, type, difficulty..."
+                           prefWidth="280"
+                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
+                                  -fx-prompt-text-fill: #6060a0; -fx-border-color: #e94560;
+                                  -fx-border-radius: 4; -fx-background-radius: 4;
+                                  -fx-padding: 8 12; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="typeFilter" prefWidth="160"
+                          style="-fx-background-color: #0d2137; -fx-border-color: #2a2a5e;
+                                 -fx-border-radius: 4; -fx-background-radius: 4;
+                                 -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="📥  EXPORT CSV" onAction="#handleExportCSV"
+                        style="-fx-background-color: #0d2137; -fx-text-fill: #a0c0e0;
+                               -fx-font-family: 'Consolas'; -fx-font-size: 13px;
+                               -fx-padding: 9 16; -fx-border-radius: 4; -fx-background-radius: 4;
+                               -fx-border-color: #2a4a6e; -fx-cursor: hand;"/>
+                <Button text="＋  ADD GAME" onAction="#handleAddGame"
+                        style="-fx-background-color: #e94560; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-font-family: 'Consolas'; -fx-font-size: 13px;
+                               -fx-padding: 9 20; -fx-border-radius: 4; -fx-background-radius: 4; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <TableView fx:id="gamesTable"
+                   style="-fx-background-color: #1a1a2e; -fx-border-color: #0f3460;
+                          -fx-table-cell-border-color: #1e2a4a; -fx-text-fill: #e0e0f0;">
+            <BorderPane.margin><Insets top="14" right="20" bottom="0" left="20"/></BorderPane.margin>
+            <columns>
+                <TableColumn fx:id="nameCol"       text="GAME NAME"  prefWidth="200"/>
+                <TableColumn fx:id="typeCol"       text="TYPE"       prefWidth="110" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="difficultyCol" text="DIFFICULTY" prefWidth="110" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="categoryCol"   text="CATEGORY"   prefWidth="120" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="tokenCostCol"  text="TOKENS"     prefWidth="90"  style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="actionsCol"    text="ACTIONS"    prefWidth="230" style="-fx-alignment: CENTER;"/>
+            </columns>
+            <placeholder>
+                <Label text="No games found." style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 14px;"/>
+            </placeholder>
+        </TableView>
+    </center>
+    <bottom>
+        <HBox style="-fx-background-color: #16213e; -fx-padding: 10 20; -fx-border-color: #0f3460; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="statusLabel" text="" style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-text-fill: #a0a0c0;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
