@@ -5,6 +5,8 @@ import utils.MyConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PostService {
 
@@ -54,9 +56,10 @@ public class PostService {
         List<Post> posts = new ArrayList<>();
 
         // The magic query that fulfills your "pas d'affichage d'id" requirement!
-        String req = "SELECT p.*, u.username AS author_name " +
+        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
                 "FROM post p " +
-                "JOIN users u ON p.author_id = u.id";
+                "JOIN user u ON p.author_id = u.id " +
+                "LEFT JOIN space s ON p.space_id = s.id";
 
         try {
             Statement st = cnx.createStatement();
@@ -143,6 +146,25 @@ public class PostService {
         } catch (SQLException e) {
             System.err.println("Erreur lors de la suppression du post : " + e.getMessage());
         }
+    }
+    // --- FETCH SPACES FOR DROPDOWN ---
+    public Map<String, Integer> getSpacesMap() {
+        Map<String, Integer> spaces = new HashMap<>();
+        String req = "SELECT id, name FROM space";
+
+        try {
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(req);
+
+            while (rs.next()) {
+                // We put the Name as the Key, and the ID as the Value
+                spaces.put(rs.getString("name"), rs.getInt("id"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération des spaces : " + e.getMessage());
+        }
+
+        return spaces;
     }
 
 }

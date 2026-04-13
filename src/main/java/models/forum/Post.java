@@ -21,6 +21,7 @@ public class Post {
     private double hotScore;
     private String authorName;
     private String spaceName;
+    private String tags;
 
     // Default constructor (Needed for JDBC)
     public Post() {}
@@ -177,5 +178,13 @@ public class Post {
 
     public void setSpaceName(String spaceName) {
         this.spaceName = spaceName;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 }
