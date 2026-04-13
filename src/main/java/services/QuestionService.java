@@ -18,7 +18,7 @@ public class QuestionService {
 
     // --- CREATE ---
     public void createQuestion(Question question) {
-        String req = "INSERT INTO question (text, xpValue, difficulty, imageName, updatedAt, quizId, userId) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String req = "INSERT INTO question (text, xp_value, difficulty, image_name, updated_at, quiz_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
@@ -61,12 +61,12 @@ public class QuestionService {
                 question = new Question(
                         rs.getInt("id"),
                         rs.getString("text"),
-                        rs.getInt("xpValue"),
+                        rs.getInt("xp_value"),
                         rs.getString("difficulty"),
-                        rs.getString("imageName"),
-                        rs.getTimestamp("updatedAt").toLocalDateTime(),
-                        rs.getInt("quizId"),
-                        (Integer) rs.getObject("userId")
+                        rs.getString("image_name"),
+                        rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null,
+                        rs.getInt("quiz_id"),
+                        (Integer) rs.getObject("user_id")
                 );
             }
 
@@ -79,7 +79,7 @@ public class QuestionService {
 
     // --- READ (Get all by Quiz ID) ---
     public List<Question> getQuestionsByQuizId(int quizId) {
-        String req = "SELECT * FROM question WHERE quizId = ?";
+        String req = "SELECT * FROM question WHERE quiz_id = ?";
         List<Question> questions = new ArrayList<>();
 
         try {
@@ -92,12 +92,12 @@ public class QuestionService {
                 Question question = new Question(
                         rs.getInt("id"),
                         rs.getString("text"),
-                        rs.getInt("xpValue"),
+                        rs.getInt("xp_value"),
                         rs.getString("difficulty"),
-                        rs.getString("imageName"),
-                        rs.getTimestamp("updatedAt").toLocalDateTime(),
-                        rs.getInt("quizId"),
-                        (Integer) rs.getObject("userId")
+                        rs.getString("image_name"),
+                        rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null,
+                        rs.getInt("quiz_id"),
+                        (Integer) rs.getObject("user_id")
                 );
                 questions.add(question);
             }
@@ -111,7 +111,7 @@ public class QuestionService {
 
     // --- UPDATE ---
     public void updateQuestion(Question question) {
-        String req = "UPDATE question SET text = ?, xpValue = ?, difficulty = ?, imageName = ?, updatedAt = ?, quizId = ?, userId = ? WHERE id = ?";
+        String req = "UPDATE question SET text = ?, xp_value = ?, difficulty = ?, image_name = ?, updated_at = ?, quiz_id = ?, user_id = ? WHERE id = ?";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req);

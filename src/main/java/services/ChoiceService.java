@@ -17,7 +17,7 @@ public class ChoiceService {
 
     // --- CREATE ---
     public void createChoice(Choice choice) {
-        String req = "INSERT INTO choice (content, isCorrect, questionId) VALUES (?, ?, ?)";
+        String req = "INSERT INTO choice (content, is_correct, question_id) VALUES (?, ?, ?)";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
@@ -56,8 +56,8 @@ public class ChoiceService {
                 choice = new Choice(
                         rs.getInt("id"),
                         rs.getString("content"),
-                        rs.getBoolean("isCorrect"),
-                        rs.getInt("questionId")
+                        rs.getBoolean("is_correct"),
+                        rs.getInt("question_id")
                 );
             }
 
@@ -70,7 +70,7 @@ public class ChoiceService {
 
     // --- READ (Get all by Question ID) ---
     public List<Choice> getChoicesByQuestionId(int questionId) {
-        String req = "SELECT * FROM choice WHERE questionId = ?";
+        String req = "SELECT * FROM choice WHERE question_id = ?";
         List<Choice> choices = new ArrayList<>();
 
         try {
@@ -83,8 +83,8 @@ public class ChoiceService {
                 Choice choice = new Choice(
                         rs.getInt("id"),
                         rs.getString("content"),
-                        rs.getBoolean("isCorrect"),
-                        rs.getInt("questionId")
+                        rs.getBoolean("is_correct"),
+                        rs.getInt("question_id")
                 );
                 choices.add(choice);
             }
@@ -98,7 +98,7 @@ public class ChoiceService {
 
     // --- UPDATE ---
     public void updateChoice(Choice choice) {
-        String req = "UPDATE choice SET content = ?, isCorrect = ?, questionId = ? WHERE id = ?";
+        String req = "UPDATE choice SET content = ?, is_correct = ?, question_id = ? WHERE id = ?";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
@@ -136,7 +136,7 @@ public class ChoiceService {
 
     // --- DELETE all choices for a question ---
     public void deleteChoicesByQuestionId(int questionId) {
-        String req = "DELETE FROM choice WHERE questionId = ?";
+        String req = "DELETE FROM choice WHERE question_id = ?";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(req);

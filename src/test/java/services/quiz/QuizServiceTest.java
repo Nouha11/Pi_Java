@@ -3,27 +3,27 @@ package services.quiz;
 import models.quiz.Choice;
 import models.quiz.Question;
 import models.quiz.Quiz;
-import services.QuestionService;
 import services.ChoiceService;
-import org.junit.jupiter.api.*;
+import services.QuestionService;
 import services.QuizService;
+import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class QuizServiceTest {
+class QuizServiceTest {
 
     static QuizService quizService;
     static QuestionService questionService;
     static ChoiceService choiceService;
-    
-    static int testQuizId;
-    static int testQuestion1Id;
-    static int testQuestion2Id;
+
+    // shared IDs across tests
+    static int quizId;
+    static int questionId;
+    static int choiceId;
 
     @BeforeAll
     static void setup() {
@@ -32,229 +32,252 @@ public class QuizServiceTest {
         choiceService = new ChoiceService();
     }
 
-    // ─────────────────────────────
-    // TEST 1: CREATE QUIZ
-    // ─────────────────────────────
+    // ───────── HELPERS ─────────
+
+    private Quiz buildQuiz(String title) {
+        return new Quiz(title, "A test quiz description");
+    }
+
+    private Question buildQuestion(int qzId, String text) {
+        Question q = new Question(text, 10, "EASY", qzId);
+        q.setUpdatedAt(LocalDateTime.now());
+        return q;
+    }
+
+    private Choice buildChoice(int qnId, String content, boolean correct) {
+        return new Choice(content, correct, qnId);
+    }
+
+    // ───────── QUIZ TESTS ─────────
+
     @Test
     @Order(1)
     void testCreateQuiz() {
-        Quiz quiz = new Quiz("Java Fundamentals", "Basic Java concepts and OOP principles");
+        Quiz quiz = buildQuiz("Unit Test Quiz");
+        assertDoesNotThrow(() -> quizService.createQuiz(quiz));
 
-        assertNotNull(quiz);
-        assertEquals("Java Fundamentals", quiz.getTitle());
-        assertEquals("Basic Java concepts and OOP principles", quiz.getDescription());
+        // fetch it back to confirm it exists and grab its ID
+        List<Quiz> all = quizService.getAllQuizzes();
+        Quiz created = all.stream()
+                .filter(q -> "Unit Test Quiz".equals(q.getTitle()))
+                .findFirst()
+                .orElse(null);
 
-        // In a real scenario, you would save to DB here
-        // quizService.createQuiz(quiz);
-        // testQuizId = quiz.getId();
-        
-        System.out.println("✅ Quiz created: " + quiz);
+        assertNotNull(created, "Quiz should exist in DB after creation");
+        assertEquals("Unit Test Quiz", created.getTitle());
+        assertEquals("A test quiz description", created.getDescription());
+
+        quizId = created.getId(); // store for subsequent tests
     }
 
-    // ─────────────────────────────
-    // TEST 2: CREATE QUESTION WITH CHOICES
-    // ─────────────────────────────
     @Test
     @Order(2)
-    void testCreateQuestionWithChoices() {
-        // Create a question
-        Question question = new Question(
-                "What is encapsulation?",
-                10,
-                "BEGINNER",
-                1  // quizId = 1 (test quiz)
-        );
-        question.setUpdatedAt(LocalDateTime.now());
-
-        assertNotNull(question);
-        assertEquals("What is encapsulation?", question.getText());
-        assertEquals(10, question.getXpValue());
-        assertEquals("BEGINNER", question.getDifficulty());
-
-        // Create choices
-        List<Choice> choices = new ArrayList<>();
-        
-        Choice choice1 = new Choice("Bundling data and methods into a single unit", true, 1);
-        Choice choice2 = new Choice("Making data public", false, 1);
-        Choice choice3 = new Choice("Inheriting from parent classes", false, 1);
-        Choice choice4 = new Choice("Creating multiple objects", false, 1);
-
-        choices.add(choice1);
-        choices.add(choice2);
-        choices.add(choice3);
-        choices.add(choice4);
-
-        question.setChoices(choices);
-
-        // Verify question-choice relationship
-        assertNotNull(question.getChoices());
-        assertEquals(4, question.getChoices().size());
-
-        // Verify correct answer exists
-        boolean hasCorrectAnswer = question.getChoices().stream()
-                .anyMatch(Choice::isCorrect);
-        assertTrue(hasCorrectAnswer);
-
-        // Count correct answers (should be exactly 1)
-        long correctAnswerCount = question.getChoices().stream()
-                .filter(Choice::isCorrect)
-                .count();
-        assertEquals(1, correctAnswerCount);
-
-        System.out.println("✅ Question created with choices: " + question);
-        System.out.println("   Choices: " + question.getChoices());
+    void testGetQuizById() {
+        Quiz quiz = quizService.getQuizById(quizId);
+        assertNotNull(quiz, "Should retrieve quiz by ID");
+        assertEquals(quizId, quiz.getId());
+        assertEquals("Unit Test Quiz", quiz.getTitle());
     }
 
-    // ─────────────────────────────
-    // TEST 3: CREATE QUIZ WITH MULTIPLE QUESTIONS
-    // ─────────────────────────────
     @Test
     @Order(3)
-    void testCreateQuizWithMultipleQuestions() {
-        // Create quiz
-        Quiz quiz = new Quiz("Advanced Java", "OOP, Collections, Lambda Expressions");
-        List<Question> questions = new ArrayList<>();
-
-        // Question 1
-        Question q1 = new Question("What is polymorphism?", 15, "INTERMEDIATE", 2);
-        q1.setUpdatedAt(LocalDateTime.now());
-        List<Choice> q1Choices = new ArrayList<>();
-        q1Choices.add(new Choice("Ability of objects to take multiple forms", true, 1));
-        q1Choices.add(new Choice("Creating multiple classes", false, 1));
-        q1Choices.add(new Choice("Using inheritance", false, 1));
-        q1.setChoices(q1Choices);
-        questions.add(q1);
-
-        // Question 2
-        Question q2 = new Question("What is a Stream in Java?", 12, "INTERMEDIATE", 2);
-        q2.setUpdatedAt(LocalDateTime.now());
-        List<Choice> q2Choices = new ArrayList<>();
-        q2Choices.add(new Choice("A sequence of elements that can be processed in parallel", true, 2));
-        q2Choices.add(new Choice("A file I/O class", false, 2));
-        q2Choices.add(new Choice("A networking class", false, 2));
-        q2.setChoices(q2Choices);
-        questions.add(q2);
-
-        // Question 3
-        Question q3 = new Question("What is a Lambda expression?", 10, "INTERMEDIATE", 2);
-        q3.setUpdatedAt(LocalDateTime.now());
-        List<Choice> q3Choices = new ArrayList<>();
-        q3Choices.add(new Choice("An anonymous function with a concise syntax", true, 3));
-        q3Choices.add(new Choice("A type of variable", false, 3));
-        q3Choices.add(new Choice("A loop structure", false, 3));
-        q3.setChoices(q3Choices);
-        questions.add(q3);
-
-        // Tie questions to quiz
-        quiz.setQuestions(questions);
-
-        // Verify relationships
-        assertNotNull(quiz.getQuestions());
-        assertEquals(3, quiz.getQuestions().size());
-
-        for (Question q : quiz.getQuestions()) {
-            assertNotNull(q.getChoices());
-            assertEquals(3, q.getChoices().size());
-            assertTrue(q.getQuizId() > 0);
-        }
-
-        System.out.println("✅ Quiz created with multiple questions: " + quiz.getTitle());
-        System.out.println("   Total questions: " + quiz.getQuestions().size());
-        for (Question q : quiz.getQuestions()) {
-            System.out.println("   - " + q.getText() + " (" + q.getChoices().size() + " choices)");
-        }
+    void testGetAllQuizzes() {
+        List<Quiz> quizzes = quizService.getAllQuizzes();
+        assertNotNull(quizzes);
+        assertFalse(quizzes.isEmpty(), "Quiz list should not be empty");
+        assertTrue(quizzes.stream().anyMatch(q -> q.getId() == quizId));
     }
 
-    // ─────────────────────────────
-    // TEST 4: VALIDATE QUIZ STRUCTURE
-    // ─────────────────────────────
     @Test
     @Order(4)
-    void testValidateQuizStructure() {
-        Quiz quiz = new Quiz("Validation Test Quiz", "Testing structure validation");
-        List<Question> questions = new ArrayList<>();
+    void testUpdateQuiz() {
+        Quiz quiz = quizService.getQuizById(quizId);
+        assertNotNull(quiz);
 
-        Question question = new Question("Test question?", 5, "EASY", 3);
-        question.setUpdatedAt(LocalDateTime.now());
-        
-        List<Choice> choices = new ArrayList<>();
-        choices.add(new Choice("Option A", true, 1));
-        choices.add(new Choice("Option B", false, 1));
-        question.setChoices(choices);
-        
-        questions.add(question);
-        quiz.setQuestions(questions);
+        quiz.setTitle("Updated Quiz Title");
+        quiz.setDescription("Updated description");
+        assertDoesNotThrow(() -> quizService.updateQuiz(quiz));
 
-        // Validation checks
-        assertNotNull(quiz.getTitle());
-        assertFalse(quiz.getTitle().isEmpty());
-        
-        assertNotNull(quiz.getQuestions());
-        assertFalse(quiz.getQuestions().isEmpty());
-
-        for (Question q : quiz.getQuestions()) {
-            assertNotNull(q.getText());
-            assertFalse(q.getText().isEmpty());
-            assertTrue(q.getXpValue() > 0);
-            assertNotNull(q.getChoices());
-            assertTrue(q.getChoices().size() >= 2, "Question must have at least 2 choices");
-            
-            // Verify exactly one correct answer
-            long correctCount = q.getChoices().stream()
-                    .filter(Choice::isCorrect)
-                    .count();
-            assertEquals(1, correctCount, "Question must have exactly one correct answer");
-        }
-
-        System.out.println("✅ Quiz structure validation passed!");
+        Quiz updated = quizService.getQuizById(quizId);
+        assertEquals("Updated Quiz Title", updated.getTitle());
+        assertEquals("Updated description", updated.getDescription());
     }
 
-    // ─────────────────────────────
-    // TEST 5: CHOICE CONTENT VALIDATION
-    // ─────────────────────────────
+    // ───────── QUESTION TESTS ─────────
+
     @Test
     @Order(5)
-    void testChoiceContentValidation() {
-        Choice choice = new Choice("Valid choice content", true, 1);
+    void testCreateQuestion() {
+        Question q = buildQuestion(quizId, "What is 2 + 2?");
+        assertDoesNotThrow(() -> questionService.createQuestion(q));
 
-        assertNotNull(choice.getContent());
-        assertFalse(choice.getContent().isEmpty());
-        assertTrue(choice.getContent().length() > 0);
-        assertTrue(choice.isCorrect());
-
-        // Test invalid choice
-        assertThrows(Exception.class, () -> {
-            Choice invalidChoice = new Choice("", true, 1);
-            if (invalidChoice.getContent().isEmpty()) {
-                throw new Exception("Choice content cannot be empty");
-            }
-        });
-
-        System.out.println("✅ Choice content validation passed!");
+        assertTrue(q.getId() > 0, "Generated ID should be set after creation");
+        questionId = q.getId();
     }
 
-    // ─────────────────────────────
-    // TEST 6: QUESTION TO CHOICE RELATIONSHIP
-    // ─────────────────────────────
     @Test
     @Order(6)
-    void testQuestionToChoiceRelationship() {
-        Question question = new Question("Select the correct definition", 8, "BEGINNER", 1);
-        
-        List<Choice> choices = new ArrayList<>();
-        for (int i = 1; i <= 4; i++) {
-            Choice choice = new Choice("Option " + i, i == 1, i);  // First one is correct
-            choices.add(choice);
-        }
-        
-        question.setChoices(choices);
+    void testGetQuestionById() {
+        Question q = questionService.getQuestionById(questionId);
+        assertNotNull(q, "Should retrieve question by ID");
+        assertEquals(questionId, q.getId());
+        assertEquals("What is 2 + 2?", q.getText());
+        assertEquals(10, q.getXpValue());
+        assertEquals("EASY", q.getDifficulty());
+        assertEquals(quizId, q.getQuizId());
+    }
 
-        // Verify all choices belong to same question
-        for (Choice choice : question.getChoices()) {
-            assertTrue(choice.getQuestionId() > 0);
-            assertEquals(choice.getQuestionId(), question.getChoices().get(0).getQuestionId());
+    @Test
+    @Order(7)
+    void testGetQuestionsByQuizId() {
+        List<Question> questions = questionService.getQuestionsByQuizId(quizId);
+        assertNotNull(questions);
+        assertFalse(questions.isEmpty(), "Quiz should have at least one question");
+        assertTrue(questions.stream().anyMatch(q -> q.getId() == questionId));
+    }
+
+    @Test
+    @Order(8)
+    void testUpdateQuestion() {
+        Question q = questionService.getQuestionById(questionId);
+        assertNotNull(q);
+
+        q.setText("What is 3 + 3?");
+        q.setXpValue(20);
+        q.setDifficulty("MEDIUM");
+        q.setUpdatedAt(LocalDateTime.now());
+        assertDoesNotThrow(() -> questionService.updateQuestion(q));
+
+        Question updated = questionService.getQuestionById(questionId);
+        assertEquals("What is 3 + 3?", updated.getText());
+        assertEquals(20, updated.getXpValue());
+        assertEquals("MEDIUM", updated.getDifficulty());
+    }
+
+    // ───────── CHOICE TESTS ─────────
+
+    @Test
+    @Order(9)
+    void testCreateChoice() {
+        Choice c = buildChoice(questionId, "Option A", true);
+        assertDoesNotThrow(() -> choiceService.createChoice(c));
+
+        assertTrue(c.getId() > 0, "Generated ID should be set after creation");
+        choiceId = c.getId();
+
+        // add a wrong choice too
+        Choice wrong = buildChoice(questionId, "Option B", false);
+        assertDoesNotThrow(() -> choiceService.createChoice(wrong));
+    }
+
+    @Test
+    @Order(10)
+    void testGetChoiceById() {
+        Choice c = choiceService.getChoiceById(choiceId);
+        assertNotNull(c, "Should retrieve choice by ID");
+        assertEquals(choiceId, c.getId());
+        assertEquals("Option A", c.getContent());
+        assertTrue(c.isCorrect());
+        assertEquals(questionId, c.getQuestionId());
+    }
+
+    @Test
+    @Order(11)
+    void testGetChoicesByQuestionId() {
+        List<Choice> choices = choiceService.getChoicesByQuestionId(questionId);
+        assertNotNull(choices);
+        assertEquals(2, choices.size(), "Question should have exactly 2 choices");
+
+        long correctCount = choices.stream().filter(Choice::isCorrect).count();
+        assertEquals(1, correctCount, "Exactly one choice should be correct");
+    }
+
+    @Test
+    @Order(12)
+    void testUpdateChoice() {
+        Choice c = choiceService.getChoiceById(choiceId);
+        assertNotNull(c);
+
+        c.setContent("Option A - Updated");
+        c.setIsCorrect(false);
+        assertDoesNotThrow(() -> choiceService.updateChoice(c));
+
+        Choice updated = choiceService.getChoiceById(choiceId);
+        assertEquals("Option A - Updated", updated.getContent());
+        assertFalse(updated.isCorrect());
+    }
+
+    // ───────── INTEGRATION TEST ─────────
+
+    @Test
+    @Order(13)
+    void testFullQuizWithQuestionsAndChoices() {
+        // Create a quiz
+        Quiz quiz = buildQuiz("Integration Quiz");
+        quizService.createQuiz(quiz);
+
+        List<Quiz> all = quizService.getAllQuizzes();
+        Quiz saved = all.stream()
+                .filter(q -> "Integration Quiz".equals(q.getTitle()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(saved);
+        int iQuizId = saved.getId();
+
+        // Add 2 questions
+        for (int i = 1; i <= 2; i++) {
+            Question q = buildQuestion(iQuizId, "Integration Question " + i);
+            questionService.createQuestion(q);
+            assertTrue(q.getId() > 0);
+
+            // Add 3 choices per question (first one correct)
+            for (int j = 1; j <= 3; j++) {
+                Choice c = buildChoice(q.getId(), "Choice " + j, j == 1);
+                choiceService.createChoice(c);
+                assertTrue(c.getId() > 0);
+            }
+
+            // Verify choices were saved
+            List<Choice> choices = choiceService.getChoicesByQuestionId(q.getId());
+            assertEquals(3, choices.size());
+            assertEquals(1, choices.stream().filter(Choice::isCorrect).count());
         }
 
-        System.out.println("✅ Question-Choice relationship validated!");
+        // Verify questions were saved
+        List<Question> questions = questionService.getQuestionsByQuizId(iQuizId);
+        assertEquals(2, questions.size());
+
+        // Cleanup integration quiz
+        for (Question q : questions) {
+            choiceService.deleteChoicesByQuestionId(q.getId());
+            questionService.deleteQuestion(q.getId());
+        }
+        quizService.deleteQuiz(iQuizId);
+
+        assertNull(quizService.getQuizById(iQuizId), "Quiz should be deleted");
+    }
+
+    // ───────── CLEANUP ─────────
+
+    @Test
+    @Order(14)
+    void testDeleteChoicesByQuestionId() {
+        assertDoesNotThrow(() -> choiceService.deleteChoicesByQuestionId(questionId));
+        List<Choice> choices = choiceService.getChoicesByQuestionId(questionId);
+        assertTrue(choices.isEmpty(), "All choices for question should be deleted");
+    }
+
+    @Test
+    @Order(15)
+    void testDeleteQuestion() {
+        assertDoesNotThrow(() -> questionService.deleteQuestion(questionId));
+        assertNull(questionService.getQuestionById(questionId), "Question should be deleted");
+    }
+
+    @Test
+    @Order(16)
+    void testDeleteQuiz() {
+        assertDoesNotThrow(() -> quizService.deleteQuiz(quizId));
+        assertNull(quizService.getQuizById(quizId), "Quiz should be deleted");
     }
 }
