@@ -11,10 +11,8 @@ import java.util.Random;
 
 public class PaymentService {
 
-    private Connection cnx;
-
-    public PaymentService() {
-        cnx = MyConnection.getInstance().getCnx();
+    private Connection getCnx() {
+        return MyConnection.getInstance().getCnx();
     }
 
     // ─────────────────────────────────────────────
@@ -135,8 +133,8 @@ public class PaymentService {
     public void ajouter(Payment p) throws SQLException {
         String sql = "INSERT INTO payments (user_id, book_id, amount, status, payment_method, " +
                 "transaction_id, card_last_four, card_holder_name, failure_reason, created_at) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?)";
-        PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                "VALUES (?,?,?,?,?,?,?,?,?,NOW())";
+        PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setInt(1, p.getUserId());
         ps.setInt(2, p.getBookId());
         ps.setDouble(3, p.getAmount());
@@ -146,7 +144,6 @@ public class PaymentService {
         ps.setString(7, p.getCardLastFour());
         ps.setString(8, p.getCardHolderName());
         ps.setString(9, p.getFailureReason());
-        ps.setTimestamp(10, p.getCreatedAt());
         ps.executeUpdate();
 
         ResultSet keys = ps.getGeneratedKeys();
@@ -163,10 +160,10 @@ public class PaymentService {
         String sql = "SELECT p.*, b.title as book_title, u.email as user_name " +
                 "FROM payments p " +
                 "LEFT JOIN books b ON p.book_id=b.id " +
-                "LEFT JOIN users u ON p.user_id=u.id " +
+                "LEFT JOIN user u ON p.user_id=u.id " +
                 "ORDER BY p.created_at DESC";
         try {
-            ResultSet rs = cnx.createStatement().executeQuery(sql);
+            ResultSet rs = getCnx().createStatement().executeQuery(sql);
             while (rs.next()) payments.add(mapRow(rs));
         } catch (SQLException e) {
             System.err.println("Error loading payments: " + e.getMessage());
@@ -179,10 +176,10 @@ public class PaymentService {
         String sql = "SELECT p.*, b.title as book_title, u.email as user_name " +
                 "FROM payments p " +
                 "LEFT JOIN books b ON p.book_id=b.id " +
-                "LEFT JOIN users u ON p.user_id=u.id " +
+                "LEFT JOIN user u ON p.user_id=u.id " +
                 "WHERE p.user_id=? ORDER BY p.created_at DESC";
         try {
-            PreparedStatement ps = cnx.prepareStatement(sql);
+            PreparedStatement ps = getCnx().prepareStatement(sql);
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) payments.add(mapRow(rs));
@@ -215,3 +212,6 @@ public class PaymentService {
         return p;
     }
 }
+
+
+
