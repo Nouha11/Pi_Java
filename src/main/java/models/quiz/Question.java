@@ -1,4 +1,4 @@
-package models;
+package models.quiz;
 
 import java.time.LocalDateTime;
 

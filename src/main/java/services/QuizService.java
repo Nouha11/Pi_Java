@@ -1,6 +1,6 @@
 package services;
 
-import models.Quiz;
+import models.quiz.Quiz;
 import utils.MyConnection;
 
 import java.sql.*;

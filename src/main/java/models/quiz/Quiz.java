@@ -1,4 +1,4 @@
-package models;
+package models.quiz;
 
 public class Quiz {
     private int id;
