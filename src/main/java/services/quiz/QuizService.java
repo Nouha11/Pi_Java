@@ -1,4 +1,4 @@
-package services;
+package services.quiz;
 
 import models.quiz.Quiz;
 import utils.MyConnection;
