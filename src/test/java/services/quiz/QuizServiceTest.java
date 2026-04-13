@@ -3,9 +3,9 @@ package services.quiz;
 import models.quiz.Choice;
 import models.quiz.Question;
 import models.quiz.Quiz;
-import services.ChoiceService;
-import services.QuestionService;
-import services.QuizService;
+import services.quiz.ChoiceService;
+import services.quiz.QuestionService;
+import services.quiz.QuizService;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ class QuizServiceTest {
 
     @BeforeAll
     static void setup() {
-        quizService = new QuizService();
+        quizService =   new QuizService();
         questionService = new QuestionService();
         choiceService = new ChoiceService();
     }
