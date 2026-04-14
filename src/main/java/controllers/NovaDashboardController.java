@@ -139,12 +139,12 @@ public class NovaDashboardController {
 
     @FXML void handleShowGamification(ActionEvent event) {
         setActiveButton(btnGames);
-        loadPage("/views/gamification/GameDashboard.fxml");
+        loadPage("/views/gamification/user_games.fxml");
     }
 
     @FXML void handleShowRewards(ActionEvent event) {
         setActiveButton(btnRewards);
-        loadPage("/views/gamification/reward_list.fxml");
+        loadPage("/views/gamification/user_rewards.fxml");
     }
 
     // --- THE ANIMATION ENGINE & ERROR HANDLER ---
