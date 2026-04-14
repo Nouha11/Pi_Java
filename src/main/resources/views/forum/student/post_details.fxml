@@ -72,6 +72,7 @@
 
                                                     <Region HBox.hgrow="ALWAYS" />
 
+                                                    <Button fx:id="lockButton" onAction="#handleLockPost" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="🔒 Lock" />
                                                     <Button fx:id="editButton" onAction="#handleEditPost" style="-fx-background-color: #fef08a; -fx-text-fill: #a16207; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="✏ Edit" />
                                                     <Button fx:id="deleteButton" onAction="#handleDeletePost" style="-fx-background-color: #fee2e2; -fx-text-fill: #b91c1c; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="🗑 Delete" />
                                                 </HBox>
@@ -95,7 +96,7 @@
                                                 <Separator />
                                                 <TextArea fx:id="commentArea" prefHeight="80.0" promptText="Write a reply..." style="-fx-background-color: #f8fafc;" wrapText="true" />
                                                 <HBox alignment="CENTER_RIGHT">
-                                                    <Button onAction="#handleSubmitComment" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;" text="Post Reply" />
+                                                    <Button fx:id="submitCommentBtn" onAction="#handleSubmitComment" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;" text="Post Reply" />
                                                 </HBox>
                                                 <VBox fx:id="commentsContainer" spacing="15.0" />
                                             </children>
@@ -108,7 +109,7 @@
                                         <VBox style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20;" spacing="12.0">
                                             <Label style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="Discussion Stats" />
                                             <Separator />
-                                            <Label style="-fx-text-fill: #475569;" text="🛡 Status: Open" />
+                                            <Label fx:id="statusLabel" style="-fx-text-fill: #475569;" text="🛡 Status: Open" />
                                             <Label fx:id="statsViewsLabel" style="-fx-text-fill: #475569;" text="👁 Views: N/A" />
                                             <Label fx:id="statsRepliesLabel" style="-fx-text-fill: #475569;" text="💬 Replies: 0" />
                                             <Label fx:id="statsUpvotesLabel" style="-fx-text-fill: #475569;" text="👍 Upvotes: 0" />

@@ -114,7 +114,17 @@ public class ForumFeedController {
                     authorLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
                     headerRow.getChildren().addAll(dot, spaceLabel, authorLabel);
 
-                    Label titleLabel = new Label(post.getTitle()); titleLabel.setFont(Font.font("System", FontWeight.BOLD, 17)); titleLabel.setStyle("-fx-text-fill: #0f172a;");
+                    // 🔥 LOCK INDICATOR ON FEED
+                    Label titleLabel = new Label();
+                    if (post.isLocked()) {
+                        titleLabel.setText("🔒 " + post.getTitle());
+                        titleLabel.setStyle("-fx-text-fill: #94a3b8;"); // Gray text for locked
+                    } else {
+                        titleLabel.setText(post.getTitle());
+                        titleLabel.setStyle("-fx-text-fill: #0f172a;"); // Standard dark text
+                    }
+                    titleLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
+
                     Label contentLabel = new Label(post.getContent()); contentLabel.setWrapText(true); contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 2px;");
 
                     VBox attachmentBox = new VBox();

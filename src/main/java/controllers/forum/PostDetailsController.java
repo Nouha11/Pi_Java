@@ -2,7 +2,6 @@ package controllers.forum;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -23,13 +22,11 @@ import java.util.Optional;
 
 public class PostDetailsController {
 
-    @FXML private Button backButton;
-    @FXML private Button upvoteButton;
-    @FXML private Button editButton;   // 🔥 NEW
-    @FXML private Button deleteButton; // 🔥 NEW
+    @FXML private Button backButton, upvoteButton, editButton, deleteButton;
+    @FXML private Button lockButton, submitCommentBtn; // 🔥 NEW
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
-    @FXML private Label contentLabel;
+    @FXML private Label contentLabel, statusLabel; // 🔥 NEW
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
     @FXML private TextArea commentArea;
@@ -48,7 +45,6 @@ public class PostDetailsController {
 
     public void setPostData(Post post) {
         this.currentPost = post;
-
         String spaceName = post.getSpaceName() != null ? post.getSpaceName() : "General";
 
         breadcrumbSpaceLabel.setText(spaceName + "  •");
@@ -64,7 +60,6 @@ public class PostDetailsController {
         }
 
         contentLabel.setText(post.getContent());
-
         upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
         statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
@@ -78,14 +73,60 @@ public class PostDetailsController {
             upvoteButton.setText("👍 Upvote");
         }
 
+        // 🔥 UI UPDATES FOR LOCKED POSTS
+        updateLockUI();
+
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
             if (imgFile.exists()) {
                 postImageView.setImage(new Image(imgFile.toURI().toString()));
             }
         }
-
         loadComments();
+    }
+
+    //  DYNAMIC UI UPDATER FOR LOCKING (Now Highly Visible)
+    private void updateLockUI() {
+        if (currentPost.isLocked()) {
+            // Change Main Title
+            topTitleLabel.setText("🔒 " + currentPost.getTitle());
+            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"); // Muted Gray
+
+            // Change Side Status
+            statusLabel.setText("🔒 Status: Locked");
+            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            lockButton.setText("🔓 Unlock");
+
+            // Visibly Disable Comments
+            commentArea.setDisable(true);
+            commentArea.setPromptText("🔒 This discussion has been locked by the author or an admin.");
+            submitCommentBtn.setDisable(true);
+            submitCommentBtn.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6;");
+        } else {
+            // Restore Main Title
+            topTitleLabel.setText(currentPost.getTitle());
+            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"); // Dark Blue
+
+            // Restore Side Status
+            statusLabel.setText("🛡 Status: Open");
+            statusLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+            lockButton.setText("🔒 Lock");
+
+            // Enable Comments
+            commentArea.setDisable(false);
+            commentArea.setPromptText("Write a reply...");
+            submitCommentBtn.setDisable(false);
+            submitCommentBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;");
+        }
+    }
+
+    // 🔥 HANDLE AUTHOR LOCKING
+    @FXML
+    void handleLockPost(ActionEvent event) {
+        boolean newState = !currentPost.isLocked();
+        currentPost.setLocked(newState);
+        postService.toggleLock(currentPost.getId(), newState);
+        updateLockUI(); // Instantly update view
     }
 
     private void loadComments() {
@@ -110,7 +151,6 @@ public class PostDetailsController {
             HBox headerBox = new HBox(10);
             Label author = new Label(c.getAuthorName() != null ? c.getAuthorName() : "Student");
             author.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
-
             Label time = new Label("• Reply");
             time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
             headerBox.getChildren().addAll(author, time);
@@ -126,6 +166,7 @@ public class PostDetailsController {
 
     @FXML
     void handleSubmitComment(ActionEvent event) {
+        if (currentPost.isLocked()) return; // Extra security check
         String text = commentArea.getText();
         if (text == null || text.trim().isEmpty()) return;
 
@@ -160,7 +201,6 @@ public class PostDetailsController {
         statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
     }
 
-    // 🔥 NEW: DELETE LOGIC
     @FXML
     void handleDeletePost(ActionEvent event) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -171,11 +211,10 @@ public class PostDetailsController {
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             postService.supprimer(currentPost.getId());
-            handleBack(null); // Instantly return to feed
+            handleBack(null);
         }
     }
 
-    // 🔥 NEW: EDIT LOGIC (Beautiful Custom UI built entirely in code!)
     @FXML
     void handleEditPost(ActionEvent event) {
         Stage editStage = new Stage();
@@ -202,20 +241,15 @@ public class PostDetailsController {
             if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
                 currentPost.setTitle(titleInput.getText());
                 currentPost.setContent(contentInput.getText());
-
-                // Update DB
                 postService.modifier(currentPost);
 
-                // Instantly update UI text on the details page
                 topTitleLabel.setText(currentPost.getTitle());
                 contentLabel.setText(currentPost.getContent());
-
                 editStage.close();
             }
         });
 
         layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
-
         Scene scene = new Scene(layout, 500, 450);
         editStage.setScene(scene);
         editStage.showAndWait();

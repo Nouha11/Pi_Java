@@ -56,20 +56,21 @@ public class AdminForumController {
             return new SimpleStringProperty(isLocked ? "🔒 Locked" : "🟢 Open");
         });
 
+        // 🔥 FIXED ACTION BUTTONS: Crisp Text, No Clipping
         actionsCol.setCellFactory(param -> new TableCell<Post, Void>() {
             private final Button lockBtn = new Button();
-            private final Button editBtn = new Button("Edit"); // 🔥 NEW EDIT BUTTON
+            private final Button editBtn = new Button("Edit");
             private final Button deleteBtn = new Button("Delete");
-            private final HBox pane = new HBox(8, lockBtn, editBtn, deleteBtn);
+            private final HBox pane = new HBox(5, lockBtn, editBtn, deleteBtn);
 
             {
                 pane.setAlignment(Pos.CENTER);
 
-                // Styling
-                editBtn.setStyle("-fx-background-color: #fef08a; -fx-text-fill: #a16207; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
-                deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
+                // Styling: Slightly smaller font and tight padding so they fit nicely
+                String btnStyle = "-fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 4 8; -fx-background-radius: 4; -fx-font-weight: bold;";
+                editBtn.setStyle("-fx-background-color: #fef08a; -fx-text-fill: #a16207; " + btnStyle);
+                deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " + btnStyle);
 
-                // Toggle Lock/Unlock Logic
                 lockBtn.setOnAction(e -> {
                     Post p = getTableView().getItems().get(getIndex());
                     boolean newState = !p.isLocked();
@@ -78,16 +79,14 @@ public class AdminForumController {
                     getTableView().refresh();
                 });
 
-                // 🔥 Edit Logic for Admins
                 editBtn.setOnAction(e -> {
                     Post p = getTableView().getItems().get(getIndex());
                     showAdminEditDialog(p);
                 });
 
-                // Delete Logic
                 deleteBtn.setOnAction(e -> {
                     Post p = getTableView().getItems().get(getIndex());
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete this post permanently?", ButtonType.YES, ButtonType.NO);
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Permanently delete this post and all its comments?", ButtonType.YES, ButtonType.NO);
                     confirm.showAndWait().ifPresent(response -> {
                         if (response == ButtonType.YES) {
                             postService.supprimer(p.getId());
@@ -104,12 +103,14 @@ public class AdminForumController {
                     setGraphic(null);
                 } else {
                     Post p = getTableView().getItems().get(getIndex());
+                    String btnStyle = "-fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 4 8; -fx-background-radius: 4; -fx-font-weight: bold;";
+
                     if (p.isLocked()) {
                         lockBtn.setText("Unlock");
-                        lockBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
+                        lockBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " + btnStyle);
                     } else {
                         lockBtn.setText("Lock");
-                        lockBtn.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 4;");
+                        lockBtn.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; " + btnStyle);
                     }
                     setGraphic(pane);
                 }
@@ -117,7 +118,6 @@ public class AdminForumController {
         });
     }
 
-    // 🔥 Sleek programmatic popup window for Admin Editing
     private void showAdminEditDialog(Post post) {
         Stage editStage = new Stage();
         editStage.initModality(Modality.APPLICATION_MODAL);
@@ -143,15 +143,13 @@ public class AdminForumController {
             if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
                 post.setTitle(titleInput.getText());
                 post.setContent(contentInput.getText());
-
                 postService.modifier(post);
-                postTable.refresh(); // Magically updates the table behind the popup
+                postTable.refresh();
                 editStage.close();
             }
         });
 
         layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
-
         Scene scene = new Scene(layout, 500, 450);
         editStage.setScene(scene);
         editStage.showAndWait();
