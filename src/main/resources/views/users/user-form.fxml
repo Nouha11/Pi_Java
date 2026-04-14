@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<!--
+  Desktop Add/Edit User dialog — 700 × 480
+  Two-column GridPane layout, matches the desktop app style
+-->
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.UserFormController"
+            styleClass="form-root" prefWidth="700" prefHeight="480">
+
+    <!-- ── Header bar ── -->
+    <top>
+        <HBox styleClass="form-header" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="18" right="24" bottom="18" left="24"/></padding>
+            <Label text="👤" style="-fx-font-size:20px;"/>
+            <VBox spacing="2">
+                <Label fx:id="lblTitle" text="Add User" styleClass="form-header-title"/>
+                <Label fx:id="lblSubtitle" text="Fill in the details below"
+                       styleClass="form-header-sub"/>
+            </VBox>
+        </HBox>
+    </top>
+
+    <!-- ── Body ── -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="form-scroll">
+            <VBox spacing="20">
+                <padding><Insets top="24" right="28" bottom="8" left="28"/></padding>
+
+                <!-- Row 1: Email + Username -->
+                <GridPane hgap="20" vgap="0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                    </columnConstraints>
+
+                    <!-- Email -->
+                    <VBox spacing="6" GridPane.columnIndex="0">
+                        <Label text="EMAIL ADDRESS" styleClass="field-label"/>
+                        <TextField fx:id="tfEmail" promptText="user@example.com"
+                                   styleClass="form-field" maxWidth="Infinity"/>
+                    </VBox>
+
+                    <!-- Username -->
+                    <VBox spacing="6" GridPane.columnIndex="1">
+                        <Label text="USERNAME" styleClass="field-label"/>
+                        <TextField fx:id="tfUsername" promptText="letters, numbers, underscores"
+                                   styleClass="form-field" maxWidth="Infinity"/>
+                    </VBox>
+                </GridPane>
+
+                <!-- Row 2: Password + Role -->
+                <GridPane hgap="20" vgap="0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
+                    </columnConstraints>
+
+                    <!-- Password -->
+                    <VBox spacing="6" GridPane.columnIndex="0">
+                        <Label text="PASSWORD" styleClass="field-label"/>
+                        <PasswordField fx:id="pfPassword" promptText="Min 8 chars"
+                                       styleClass="form-field" maxWidth="Infinity"/>
+                        <Label fx:id="lblPasswordHint" text=""
+                               styleClass="field-hint"/>
+                    </VBox>
+
+                    <!-- Role -->
+                    <VBox spacing="6" GridPane.columnIndex="1">
+                        <Label text="ROLE" styleClass="field-label"/>
+                        <ComboBox fx:id="cbRole" maxWidth="Infinity"
+                                  styleClass="form-combo"/>
+                    </VBox>
+                </GridPane>
+
+                <!-- Row 3: XP + Status flags -->
+                <GridPane hgap="20" vgap="0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="30"/>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="70"/>
+                    </columnConstraints>
+
+                    <!-- XP -->
+                    <VBox spacing="6" GridPane.columnIndex="0">
+                        <Label text="XP POINTS" styleClass="field-label"/>
+                        <TextField fx:id="tfXp" promptText="0"
+                                   styleClass="form-field" maxWidth="Infinity"/>
+                    </VBox>
+
+                    <!-- Status flags -->
+                    <VBox spacing="6" GridPane.columnIndex="1">
+                        <Label text="STATUS FLAGS" styleClass="field-label"/>
+                        <HBox spacing="24" alignment="CENTER_LEFT"
+                              style="-fx-padding:10 14;-fx-background-color:#f8fafc;
+                                     -fx-background-radius:8;-fx-border-color:#e5e7eb;
+                                     -fx-border-radius:8;-fx-border-width:1.5;">
+                            <CheckBox fx:id="chkActive"   text="Active"
+                                      styleClass="form-check"/>
+                            <CheckBox fx:id="chkVerified" text="Verified"
+                                      styleClass="form-check"/>
+                            <CheckBox fx:id="chkBanned"   text="Banned"
+                                      styleClass="form-check-danger"/>
+                        </HBox>
+                    </VBox>
+                </GridPane>
+
+                <!-- Row 4: Ban reason (full width, hidden when not banned) -->
+                <VBox spacing="6">
+                    <Label text="BAN REASON" styleClass="field-label"/>
+                    <TextField fx:id="tfBanReason" promptText="Reason for banning this user…"
+                               styleClass="form-field" maxWidth="Infinity"/>
+                </VBox>
+
+                <!-- Error area -->
+                <Label fx:id="lblErrors" text="" wrapText="true"
+                       styleClass="form-errors" maxWidth="Infinity"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ── Footer bar ── -->
+    <bottom>
+        <HBox styleClass="form-footer" alignment="CENTER_RIGHT" spacing="12">
+            <padding><Insets top="14" right="24" bottom="14" left="24"/></padding>
+            <Button text="Cancel" onAction="#onCancel" styleClass="btn-cancel"/>
+            <Button fx:id="btnSave" text="Save User" onAction="#onSave"
+                    styleClass="btn-save"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
