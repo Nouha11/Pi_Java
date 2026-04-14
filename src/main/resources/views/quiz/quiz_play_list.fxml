@@ -8,17 +8,16 @@
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
-      fx:controller="controllers.quiz.QuizListController">
+      fx:controller="controllers.quiz.QuizPlayListController">
 
     <!-- TOOLBAR -->
     <HBox alignment="CENTER_LEFT" spacing="14" styleClass="toolbar">
         <padding><Insets bottom="14" left="20" right="20" top="14"/></padding>
-        <Label styleClass="toolbar-title" text="📝  Quizzes"/>
+        <Label styleClass="toolbar-title" text="🎯  Smart Quizzes"/>
         <Region HBox.hgrow="ALWAYS"/>
         <TextField fx:id="txtSearch" promptText="🔍  Search quizzes…"
                    styleClass="search-field" prefWidth="210"
                    onKeyReleased="#handleSearch"/>
-        <Button onAction="#handleCreate" styleClass="btn-primary" text="＋  New Quiz"/>
     </HBox>
 
     <!-- CARD GRID -->
@@ -27,8 +26,7 @@
                 VBox.vgrow="ALWAYS">
         <VBox>
             <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
-            <FlowPane fx:id="cardsPane" hgap="16" vgap="16"
-                      styleClass="cards-pane"/>
+            <FlowPane fx:id="cardsPane" hgap="16" vgap="16" styleClass="cards-pane"/>
         </VBox>
     </ScrollPane>
 
