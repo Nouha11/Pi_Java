@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
 <!--
-  Desktop main window — BorderPane layout:
+  Desktop main window â€” BorderPane layout:
   LEFT   = dark sidebar
   TOP    = top bar (title + user info)
   CENTER = content (stats cards + toolbar + table)
@@ -13,9 +13,9 @@
             fx:controller="controllers.users.UserListController"
             styleClass="app-root" prefWidth="1200" prefHeight="740">
 
-    <!-- ══════════════════════════════════════════════
-         LEFT — Sidebar
-         ══════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         LEFT â€” Sidebar
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <left>
         <VBox styleClass="sidebar" prefWidth="220" spacing="4">
             <padding><Insets top="0" right="0" bottom="16" left="0"/></padding>
@@ -23,7 +23,7 @@
             <!-- App logo -->
             <VBox styleClass="sidebar-logo" alignment="CENTER" spacing="4">
                 <padding><Insets top="24" bottom="24"/></padding>
-                <Label text="🎓" style="-fx-font-size:36px;"/>
+                <Label text="ðŸŽ“" style="-fx-font-size:36px;"/>
                 <Label text="NOVA" styleClass="sidebar-app-name"/>
                 <Label text="Admin Panel" styleClass="sidebar-app-sub"/>
             </VBox>
@@ -39,7 +39,7 @@
             <!-- Nav items (active = Users) -->
             <HBox styleClass="nav-item nav-item-active" alignment="CENTER_LEFT" spacing="12">
                 <padding><Insets top="11" right="16" bottom="11" left="20"/></padding>
-                <Label text="👥" style="-fx-font-size:16px;"/>
+                <Label text="ðŸ‘¥" style="-fx-font-size:16px;"/>
                 <Label text="All Users" styleClass="nav-label-active"/>
             </HBox>
 
@@ -48,9 +48,9 @@
             <Separator styleClass="sidebar-sep"/>
 
             <!-- Logged-in user info -->
-            <HBox fx:id="hboxCurrentUser" styleClass="sidebar-user" alignment="CENTER_LEFT" spacing="10">
+            <HBox fx:id="hboxCurrentUser" onMouseClicked="#onProfileClick" styleClass="sidebar-user" alignment="CENTER_LEFT" spacing="10" style="-fx-cursor:hand;">
                 <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
-                <Label text="👤" style="-fx-font-size:22px;"/>
+                <Label text="ðŸ‘¤" style="-fx-font-size:22px;"/>
                 <VBox spacing="2">
                     <Label fx:id="lblCurrentUser" text="Admin" styleClass="sidebar-username"/>
                     <Label fx:id="lblCurrentRole" text="ROLE_ADMIN" styleClass="sidebar-role"/>
@@ -59,9 +59,9 @@
         </VBox>
     </left>
 
-    <!-- ══════════════════════════════════════════════
-         TOP — Top bar
-         ══════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         TOP â€” Top bar
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <top>
         <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
@@ -74,7 +74,7 @@
 
             <!-- Search -->
             <TextField fx:id="tfSearch"
-                       promptText="  🔍  Search username or email…"
+                       promptText="  ðŸ”  Search username or emailâ€¦"
                        prefWidth="280" onAction="#onSearch"
                        styleClass="topbar-search"/>
             <Button text="Search" onAction="#onSearch" styleClass="btn-primary"/>
@@ -84,21 +84,21 @@
                       prefWidth="140" styleClass="topbar-combo"/>
 
             <!-- Buttons -->
-            <Button text="＋  Add User" onAction="#onAddUser" styleClass="btn-success"/>
-            <Button text="↺" onAction="#onRefresh" styleClass="btn-icon">
+            <Button text="ï¼‹  Add User" onAction="#onAddUser" styleClass="btn-success"/>
+            <Button text="â†º" onAction="#onRefresh" styleClass="btn-icon">
                 <tooltip><Tooltip text="Refresh"/></tooltip>
             </Button>
         </HBox>
     </top>
 
-    <!-- ══════════════════════════════════════════════
-         CENTER — Content
-         ══════════════════════════════════════════════ -->
+    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+         CENTER â€” Content
+         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
     <center>
         <VBox styleClass="content-area" spacing="16">
             <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
-            <!-- ── Stats cards row ── -->
+            <!-- â”€â”€ Stats cards row â”€â”€ -->
             <HBox spacing="14">
                 <!-- Total -->
                 <VBox styleClass="stat-card stat-card-blue" HBox.hgrow="ALWAYS" spacing="4">
@@ -144,7 +144,7 @@
                 </VBox>
             </HBox>
 
-            <!-- ── Table ── -->
+            <!-- â”€â”€ Table â”€â”€ -->
             <TableView fx:id="tableUsers" VBox.vgrow="ALWAYS" styleClass="main-table">
                 <columns>
                     <TableColumn fx:id="colId"       text="ID"       prefWidth="55"/>
@@ -163,3 +163,4 @@
     </center>
 
 </BorderPane>
+

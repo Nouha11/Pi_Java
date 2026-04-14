@@ -53,24 +53,10 @@ public class LoginController implements Initializable {
 
         try {
             User user = authenticate(username, password);
-            if (user == null) {
-                showError("Invalid username or password.");
-                pfPassword.clear();
-                pfPassword.requestFocus();
-                return;
-            }
-            if (user.isBanned()) {
-                showError("Account banned. Reason: " + (user.getBanReason() != null ? user.getBanReason() : "N/A"));
-                return;
-            }
-            if (!user.isActive()) {
-                showError("Account inactive. Contact an administrator.");
-                return;
-            }
-
-            // 🔥 THE MAGIC: Route the user based on their role!
+            if (user == null) { showError("Invalid username or password."); pfPassword.clear(); pfPassword.requestFocus(); return; }
+            if (user.isBanned()) { showError("Account banned. Reason: " + (user.getBanReason() != null ? user.getBanReason() : "N/A")); return; }
+            if (!user.isActive()) { showError("Account inactive. Contact an administrator."); return; }
             routeUserBasedOnRole(user);
-
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());
         } finally {
@@ -86,24 +72,16 @@ public class LoginController implements Initializable {
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) return null;
-
             String storedHash = rs.getString("password");
             boolean passwordMatches;
-
-            // Excellent PHP/Symfony BCrypt workaround from your teammate!
             if (storedHash != null && storedHash.startsWith("$2")) {
                 String jbcryptHash = storedHash.replaceFirst("^\\$2y\\$", "\\$2a\\$");
-                try {
-                    passwordMatches = BCrypt.checkpw(password, jbcryptHash);
-                } catch (Exception e) {
-                    passwordMatches = false;
-                }
+                try { passwordMatches = BCrypt.checkpw(password, jbcryptHash); }
+                catch (Exception e) { passwordMatches = false; }
             } else {
                 passwordMatches = password.equals(storedHash);
             }
-
             if (!passwordMatches) return null;
-
             User u = new User();
             u.setId(rs.getInt("id"));
             u.setUsername(rs.getString("username"));
@@ -119,7 +97,6 @@ public class LoginController implements Initializable {
         }
     }
 
-    // 🚦 THE TRAFFIC COP ROUTER
     private void routeUserBasedOnRole(User loggedInUser) {
         try {
             Stage stage = (Stage) btnLogin.getScene().getWindow();
@@ -127,31 +104,26 @@ public class LoginController implements Initializable {
             Parent root;
             Scene scene;
 
-            // Route 1: ADMINISTRATORS
             if (loggedInUser.getRole() == User.Role.ROLE_ADMIN) {
                 loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
                 root = loader.load();
-
                 controllers.admin.AdminDashboardController adminCtrl = loader.getController();
                 adminCtrl.setCurrentUser(loggedInUser);
-
                 scene = new Scene(root, 1280, 800);
                 scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
                 stage.setTitle("NOVA - Admin Dashboard");
-
-                // Route 2: STUDENTS & TUTORS
             } else {
                 loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
                 root = loader.load();
-
+                // Pass logged-in user so the avatar click can open the profile
+                controllers.NovaDashboardController dashCtrl = loader.getController();
+                dashCtrl.setCurrentUser(loggedInUser);
                 scene = new Scene(root, 1300, 800);
                 stage.setTitle("NOVA - Student Hub");
             }
 
-            // Apply the scene and center the window on the screen
             stage.setScene(scene);
             stage.centerOnScreen();
-
         } catch (IOException e) {
             showError("Cannot load dashboard: " + e.getMessage());
             e.printStackTrace();
