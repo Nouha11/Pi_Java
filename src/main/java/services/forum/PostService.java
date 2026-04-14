@@ -17,7 +17,6 @@ public class PostService {
     }
 
     public void ajouter(Post p) {
-        // REMOVED 'tags' from this query so it matches your DB!
         String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, image_name, link) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -51,7 +50,6 @@ public class PostService {
 
     public List<Post> afficher() {
         List<Post> posts = new ArrayList<>();
-        // LEFT JOIN ensures posts show up even if the user/space doesn't perfectly exist!
         String req = "SELECT p.*, u.username AS author_name, s.name AS space_name " +
                 "FROM post p " +
                 "LEFT JOIN user u ON p.author_id = u.id " +
@@ -125,5 +123,18 @@ public class PostService {
             while (rs.next()) spaces.put(rs.getString("name"), rs.getInt("id"));
         } catch (SQLException e) {}
         return spaces;
+    }
+
+    // --- PREMIUM FEATURE: UPVOTE / DOWNVOTE ---
+    public void updateUpvotes(int postId, int changeAmount) {
+        String req = "UPDATE post SET upvotes = upvotes + ? WHERE id = ?";
+        try {
+            PreparedStatement ps = cnx.prepareStatement(req);
+            ps.setInt(1, changeAmount);
+            ps.setInt(2, postId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("❌ Error updating upvotes: " + e.getMessage());
+        }
     }
 }

@@ -49,9 +49,36 @@ public class ForumFeedController {
                     voteBox.setAlignment(Pos.TOP_CENTER);
                     voteBox.setPadding(new Insets(12, 12, 0, 12));
                     voteBox.setStyle("-fx-background-color: #f8fafc; -fx-border-color: transparent #e2e8f0 transparent transparent; -fx-border-width: 0 1 0 0; -fx-background-radius: 8 0 0 8;");
-                    Label upArrow = new Label("↑"); upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold;");
-                    Label voteCount = new Label(String.valueOf(post.getUpvotes())); voteCount.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1e293b;");
-                    Label downArrow = new Label("↓"); downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
+
+                    // Added -fx-cursor: hand so it looks clickable!
+                    Label upArrow = new Label("↑");
+                    upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold; -fx-cursor: hand;");
+
+                    Label voteCount = new Label(String.valueOf(post.getUpvotes()));
+                    voteCount.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1e293b;");
+
+                    Label downArrow = new Label("↓");
+                    downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
+
+                    // 🔥 MAGIC SAUCE: Update DB directly from feed, e.consume() stops the post from opening
+                    upArrow.setOnMouseClicked(e -> {
+                        e.consume();
+                        postService.updateUpvotes(post.getId(), 1);
+                        post.setUpvotes(post.getUpvotes() + 1);
+                        voteCount.setText(String.valueOf(post.getUpvotes()));
+                        upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold; -fx-cursor: hand;");
+                        downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
+                    });
+
+                    downArrow.setOnMouseClicked(e -> {
+                        e.consume();
+                        postService.updateUpvotes(post.getId(), -1);
+                        post.setUpvotes(post.getUpvotes() - 1);
+                        voteCount.setText(String.valueOf(post.getUpvotes()));
+                        downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;");
+                        upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
+                    });
+
                     voteBox.getChildren().addAll(upArrow, voteCount, downArrow);
 
                     VBox contentBox = new VBox(10);
@@ -105,7 +132,6 @@ public class ForumFeedController {
                     setGraphic(mainCard);
                     setStyle("-fx-background-color: transparent; -fx-padding: 0 0 20 0;");
 
-                    // 🔥 THE ABSOLUTE FIX FOR SINGLE CLICK ROUTING 🔥
                     setOnMouseClicked(e -> {
                         if (!empty && post != null) {
                             openPostDetails(post);
@@ -138,12 +164,7 @@ public class ForumFeedController {
     }
 
     private void openPostDetails(Post post) {
-        // 1. Save the clicked post to our new session
         utils.ForumSession.currentPost = post;
-
-        // 2. Use your existing dashboard router to change the page safely!
-        // 🔥 THIS KEEPS YOUR NAVBAR INTACT! 🔥
         controllers.NovaDashboardController.loadPage("/views/forum/student/post_details.fxml");
     }
-
 }

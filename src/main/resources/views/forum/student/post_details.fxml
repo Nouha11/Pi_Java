@@ -65,7 +65,7 @@
                                                 <Separator />
 
                                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                                    <Button style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;" text="👍 Upvote" />
+                                                    <Button fx:id="upvoteButton" onAction="#handleUpvote" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;" text="👍 Upvote" />
                                                     <Button style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;" text="🔖 Save" />
                                                     <Button style="-fx-background-color: #eff6ff; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" text="↩ Reply" />
                                                 </HBox>

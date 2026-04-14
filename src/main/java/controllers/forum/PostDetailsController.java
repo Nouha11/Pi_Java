@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 import models.forum.Comment;
 import models.forum.Post;
 import services.forum.CommentService;
+import services.forum.PostService;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -20,6 +21,7 @@ import java.util.List;
 public class PostDetailsController {
 
     @FXML private Button backButton;
+    @FXML private Button upvoteButton; // 🔥 Added the Upvote button
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
     @FXML private Label contentLabel;
@@ -30,8 +32,10 @@ public class PostDetailsController {
 
     private Post currentPost;
     private CommentService commentService = new CommentService();
+    private PostService postService = new PostService(); // 🔥 Added PostService to interact with DB
 
-    // 🔥 NEW: Automatically grab the clicked post from memory when the page loads
+    private boolean isUpvotedLocally = false; // Tracks if the user clicked the button on this screen
+
     @FXML
     public void initialize() {
         if (utils.ForumSession.currentPost != null) {
@@ -44,15 +48,11 @@ public class PostDetailsController {
 
         String spaceName = post.getSpaceName() != null ? post.getSpaceName() : "General";
 
-        // Headers & Badges
         breadcrumbSpaceLabel.setText(spaceName + "  •");
         badgeSpaceLabel.setText(spaceName);
         topTitleLabel.setText(post.getTitle());
-
-        // Author & Post Info
         authorLabel.setText(post.getAuthorName() != null ? post.getAuthorName() : "Unknown Student");
 
-        // Date Formatting
         if (post.getCreatedAt() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy");
             dateLabel.setText("Posted on " + sdf.format(post.getCreatedAt()));
@@ -62,12 +62,10 @@ public class PostDetailsController {
 
         contentLabel.setText(post.getContent());
 
-        // Stats
         String upvotes = post.getUpvotes() + " Upvotes";
         upvoteBadgeLabel.setText(upvotes);
         statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
-        // Image loading
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
             if (imgFile.exists()) {
@@ -82,7 +80,6 @@ public class PostDetailsController {
         commentsContainer.getChildren().clear();
         List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
 
-        // Update Reply Counters
         String replyCount = String.valueOf(comments.size());
         repliesCountLabel.setText("Replies (" + replyCount + ")");
         statsRepliesLabel.setText("💬 Replies: " + replyCount);
@@ -127,9 +124,31 @@ public class PostDetailsController {
         loadComments();
     }
 
-    // 🔥 NEW: Safe routing back to the feed while keeping the navbar
+    // 🔥 NEW: Handles the Upvote Button click
+    @FXML
+    void handleUpvote(ActionEvent event) {
+        if (!isUpvotedLocally) {
+            postService.updateUpvotes(currentPost.getId(), 1);
+            currentPost.setUpvotes(currentPost.getUpvotes() + 1);
+
+            upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
+            upvoteButton.setText("👍 Upvoted");
+            isUpvotedLocally = true;
+        } else {
+            postService.updateUpvotes(currentPost.getId(), -1);
+            currentPost.setUpvotes(currentPost.getUpvotes() - 1);
+
+            upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
+            upvoteButton.setText("👍 Upvote");
+            isUpvotedLocally = false;
+        }
+
+        upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
+        statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
+    }
+
     @FXML
     void handleBack(ActionEvent event) {
-        controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml");
+        controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml"); // Adjust this path if needed
     }
 }
