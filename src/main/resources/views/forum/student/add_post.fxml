@@ -12,17 +12,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.AddPostController">
+<AnchorPane prefHeight="600.0" prefWidth="700.0" style="-fx-background-color: white; -fx-background-radius: 12;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.AddPostController">
     <children>
         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" spacing="15.0">
             <padding>
-                <Insets bottom="25.0" left="30.0" right="30.0" top="25.0" />
+                <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
             </padding>
             <children>
-                <Label text="Create a New Post" textFill="#333333">
-                    <font>
-                        <Font name="System Bold" size="26.0" />
-                    </font>
+                <Label text="Create a New Post" style="-fx-text-fill: #0f172a; -fx-font-weight: 900; -fx-font-size: 26px;">
                     <VBox.margin>
                         <Insets bottom="10.0" />
                     </VBox.margin>
@@ -32,14 +29,16 @@
                     <children>
                         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                             <children>
-                                <Label text="Title:" textFill="#555555" />
-                                <TextField fx:id="titleField" promptText="Enter post title..." style="-fx-pref-height: 35;" />
+                                <Label text="Title:" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
+                                <TextField fx:id="titleField" promptText="Enter post title..." style="-fx-pref-height: 40; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" />
+                                <Label fx:id="titleError" text="Title must be at least 5 characters." style="-fx-text-fill: #ef4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" managed="false"/>
                             </children>
                         </VBox>
                         <VBox prefWidth="220.0" spacing="5.0">
                             <children>
-                                <Label text="Space:" textFill="#555555" />
-                                <ComboBox fx:id="spaceCombo" maxWidth="1.7976931348623157E308" promptText="Select Space" style="-fx-pref-height: 35;" />
+                                <Label text="Space:" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
+                                <ComboBox fx:id="spaceCombo" maxWidth="1.7976931348623157E308" promptText="Select Space" style="-fx-pref-height: 40; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" />
+                                <Label fx:id="spaceError" text="Please select a space." style="-fx-text-fill: #ef4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" managed="false"/>
                             </children>
                         </VBox>
                     </children>
@@ -49,14 +48,14 @@
                     <children>
                         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                             <children>
-                                <Label text="Tags (comma separated):" textFill="#555555" />
-                                <TextField fx:id="tagsField" promptText="e.g. Science, Exams" style="-fx-pref-height: 35;" />
+                                <Label text="Tags (comma separated):" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
+                                <TextField fx:id="tagsField" promptText="e.g. Science, Exams" style="-fx-pref-height: 40; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" />
                             </children>
                         </VBox>
                         <VBox prefWidth="220.0" spacing="5.0">
                             <children>
-                                <Label text="URL Link:" textFill="#555555" />
-                                <TextField fx:id="linkField" promptText="https://..." style="-fx-pref-height: 35;" />
+                                <Label text="URL Link:" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
+                                <TextField fx:id="linkField" promptText="https://..." style="-fx-pref-height: 40; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" />
                             </children>
                         </VBox>
                     </children>
@@ -64,23 +63,22 @@
 
                 <HBox alignment="BOTTOM_LEFT" spacing="10.0">
                     <children>
-                        <Label text="Content:" textFill="#555555" />
+                        <Label text="Content:" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="fileNameLabel" text="No file selected" textFill="#888888">
-                            <font>
-                                <Font name="System Italic" size="12.0" />
-                            </font>
-                        </Label>
-                        <Button mnemonicParsing="false" onAction="#handleUploadFile" style="-fx-background-color: #e0e0e0; -fx-text-fill: #333333;" text="📎 Attach File" />
+                        <Label fx:id="fileNameLabel" text="No file selected" style="-fx-text-fill: #94a3b8; -fx-font-style: italic;" />
+                        <Button mnemonicParsing="false" onAction="#handleUploadFile" style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-cursor: hand;" text="📎 Attach File" />
                     </children>
                     <VBox.margin>
                         <Insets top="10.0" />
                     </VBox.margin>
                 </HBox>
 
-                <TextArea fx:id="contentArea" promptText="What do you want to share?" wrapText="true" VBox.vgrow="ALWAYS" />
+                <VBox VBox.vgrow="ALWAYS" spacing="5">
+                    <TextArea fx:id="contentArea" promptText="What do you want to share?" wrapText="true" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" VBox.vgrow="ALWAYS" />
+                    <Label fx:id="contentError" text="Content must be at least 10 characters." style="-fx-text-fill: #ef4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" managed="false"/>
+                </VBox>
 
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45;" text="Submit Post">
+                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45; -fx-background-radius: 8; -fx-cursor: hand;" text="Post to Forum">
                     <VBox.margin>
                         <Insets top="10.0" />
                     </VBox.margin>

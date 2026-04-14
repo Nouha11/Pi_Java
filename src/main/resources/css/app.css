@@ -68,4 +68,13 @@
     -fx-pref-width: 0;
     -fx-padding: 0;
     -fx-opacity: 0;
+
+    /* --- FORM VALIDATION --- */
+    .error-input {
+        -fx-border-color: #ef4444; /* Bright Red */
+        -fx-border-width: 2px;
+        -fx-border-radius: 4px;
+        -fx-background-radius: 4px;
+        -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.2), 5, 0, 0, 2);
+    }
 }
