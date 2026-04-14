@@ -77,16 +77,17 @@ public class StatsController {
                     .limit(5)
                     .forEach(r -> {
                         HBox row = new HBox(10);
-                        row.setStyle("-fx-background-color: #0d2137; -fx-padding: 8 14; " +
-                                     "-fx-border-radius: 4; -fx-background-radius: 4;");
+                        row.setStyle("-fx-background-color: #f8f9ff; -fx-padding: 10 14; " +
+                                     "-fx-border-radius: 8; -fx-background-radius: 8; " +
+                                     "-fx-border-color: #e4e8f0; -fx-border-width: 1;");
                         Label name = new Label("🏆 " + r.getName());
-                        name.setStyle("-fx-text-fill: #e0e0f0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;");
+                        name.setStyle("-fx-text-fill: #2d3748; -fx-font-size: 13px;");
                         name.setMaxWidth(Double.MAX_VALUE);
                         HBox.setHgrow(name, javafx.scene.layout.Priority.ALWAYS);
                         Label type = new Label("[" + r.getType() + "]");
-                        type.setStyle("-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px;");
+                        type.setStyle("-fx-text-fill: #718096; -fx-font-size: 11px;");
                         Label val = new Label("+" + r.getValue() + " pts");
-                        val.setStyle("-fx-text-fill: #4caf50; -fx-font-family: 'Consolas'; -fx-font-size: 13px; -fx-font-weight: bold;");
+                        val.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 13px; -fx-font-weight: bold;");
                         row.getChildren().addAll(name, type, val);
                         topRewardsBox.getChildren().add(row);
                     });
@@ -109,14 +110,14 @@ public class StatsController {
     private void applyLabelStyle(PieChart chart) {
         chart.lookupAll(".chart-pie-label").forEach(node -> {
             if (node instanceof Text t) {
-                t.setFill(Color.web("#e0e0f0"));
-                t.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 12px;");
+                t.setFill(Color.web("#2d3748"));
+                t.setStyle("-fx-font-size: 12px;");
             }
         });
         chart.lookupAll(".chart-legend-item").forEach(node -> {
             if (node instanceof Label l) {
-                l.setTextFill(Color.web("#e0e0f0"));
-                l.setStyle("-fx-font-family: 'Consolas'; -fx-font-size: 12px;");
+                l.setTextFill(Color.web("#4a5568"));
+                l.setStyle("-fx-font-size: 12px;");
             }
         });
     }

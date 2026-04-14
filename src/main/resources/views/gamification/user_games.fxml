@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.gamification.UserGamesController"
+      stylesheets="@../../css/quiz.css"
+      style="-fx-background-color: #f0f2f8;">
+
+    <!-- TOOLBAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" left="20" right="20" bottom="14"/></padding>
+        <Label text="🎮  Games" styleClass="toolbar-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="🔍  Search games…"
+                   styleClass="search-field" prefWidth="220" onKeyReleased="#handleSearch"/>
+        <ComboBox fx:id="filterType" prefWidth="150"/>
+        <ComboBox fx:id="filterDifficulty" prefWidth="140"/>
+    </HBox>
+
+    <!-- CARD GRID -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox>
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <FlowPane fx:id="cardsPane" hgap="18" vgap="18" styleClass="cards-pane"/>
+        </VBox>
+    </ScrollPane>
+
+    <!-- STATUS BAR -->
+    <HBox styleClass="status-bar">
+        <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
+        <Label fx:id="lblStatus" styleClass="status-label" text=""/>
+    </HBox>
+</VBox>
