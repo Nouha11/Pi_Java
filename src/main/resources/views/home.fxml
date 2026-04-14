@@ -8,105 +8,92 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: #f4f6f8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.NovaDashboardController">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-control-inner-background: #f8fafc; -fx-border-width: 0;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.NovaDashboardController">
     <content>
-        <VBox alignment="TOP_CENTER" spacing="40.0">
+        <VBox alignment="TOP_CENTER" spacing="35.0">
             <padding>
-                <Insets bottom="50.0" left="60.0" right="60.0" top="40.0" />
+                <Insets bottom="50.0" left="60.0" right="60.0" top="30.0" />
             </padding>
             <children>
 
-                <VBox alignment="CENTER" spacing="15.0" style="-fx-background-color: linear-gradient(to right bottom, #e0f2fe, #f3e8ff); -fx-background-radius: 20; -fx-padding: 60;">
+                <VBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-padding: 40 50 40 50; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 5);">
                     <children>
-                        <Label style="-fx-font-weight: bold; -fx-font-size: 46px; -fx-text-fill: #0f172a;" text="Study Smarter. Level Up Together." />
-                        <Label style="-fx-font-size: 18px; -fx-text-fill: #475569;" text="Experience the future of education. All your tools in one place." />
+                        <Label style="-fx-font-weight: bold; -fx-font-size: 38px; -fx-text-fill: #0f172a;" text="Welcome back to NOVA." />
+                        <Label style="-fx-font-size: 16px; -fx-text-fill: #64748b;" text="Your complete educational ecosystem. Select a module to begin your session." />
                     </children>
                 </VBox>
 
-                <VBox alignment="CENTER" spacing="5.0">
-                    <children>
-                        <Label style="-fx-font-weight: bold; -fx-font-size: 28px; -fx-text-fill: #1e293b;" text="The Complete NOVA Ecosystem" />
-                        <Label style="-fx-font-size: 16px; -fx-text-fill: #64748b;" text="Six powerful modules, perfectly integrated into one unified learning platform." />
-                    </children>
-                </VBox>
-
-                <GridPane alignment="CENTER" hgap="30.0" vgap="30.0">
+                <GridPane alignment="CENTER" hgap="25.0" vgap="25.0">
                     <children>
 
-                        <Button mnemonicParsing="false" onAction="#handleShowStudySessions" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Button mnemonicParsing="false" onAction="#handleShowStudySessions" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 3); -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="0">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #d1fae5; -fx-text-fill: #059669; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="🗺️" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="Interactive Courses" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Learn at your own pace with rich, structured courses." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #d1fae5; -fx-text-fill: #059669; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="🗺️" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="Interactive Courses" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Structured pacing and rich materials." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>
 
-                        <Button mnemonicParsing="false" onAction="#handleShowForum" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #bfdbfe; -fx-border-width: 2; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(37,99,235,0.15), 15, 0, 0, 8); -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Button mnemonicParsing="false" onAction="#handleShowForum" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #bfdbfe; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(37,99,235,0.08), 12, 0, 0, 4); -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="0">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="👥" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="AI Peer Forum" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Ask questions, get help from peers and AI tutors." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="👥" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="AI Peer Forum" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Collaborate and troubleshoot together." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>
 
-                        <Button mnemonicParsing="false" onAction="#handleShowLibrary" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Button mnemonicParsing="false" onAction="#handleShowLibrary" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 3); -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="0">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="📁" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="Digital Library" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Access hundreds of peer-reviewed resources." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="📁" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="Digital Library" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Peer-reviewed research and assets." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>
 
-                        <Button mnemonicParsing="false" onAction="#handleShowGamification" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Button mnemonicParsing="false" onAction="#handleShowGamification" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 3); -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="1">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="🎮" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="Educational Games" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Turn studying into playing. Enjoy puzzles and arcades." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="🎮" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="Educational Games" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Engage with interactive learning arcs." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>
 
-                        <Button mnemonicParsing="false" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Button mnemonicParsing="false" onAction="#handleShowQuiz" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 3); -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="❓" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="Smart Quizzes" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Test your knowledge instantly with automated grading." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="❓" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="Smart Quizzes" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Automated grading and analytics." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>
 
-                        <Button mnemonicParsing="false" prefHeight="200.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 15; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <Button mnemonicParsing="false" prefHeight="180.0" prefWidth="320.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 3); -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="1">
                             <graphic>
-                                <VBox alignment="CENTER" spacing="12.0">
+                                <VBox alignment="CENTER" spacing="10.0">
                                     <children>
-                                        <Label style="-fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 10; -fx-background-radius: 10; -fx-font-size: 24px;" text="🎖️" />
-                                        <Label style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #1e293b;" text="Rewards &amp; Badges" />
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Compete on leaderboards and earn exclusive XP." textAlignment="CENTER" wrapText="true" />
+                                        <Label style="-fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 22px;" text="🎖️" />
+                                        <Label style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #1e293b;" text="Rewards System" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="Track progress and climb leaderboards." textAlignment="CENTER" wrapText="true" />
                                     </children>
-                                    <padding><Insets bottom="10.0" left="20.0" right="20.0" top="10.0" /></padding>
                                 </VBox>
                             </graphic>
                         </Button>

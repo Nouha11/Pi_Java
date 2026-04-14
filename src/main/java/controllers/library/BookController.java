@@ -1,5 +1,6 @@
 package controllers.library;
 
+import controllers.NovaDashboardController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -55,7 +56,6 @@ public class BookController implements Initializable {
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
 
-        // Color-code type column
         colType.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -89,7 +89,6 @@ public class BookController implements Initializable {
                 (type == null || type.isEmpty()) ? null : type,
                 (search == null || search.isEmpty()) ? null : search
         ));
-        // Update stat cards
         long total    = bookData.size();
         long physical = bookData.stream().filter(b -> "physical".equals(b.getType())).count();
         long digital  = bookData.stream().filter(b -> "digital".equals(b.getType())).count();
@@ -99,13 +98,8 @@ public class BookController implements Initializable {
         setStatus("Showing " + total + " book(s).", false);
     }
 
-    @FXML
-    private void handleNew() {
-        openBookForm(null);
-    }
-
-    @FXML
-    private void handleEdit() {
+    @FXML private void handleNew() { openBookForm(null); }
+    @FXML private void handleEdit() {
         Book selected = bookTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showInfo("Please select a book to edit."); return; }
         openBookForm(selected);
@@ -126,17 +120,11 @@ public class BookController implements Initializable {
                 bookService.supprimer(selected.getId());
                 setStatus("Book deleted successfully.", false);
                 loadData();
-            } catch (SQLException e) {
-                showError(e.getMessage());
-            }
+            } catch (SQLException e) { showError(e.getMessage()); }
         }
     }
 
-    @FXML
-    private void handleRefresh() {
-        loadData();
-        setStatus("Refreshed.", false);
-    }
+    @FXML private void handleRefresh() { loadData(); setStatus("Refreshed.", false); }
 
     private void openBookForm(Book book) {
         try {
@@ -145,31 +133,19 @@ public class BookController implements Initializable {
             BookFormController ctrl = loader.getController();
             ctrl.initData(book, this::loadData);
 
+            // Keeping Form as Popup for better UX during data entry
             Stage stage = new Stage();
             stage.setTitle(book == null ? "New Book" : "Edit Book");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.showAndWait();
-        } catch (IOException e) {
-            showError("Cannot open form: " + e.getMessage());
-        }
+        } catch (IOException e) { showError("Cannot open form: " + e.getMessage()); }
     }
-
-    // ─────────────────────────────────────────────
-    //  UI HELPERS
-    // ─────────────────────────────────────────────
 
     private void setStatus(String msg, boolean isError) {
         statusLabel.setText(msg);
         statusLabel.setStyle(isError ? "-fx-text-fill: #e74c3c;" : "-fx-text-fill: #27ae60;");
     }
-
-    private void showError(String msg) {
-        setStatus("⚠ " + msg, true);
-        new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait();
-    }
-
-    private void showInfo(String msg) {
-        new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();
-    }
+    private void showError(String msg) { setStatus("⚠ " + msg, true); new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait(); }
+    private void showInfo(String msg) { new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait(); }
 }

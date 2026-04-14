@@ -9,42 +9,49 @@ import java.io.IOException;
 
 public class NovaDashboardController {
 
-    // The physical box on the main dashboard
     @FXML private StackPane contentArea;
 
-    // A static memory bank so the Home Page cards can safely change the screen!
+    // 🔥 THE KEY: This static variable allows other controllers to find the dashboard's center
     private static StackPane staticContentArea;
 
     @FXML
     public void initialize() {
-        // SAFETY CHECK: Only set up the router if this is the Main Dashboard!
         if (contentArea != null) {
             staticContentArea = contentArea;
-            loadPage("/views/home.fxml"); // Load the home page safely
+            loadPage("/views/home.fxml"); // Load home by default
         }
     }
 
-    // --- BUTTON CLICKS (Works for the Navbar AND the Home Cards!) ---
-    @FXML void handleShowHome(ActionEvent event) { loadPage("/views/home.fxml"); }
-    @FXML void handleShowStudySessions(ActionEvent event) { loadPage("/views/studysession/MainDashboard.fxml"); }
-    @FXML void handleShowForum(ActionEvent event) { loadPage("/views/forum/forum_feed.fxml"); }
-    @FXML void handleShowGamification(ActionEvent event) { loadPage("/views/gamification/GameDashboard.fxml"); }
-    @FXML void handleShowLibrary(ActionEvent event) { loadPage("/views/library/LibrariesView.fxml"); }
-
-    // --- THE STATIC ENGINE ---
+    // ✅ METHOD A: Use this for simple pages (Home, Forum, etc.)
     public static void loadPage(String fxmlPath) {
         try {
-            System.out.println("Routing to: " + fxmlPath);
-            // Notice we use NovaDashboardController.class here now
             FXMLLoader loader = new FXMLLoader(NovaDashboardController.class.getResource(fxmlPath));
             Parent view = loader.load();
-
-            staticContentArea.getChildren().clear();
-            staticContentArea.getChildren().add(view);
-
-        } catch (Exception e) {
-            System.err.println("❌ Failed to load view: " + fxmlPath);
+            setView(view);
+        } catch (IOException e) {
+            System.err.println("❌ Could not load: " + fxmlPath);
             e.printStackTrace();
         }
     }
+
+    // ✅ METHOD B: Use this for pages that already have data (Library, Detail views)
+    public static void setView(Parent view) {
+        if (staticContentArea != null) {
+            staticContentArea.getChildren().clear();
+            staticContentArea.getChildren().add(view);
+        }
+    }
+
+    // --- NAVBAR BUTTON ACTIONS ---
+    @FXML void handleShowHome(ActionEvent event) { loadPage("/views/home.fxml"); }
+
+    @FXML void handleShowStudySessions(ActionEvent event) { loadPage("/views/studysession/MainDashboard.fxml"); }
+
+    @FXML void handleShowLibrary(ActionEvent event) { loadPage("/views/library/BookListView.fxml"); }
+
+    @FXML void handleShowGamification(ActionEvent event) { loadPage("/views/gamification/GameDashboard.fxml"); }
+
+    @FXML void handleShowQuiz(ActionEvent event) { loadPage("/views/quiz/quiz_list.fxml"); }
+
+    @FXML void handleShowForum(ActionEvent event) { loadPage("/views/forum/forum_feed.fxml"); }
 }
