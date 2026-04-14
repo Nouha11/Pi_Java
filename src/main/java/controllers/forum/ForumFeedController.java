@@ -138,15 +138,12 @@ public class ForumFeedController {
     }
 
     private void openPostDetails(Post post) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/post_details.fxml"));
-            Parent root = loader.load();
-            PostDetailsController controller = loader.getController();
-            controller.setPostData(post);
-            // Safe Native JavaFX scene swapping
-            postsListView.getScene().setRoot(root);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // 1. Save the clicked post to our new session
+        utils.ForumSession.currentPost = post;
+
+        // 2. Use your existing dashboard router to change the page safely!
+        // 🔥 THIS KEEPS YOUR NAVBAR INTACT! 🔥
+        controllers.NovaDashboardController.loadPage("/views/forum/student/post_details.fxml");
     }
+
 }

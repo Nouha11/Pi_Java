@@ -2,8 +2,6 @@ package controllers.forum;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -16,7 +14,6 @@ import models.forum.Post;
 import services.forum.CommentService;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -34,6 +31,14 @@ public class PostDetailsController {
     private Post currentPost;
     private CommentService commentService = new CommentService();
 
+    // 🔥 NEW: Automatically grab the clicked post from memory when the page loads
+    @FXML
+    public void initialize() {
+        if (utils.ForumSession.currentPost != null) {
+            setPostData(utils.ForumSession.currentPost);
+        }
+    }
+
     public void setPostData(Post post) {
         this.currentPost = post;
 
@@ -47,7 +52,7 @@ public class PostDetailsController {
         // Author & Post Info
         authorLabel.setText(post.getAuthorName() != null ? post.getAuthorName() : "Unknown Student");
 
-        // Date Formatting (Safely handle if DB date exists)
+        // Date Formatting
         if (post.getCreatedAt() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy");
             dateLabel.setText("Posted on " + sdf.format(post.getCreatedAt()));
@@ -122,16 +127,9 @@ public class PostDetailsController {
         loadComments();
     }
 
+    // 🔥 NEW: Safe routing back to the feed while keeping the navbar
     @FXML
     void handleBack(ActionEvent event) {
-        try {
-            // Safe Native JavaFX scene swapping
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/forum_feed.fxml"));
-            Parent root = loader.load();
-            backButton.getScene().setRoot(root);
-        } catch (IOException e) {
-            System.err.println("❌ Could not load forum_feed.fxml to go back.");
-            e.printStackTrace();
-        }
+        controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml");
     }
 }
