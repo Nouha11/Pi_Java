@@ -129,14 +129,13 @@ public class LoginController implements Initializable {
 
             // Route 1: ADMINISTRATORS
             if (loggedInUser.getRole() == User.Role.ROLE_ADMIN) {
-                loader = new FXMLLoader(getClass().getResource("/views/users/user-list.fxml"));
+                loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
                 root = loader.load();
 
-                // Pass user data to the admin controller
-                UserListController listCtrl = loader.getController();
-                listCtrl.setCurrentUser(loggedInUser);
+                controllers.admin.AdminDashboardController adminCtrl = loader.getController();
+                adminCtrl.setCurrentUser(loggedInUser);
 
-                scene = new Scene(root, 1200, 740);
+                scene = new Scene(root, 1280, 800);
                 scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
                 stage.setTitle("NOVA - Admin Dashboard");
 

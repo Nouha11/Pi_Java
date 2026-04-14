@@ -4,29 +4,40 @@
 <?import javafx.geometry.Insets?>
 
 
-<VBox spacing="0" styleClass="stats-pane"
-      stylesheets="@../../css/study.css"
-      xmlns:fx="http://javafx.com/fxml/1"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      fx:controller="controllers.studysession.StatsController">
-
+<BorderPane style="-fx-background-color: #f8f9fa;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.StatsController">
 
     <!-- HEADER -->
-    <HBox styleClass="stats-header" alignment="CENTER_LEFT" spacing="12">
-        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
-        <Label text="📊" style="-fx-font-size:22px;"/>
-        <Label text="Study Session Statistics" styleClass="stats-title"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="🔄 Refresh" styleClass="btn-ghost"
-                style="-fx-text-fill:white; -fx-border-color:rgba(255,255,255,0.4);"
-                onAction="#handleRefresh"/>
-    </HBox>
+    <top>
+        <VBox styleClass="page-header">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox HBox.hgrow="ALWAYS">
+                    <Label text="📊 Study Session Statistics"
+                           styleClass="page-title"/>
+                    <Label text="Overview of your study performance"
+                           styleClass="page-subtitle"/>
+                </VBox>
 
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                <Button text="🔄 Refresh"
+                        styleClass="btn-primary"
+                        onAction="#handleRefresh"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CONTENT -->
+    <center>
+    <ScrollPane fitToWidth="true"
                 hbarPolicy="NEVER"
                 style="-fx-background-color:transparent; -fx-background:transparent;">
+
         <VBox spacing="16">
-            <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
+            <padding>
+                <Insets top="18" right="20" bottom="18" left="20"/>
+            </padding>
 
             <!-- ── ROW 1: SESSION STAT CARDS ── -->
             <Label text="⏱ Session Overview" styleClass="section-label"/>
@@ -125,5 +136,6 @@
 
         </VBox>
     </ScrollPane>
+    </center>
 
-</VBox>
+</BorderPane>

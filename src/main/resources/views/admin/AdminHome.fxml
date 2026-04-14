@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.admin.AdminHomeController"
+            style="-fx-background-color: #f8fafc; -fx-background: #f8fafc;
+                   -fx-border-color: transparent;">
+
+    <VBox spacing="28" style="-fx-padding: 32 36 40 36; -fx-background-color: #f8fafc;">
+
+        <!-- ── Page header ── -->
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <ImageView fitWidth="56" fitHeight="56" preserveRatio="true" smooth="true">
+                <image><Image url="@/images/nova-logo.png"/></image>
+            </ImageView>
+            <VBox spacing="4">
+                <Label fx:id="lblGreeting" text="Good morning, Admin"
+                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label text="Here's what's happening across your platform today."
+                       style="-fx-font-size: 13px; -fx-text-fill: #64748b;"/>
+            </VBox>
+        </HBox>
+
+        <!-- ── Stat cards ── -->
+        <HBox spacing="16">
+            <!-- Users -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-blue">
+                        <Label text="👥" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Total Users" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statUsers" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statUsersDetail" text="— active"
+                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+            </VBox>
+
+            <!-- Books -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-violet">
+                        <Label text="📚" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Books" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statBooks" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statBooksDetail" text="— digital  ·  — physical"
+                       style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
+            </VBox>
+
+            <!-- Loans -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-amber">
+                        <Label text="📋" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Loans" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statLoans" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statLoansDetail" text="— pending approval"
+                       style="-fx-font-size:12px; -fx-text-fill:#f59e0b;"/>
+            </VBox>
+
+            <!-- Games -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-emerald">
+                        <Label text="🎮" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Games" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statGames" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statGamesDetail" text="— active"
+                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+            </VBox>
+
+            <!-- Rewards -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-rose">
+                        <Label text="🏆" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Rewards" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statRewards" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statRewardsDetail" text="— active"
+                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+            </VBox>
+
+            <!-- Quizzes -->
+            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane styleClass="admin-stat-icon-bg-blue">
+                        <Label text="📝" style="-fx-font-size:18px;"/>
+                    </StackPane>
+                    <Label text="Quizzes" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                </HBox>
+                <Label fx:id="statQuizzes" text="—"
+                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                <Label fx:id="statQuizzesDetail" text="— questions total"
+                       style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
+            </VBox>
+        </HBox>
+
+        <!-- ── Two-column section ── -->
+        <HBox spacing="20" alignment="TOP_LEFT">
+
+            <!-- Recent loans table -->
+            <VBox styleClass="admin-card" HBox.hgrow="ALWAYS" spacing="0">
+                <HBox alignment="CENTER_LEFT"
+                      style="-fx-padding: 16 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="Recent Loan Requests"
+                           style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"
+                           HBox.hgrow="ALWAYS"/>
+                    <Label text="View all →"
+                           style="-fx-text-fill:#6366f1; -fx-font-size:12px; -fx-cursor:hand;"/>
+                </HBox>
+                <TableView fx:id="recentLoansTable" prefHeight="220"
+                           style="-fx-background-color:transparent; -fx-border-color:transparent;">
+                    <columns>
+                        <TableColumn fx:id="loanColBook"   text="Book"      prefWidth="180"/>
+                        <TableColumn fx:id="loanColUser"   text="User"      prefWidth="140"/>
+                        <TableColumn fx:id="loanColStatus" text="Status"    prefWidth="110"/>
+                        <TableColumn fx:id="loanColDate"   text="Requested" prefWidth="120"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="No recent loans" style="-fx-text-fill:#94a3b8;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+
+            <!-- Quick actions + user breakdown -->
+            <VBox spacing="16" prefWidth="280">
+
+                <!-- Quick actions -->
+                <VBox styleClass="admin-card" spacing="0">
+                    <Label text="Quick Actions"
+                           style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;
+                                  -fx-padding: 16 20 12 20; -fx-border-color:#e2e8f0; -fx-border-width:0 0 1 0;"/>
+                    <VBox spacing="8" style="-fx-padding: 14 16;">
+                        <Button text="＋  Add New Book" maxWidth="Infinity"
+                                onAction="#quickAddBook"
+                                style="-fx-background-color:#6366f1; -fx-text-fill:white;
+                                       -fx-font-weight:bold; -fx-background-radius:6;
+                                       -fx-padding:9 14; -fx-cursor:hand; -fx-font-size:13px;"/>
+                        <Button text="👥  Manage Users" maxWidth="Infinity"
+                                onAction="#quickUsers"
+                                style="-fx-background-color:#f1f5f9; -fx-text-fill:#0f172a;
+                                       -fx-border-color:#e2e8f0; -fx-border-width:1;
+                                       -fx-background-radius:6; -fx-padding:9 14;
+                                       -fx-cursor:hand; -fx-font-size:13px;"/>
+                        <Button text="📊  View Game Stats" maxWidth="Infinity"
+                                onAction="#quickGameStats"
+                                style="-fx-background-color:#f1f5f9; -fx-text-fill:#0f172a;
+                                       -fx-border-color:#e2e8f0; -fx-border-width:1;
+                                       -fx-background-radius:6; -fx-padding:9 14;
+                                       -fx-cursor:hand; -fx-font-size:13px;"/>
+                    </VBox>
+                </VBox>
+
+                <!-- User role breakdown -->
+                <VBox styleClass="admin-card" spacing="0">
+                    <Label text="Users by Role"
+                           style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;
+                                  -fx-padding: 16 20 12 20; -fx-border-color:#e2e8f0; -fx-border-width:0 0 1 0;"/>
+                    <VBox spacing="10" style="-fx-padding: 14 16;">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🎓 Students"
+                                   style="-fx-text-fill:#475569; -fx-font-size:13px;" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="roleStudents" text="—"
+                                   style="-fx-font-weight:bold; -fx-text-fill:#0f172a; -fx-font-size:13px;"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🧑‍🏫 Tutors"
+                                   style="-fx-text-fill:#475569; -fx-font-size:13px;" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="roleTutors" text="—"
+                                   style="-fx-font-weight:bold; -fx-text-fill:#0f172a; -fx-font-size:13px;"/>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🔑 Admins"
+                                   style="-fx-text-fill:#475569; -fx-font-size:13px;" HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="roleAdmins" text="—"
+                                   style="-fx-font-weight:bold; -fx-text-fill:#0f172a; -fx-font-size:13px;"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+            </VBox>
+        </HBox>
+
+    </VBox>
+</ScrollPane>
