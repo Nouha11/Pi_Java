@@ -111,7 +111,6 @@ public class NovaDashboardController {
     }
 
     // --- BULLETPROOF ROUTER METHODS ---
-    // Make sure these exact paths match the folders in your project!
     @FXML void handleShowHome(ActionEvent event) {
         setActiveButton(btnHome);
         loadPage("/views/home.fxml");
@@ -132,9 +131,10 @@ public class NovaDashboardController {
         loadPage("/views/forum/forum_feed.fxml");
     }
 
+    // 🔥 FIXED: Now routing to the Student Play List instead of the Admin List!
     @FXML void handleShowQuiz(ActionEvent event) {
         setActiveButton(btnQuiz);
-        loadPage("/views/quiz/quiz_list.fxml");
+        loadPage("/views/quiz/quiz_play_list.fxml");
     }
 
     @FXML void handleShowGamification(ActionEvent event) {
