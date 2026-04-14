@@ -26,7 +26,6 @@ import java.util.ResourceBundle;
 public class StudySessionController implements Initializable {
 
     @FXML private TableView<StudySession> sessionTable;
-    @FXML private TableColumn<StudySession, Integer> colId;
     @FXML private TableColumn<StudySession, String> colCourse;
     @FXML private TableColumn<StudySession, String> colPlanning;
     @FXML private TableColumn<StudySession, String> colStarted;
@@ -55,7 +54,6 @@ public class StudySessionController implements Initializable {
     }
 
     private void setupColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colCourse.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCourseNameCache()));
         colPlanning.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPlanningTitleCache()));
         colStarted.setCellValueFactory(d -> new SimpleStringProperty(

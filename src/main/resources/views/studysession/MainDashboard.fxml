@@ -4,41 +4,67 @@
 <?import javafx.geometry.Insets?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.MainDashboardController"
             stylesheets="@../../css/study.css"
             prefWidth="1100" prefHeight="740">
 
-    <!-- TOP BAR -->
-    <top>
-        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="12">
-            <padding><Insets top="12" right="20" bottom="12" left="20"/></padding>
-            <Label text="📚" style="-fx-font-size:26px;"/>
-            <Label text="Study Session Manager" styleClass="app-title"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label text="Nova Application" styleClass="top-subtitle"/>
-        </HBox>
-    </top>
+    <!-- SIDEBAR -->
+    <left>
+        <VBox styleClass="sidebar" spacing="0" prefWidth="220"
+              style="-fx-background-color:#0F172A ; -fx-min-width: 220;">
 
-    <!-- MAIN TABS -->
+            <!-- BRAND -->
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-padding: 20 16 20 16; -fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 0 0 1 0;">
+                <Label text="📚" style="-fx-font-size: 26px;"/>
+                <VBox spacing="1">
+                    <Label text="Study Session" styleClass="app-title"
+                           style="-fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+                    <Label text="Nova Application"
+                           style="-fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 11;"/>
+                </VBox>
+            </HBox>
+
+            <!-- NAV ITEMS -->
+            <VBox spacing="4" style="-fx-padding: 12 8 12 8;" VBox.vgrow="ALWAYS">
+                <ToggleButton fx:id="tabCourses" text="📘  Courses" maxWidth="Infinity"
+                              style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.8);
+                                     -fx-alignment: CENTER_LEFT; -fx-padding: 10 16;
+                                     -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13;"/>
+                <ToggleButton fx:id="tabPlannings" text="📅  Plannings" maxWidth="Infinity"
+                              style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.8);
+                                     -fx-alignment: CENTER_LEFT; -fx-padding: 10 16;
+                                     -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13;"/>
+                <ToggleButton fx:id="tabSessions" text="⏱  Study Sessions" maxWidth="Infinity"
+                              style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.8);
+                                     -fx-alignment: CENTER_LEFT; -fx-padding: 10 16;
+                                     -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13;"/>
+                <ToggleButton fx:id="tabStats" text="📊  Statistics" maxWidth="Infinity"
+                              style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.8);
+                                     -fx-alignment: CENTER_LEFT; -fx-padding: 10 16;
+                                     -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13;"/>
+            </VBox>
+
+            <!-- SIDEBAR FOOTER -->
+            <HBox alignment="CENTER_LEFT" spacing="6"
+                  style="-fx-padding: 12 16; -fx-border-color: rgba(255,255,255,0.1); -fx-border-width: 1 0 0 0;">
+                <Label text="✅" style="-fx-font-size: 11;"/>
+                <Label text="nova_db"
+                       style="-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 11;"/>
+            </HBox>
+
+        </VBox>
+    </left>
+
+    <!-- MAIN CONTENT -->
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
-
-            <Tab text="📘  Courses">
-                <fx:include source="CourseView.fxml"/>
-            </Tab>
-
-            <Tab text="📅  Plannings">
-                <fx:include source="PlanningView.fxml"/>
-            </Tab>
-
-            <Tab text="⏱  Study Sessions">
-                <fx:include source="StudySessionView.fxml"/>
-            </Tab>
-
-            <Tab text="📊  Statistics">
-                <fx:include source="StatsView.fxml"/>
-            </Tab>
-
-        </TabPane>
+        <StackPane fx:id="contentArea">
+            <fx:include fx:id="courseView"   source="CourseView.fxml"/>
+            <fx:include fx:id="planningView" source="PlanningView.fxml"/>
+            <fx:include fx:id="sessionView"  source="StudySessionView.fxml"/>
+            <fx:include fx:id="statsView"    source="StatsView.fxml"/>
+        </StackPane>
     </center>
 
     <!-- STATUS BAR -->

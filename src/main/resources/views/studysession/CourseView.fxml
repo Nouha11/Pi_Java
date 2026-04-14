@@ -3,67 +3,92 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
+<BorderPane style="-fx-background-color: #f0f2f8;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.CourseController">
 
-<VBox spacing="0" styleClass="module-pane"
-      stylesheets="@../../css/study.css"
-      xmlns:fx="http://javafx.com/fxml/1"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      fx:controller="controllers.studysession.CourseController">
+    <!-- PAGE HEADER -->
+    <top>
+        <VBox style="-fx-background-color: white; -fx-border-color: #dee2e6;
+                     -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox HBox.hgrow="ALWAYS" spacing="3">
+                    <Label text="📘 Courses Management"
+                           style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    <Label text="Browse, manage and track your course catalog"
+                           style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                <Button text="➕ New Course" onAction="#handleNew"
+                        style="-fx-background-color: #3949ab; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-padding: 8 16;
+                               -fx-background-radius: 6; -fx-cursor: hand;
+                               -fx-font-size: 13;"/>
+            </HBox>
 
+            <!-- FILTER BAR inside header -->
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-padding: 12 0 0 0;">
+                <Label text="🔍" style="-fx-font-size: 14; -fx-text-fill: #546e7a;"/>
+                <TextField fx:id="searchField"
+                           promptText="Search courses…"
+                           prefWidth="200"
+                           style="-fx-background-radius: 20; -fx-padding: 6 14;"/>
+                <ComboBox fx:id="filterDifficulty" prefWidth="130" promptText="All Difficulties"
+                          style="-fx-background-radius: 6;"/>
+                <ComboBox fx:id="filterCategory"   prefWidth="140" promptText="All Categories"
+                          style="-fx-background-radius: 6;"/>
+                <ComboBox fx:id="filterStatus"     prefWidth="130" promptText="All Statuses"
+                          style="-fx-background-radius: 6;"/>
+                <Button text="🔄" onAction="#handleRefresh"
+                        style="-fx-background-color: #f0f2f8; -fx-text-fill: #546e7a;
+                               -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 12;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statsLabel"
+                       style="-fx-text-fill: #6c757d; -fx-font-size: 12;"/>
+            </HBox>
+        </VBox>
+    </top>
 
-    <!-- TOOLBAR -->
-    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="8">
-        <padding><Insets top="10" right="14" bottom="10" left="14"/></padding>
-        <Button text="➕ New Course"      styleClass="btn-primary"   onAction="#handleNew"/>
-        <Button text="✏ Edit"             styleClass="btn-secondary" onAction="#handleEdit"/>
-        <Button text="🗑 Delete"          styleClass="btn-danger"    onAction="#handleDelete"/>
-        <Button text="📢 Toggle Publish"  styleClass="btn-warning"   onAction="#handleTogglePublish"/>
-        <Button text="📅 View Plannings"  styleClass="btn-info"      onAction="#handleViewPlannings"/>
-        <Separator orientation="VERTICAL"/>
-        <Button text="📊 Stats"           styleClass="btn-stats"     onAction="#handleStats"/>
-        <Button text="🔄 Refresh"         styleClass="btn-ghost"     onAction="#handleRefresh"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="statsLabel" styleClass="stats-label"/>
-    </HBox>
+    <!-- SCROLLABLE CARD GRID -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
+            <VBox spacing="0">
+                <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
-    <!-- FILTER BAR -->
-    <HBox styleClass="filter-bar" alignment="CENTER_LEFT" spacing="10">
-        <padding><Insets top="7" right="14" bottom="7" left="14"/></padding>
-        <Label text="🔍" style="-fx-font-size:14px;"/>
-        <TextField fx:id="searchField"
-                   promptText="Search name, category, description…"
-                   prefWidth="230" styleClass="search-field"/>
-        <Label text="Difficulty:" style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
-        <ComboBox fx:id="filterDifficulty" prefWidth="130"/>
-        <Label text="Category:"  style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
-        <ComboBox fx:id="filterCategory"  prefWidth="130"/>
-        <Label text="Status:"    style="-fx-text-fill:#546e7a; -fx-font-weight:bold;"/>
-        <ComboBox fx:id="filterStatus"    prefWidth="130"/>
-    </HBox>
+                <!-- CARDS CONTAINER — FlowPane for responsive grid -->
+                <FlowPane fx:id="courseCardsPane"
+                          hgap="18" vgap="18"
+                          prefWrapLength="900"/>
 
-    <!-- TABLE -->
-    <TableView fx:id="courseTable" VBox.vgrow="ALWAYS" styleClass="data-table">
-        <columns>
-            <TableColumn fx:id="colId"         text="ID"              prefWidth="50"  minWidth="40"/>
-            <TableColumn fx:id="colName"       text="Course Name"     prefWidth="230" minWidth="120"/>
-            <TableColumn fx:id="colCategory"   text="Category"        prefWidth="130" minWidth="80"/>
-            <TableColumn fx:id="colDifficulty" text="Difficulty"      prefWidth="110" minWidth="80"/>
-            <TableColumn fx:id="colStatus"     text="Status"          prefWidth="120" minWidth="80"/>
-            <TableColumn fx:id="colDuration"   text="Duration (min)"  prefWidth="115" minWidth="80"/>
-            <TableColumn fx:id="colProgress"   text="Progress"        prefWidth="80"  minWidth="60"/>
-            <TableColumn fx:id="colPublished"  text="Published"       prefWidth="90"  minWidth="60"/>
-        </columns>
-        <placeholder>
-            <Label text="No courses found. Click ➕ New Course to add one."
-                   style="-fx-text-fill:#90a4ae; -fx-font-size:13px;"/>
-        </placeholder>
-    </TableView>
+                <!-- EMPTY STATE -->
+                <VBox fx:id="emptyState" alignment="CENTER" spacing="12"
+                      style="-fx-padding: 80 0 0 0;" visible="false" managed="false">
+                    <Label text="📭"  style="-fx-font-size: 48;"/>
+                    <Label text="No courses found"
+                           style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #546e7a;"/>
+                    <Label text="Try adjusting your filters or add a new course."
+                           style="-fx-font-size: 13; -fx-text-fill: #90a4ae;"/>
+                    <Button text="➕ Add First Course" onAction="#handleNew"
+                            style="-fx-background-color: #3949ab; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-padding: 9 20;
+                                   -fx-background-radius: 6; -fx-cursor: hand;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
 
     <!-- BOTTOM STATUS -->
-    <HBox styleClass="module-status-bar" alignment="CENTER_LEFT" spacing="8">
-        <padding><Insets top="5" right="14" bottom="5" left="14"/></padding>
-        <Label fx:id="statusLabel" text="Ready"
-               style="-fx-text-fill:#546e7a; -fx-font-size:11px;"/>
-    </HBox>
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="8"
+              style="-fx-padding: 6 24; -fx-background-color: white;
+                     -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="statusLabel" text="Ready"
+                   style="-fx-text-fill: #546e7a; -fx-font-size: 11;"/>
+        </HBox>
+    </bottom>
 
-</VBox>
+</BorderPane>

@@ -55,6 +55,9 @@
 }
 
 /* ── MODULE PANE ─────────────────────────────────────── */
+/* Note: redesigned study session views (CourseView, PlanningView, StudySessionView)
+   use a BorderPane root with inline style "-fx-background-color: #f8f9fa;" instead.
+   This class is retained for other views (e.g. quiz module) and backward compatibility. */
 .module-pane {
     -fx-background-color: #f4f6fb;
 }
@@ -312,8 +315,8 @@
 
 /* ── STATS PANE ──────────────────────────────────────── */
 .stats-pane { -fx-background-color: #f4f6fb; }
-.stats-header { -fx-background-color: #4a148c; }
-.stats-title  { -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; }
+.stats-header { -fx-background-color: #ffffff; }
+.stats-title  { -fx-text-fill: black; -fx-font-size: 18px; -fx-font-weight: bold; }
 .stat-card {
     -fx-background-color: white;
     -fx-background-radius: 10px;
@@ -341,4 +344,24 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #37474f;
+}
+
+
+/* ── PAGE HEADER (NEW) ───────────────────────── */
+.page-header {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 16 24 16 24;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+}
+
+.page-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6c757d;
 }
