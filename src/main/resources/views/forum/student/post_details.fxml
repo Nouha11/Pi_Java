@@ -9,6 +9,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
@@ -68,6 +69,11 @@
                                                     <Button fx:id="upvoteButton" onAction="#handleUpvote" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;" text="👍 Upvote" />
                                                     <Button style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;" text="🔖 Save" />
                                                     <Button style="-fx-background-color: #eff6ff; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" text="↩ Reply" />
+
+                                                    <Region HBox.hgrow="ALWAYS" />
+
+                                                    <Button fx:id="editButton" onAction="#handleEditPost" style="-fx-background-color: #fef08a; -fx-text-fill: #a16207; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="✏ Edit" />
+                                                    <Button fx:id="deleteButton" onAction="#handleDeletePost" style="-fx-background-color: #fee2e2; -fx-text-fill: #b91c1c; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12;" text="🗑 Delete" />
                                                 </HBox>
                                             </children>
                                         </VBox>

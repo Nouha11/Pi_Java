@@ -108,12 +108,29 @@ public class PostService {
     }
 
     public void supprimer(int id) {
-        String req = "DELETE FROM post WHERE id = ?";
+        // Step 1: Delete all comments attached to this post (Satisfies Foreign Key rules)
+        String deleteCommentsReq = "DELETE FROM comment WHERE post_id = ?";
         try {
-            PreparedStatement ps = cnx.prepareStatement(req);
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {}
+            PreparedStatement ps1 = cnx.prepareStatement(deleteCommentsReq);
+            ps1.setInt(1, id);
+            ps1.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("❌ Error deleting attached comments: " + e.getMessage());
+        }
+
+        // Step 2: Now that it's clean, delete the actual post
+        String deletePostReq = "DELETE FROM post WHERE id = ?";
+        try {
+            PreparedStatement ps2 = cnx.prepareStatement(deletePostReq);
+            ps2.setInt(1, id);
+            int rowsAffected = ps2.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✅ Post completely deleted!");
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Error deleting post: " + e.getMessage());
+        }
     }
 
     public Map<String, Integer> getSpacesMap() {

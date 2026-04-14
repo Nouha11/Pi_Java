@@ -2,13 +2,15 @@ package controllers.forum;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import models.forum.Comment;
 import models.forum.Post;
 import services.forum.CommentService;
@@ -17,11 +19,14 @@ import services.forum.PostService;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Optional;
 
 public class PostDetailsController {
 
     @FXML private Button backButton;
     @FXML private Button upvoteButton;
+    @FXML private Button editButton;   // 🔥 NEW
+    @FXML private Button deleteButton; // 🔥 NEW
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
     @FXML private Label contentLabel;
@@ -63,7 +68,6 @@ public class PostDetailsController {
         upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
         statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
-        // 🔥 READ GLOBAL MEMORY to keep button blue if already clicked!
         if (utils.ForumSession.upvotedPosts.contains(post.getId())) {
             currentPost.setMyVote(1);
             upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
@@ -127,20 +131,16 @@ public class PostDetailsController {
 
         Comment newComment = new Comment(text, currentPost.getId(), 1, null);
         commentService.ajouter(newComment);
-
         commentArea.clear();
         loadComments();
     }
 
-    // 🔥 PREVENTS INFINITE UPVOTES AND SAVES TO DB
     @FXML
     void handleUpvote(ActionEvent event) {
         if (currentPost.getMyVote() != 1) {
             int changeAmount = (currentPost.getMyVote() == -1) ? 2 : 1;
             postService.updateUpvotes(currentPost.getId(), changeAmount);
             currentPost.setUpvotes(currentPost.getUpvotes() + changeAmount);
-
-            // Save to memory
             currentPost.setMyVote(1);
             utils.ForumSession.upvotedPosts.add(currentPost.getId());
             utils.ForumSession.downvotedPosts.remove(currentPost.getId());
@@ -150,17 +150,75 @@ public class PostDetailsController {
         } else {
             postService.updateUpvotes(currentPost.getId(), -1);
             currentPost.setUpvotes(currentPost.getUpvotes() - 1);
-
-            // Remove from memory
             currentPost.setMyVote(0);
             utils.ForumSession.upvotedPosts.remove(currentPost.getId());
 
             upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
             upvoteButton.setText("👍 Upvote");
         }
-
         upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
         statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
+    }
+
+    // 🔥 NEW: DELETE LOGIC
+    @FXML
+    void handleDeletePost(ActionEvent event) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Post");
+        confirm.setHeaderText("Are you sure you want to delete this post?");
+        confirm.setContentText("This action cannot be undone.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            postService.supprimer(currentPost.getId());
+            handleBack(null); // Instantly return to feed
+        }
+    }
+
+    // 🔥 NEW: EDIT LOGIC (Beautiful Custom UI built entirely in code!)
+    @FXML
+    void handleEditPost(ActionEvent event) {
+        Stage editStage = new Stage();
+        editStage.initModality(Modality.APPLICATION_MODAL);
+        editStage.setTitle("Edit Your Post");
+
+        VBox layout = new VBox(15);
+        layout.setStyle("-fx-background-color: #f8fafc; -fx-padding: 25;");
+
+        Label headerText = new Label("Edit Discussion");
+        headerText.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+
+        TextField titleInput = new TextField(currentPost.getTitle());
+        titleInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-padding: 10; -fx-font-size: 14px;");
+
+        TextArea contentInput = new TextArea(currentPost.getContent());
+        contentInput.setWrapText(true);
+        contentInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-font-size: 14px;");
+
+        Button saveChangesBtn = new Button("Save Changes");
+        saveChangesBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;");
+
+        saveChangesBtn.setOnAction(e -> {
+            if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
+                currentPost.setTitle(titleInput.getText());
+                currentPost.setContent(contentInput.getText());
+
+                // Update DB
+                postService.modifier(currentPost);
+
+                // Instantly update UI text on the details page
+                topTitleLabel.setText(currentPost.getTitle());
+                contentLabel.setText(currentPost.getContent());
+
+                editStage.close();
+            }
+        });
+
+        layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
+
+        Scene scene = new Scene(layout, 500, 450);
+        editStage.setScene(scene);
+        editStage.showAndWait();
     }
 
     @FXML
