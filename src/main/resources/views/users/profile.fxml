@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.users.ProfileController"
+      styleClass="content-area" spacing="24">
+
+    <padding><Insets top="28" right="32" bottom="28" left="32"/></padding>
+
+    <!-- Breadcrumb -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="User Management" styleClass="topbar-title"
+               style="-fx-cursor:hand;" onMouseClicked="#onBackToList"/>
+        <Label text="/" styleClass="topbar-sep"/>
+        <Label text="My Profile" styleClass="topbar-sub"/>
+    </HBox>
+
+    <!-- Profile card -->
+    <HBox spacing="32" styleClass="profile-card">
+        <padding><Insets top="28" right="32" bottom="28" left="32"/></padding>
+
+        <!-- Avatar + name -->
+        <VBox spacing="10" alignment="CENTER" minWidth="160">
+            <Label fx:id="lblAvatar" text="ðŸ‘¤" styleClass="profile-avatar"/>
+            <Label fx:id="lblFullName" text="Username" styleClass="profile-name"/>
+            <Label fx:id="lblRoleBadge" text="ROLE" styleClass="profile-role-badge"/>
+        </VBox>
+
+        <Separator orientation="VERTICAL" styleClass="sidebar-sep"/>
+
+        <!-- Details grid -->
+        <GridPane hgap="24" vgap="16" VBox.vgrow="ALWAYS">
+            <columnConstraints>
+                <ColumnConstraints minWidth="120" prefWidth="140"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <!-- Email -->
+            <Label text="EMAIL" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="lblEmail" text="â€”" styleClass="profile-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Status -->
+            <Label text="STATUS" styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="lblStatus" text="â€”" styleClass="profile-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Verified -->
+            <Label text="VERIFIED" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="lblVerified" text="â€”" styleClass="profile-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- XP -->
+            <Label text="XP POINTS" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <Label fx:id="lblXp" text="0" styleClass="profile-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Member since -->
+            <Label text="MEMBER SINCE" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <Label fx:id="lblCreatedAt" text="â€”" styleClass="profile-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        </GridPane>
+    </HBox>
+
+    <!-- Change password section -->
+    <VBox styleClass="profile-card" spacing="16">
+        <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
+
+        <Label text="CHANGE PASSWORD" styleClass="field-label"/>
+        <Separator/>
+
+        <GridPane hgap="20" vgap="14">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="34"/>
+            </columnConstraints>
+
+            <VBox spacing="6" GridPane.columnIndex="0">
+                <Label text="CURRENT PASSWORD" styleClass="field-label"/>
+                <PasswordField fx:id="pfCurrent" promptText="Current password"
+                               styleClass="form-field"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="1">
+                <Label text="NEW PASSWORD" styleClass="field-label"/>
+                <PasswordField fx:id="pfNew" promptText="Min 8 chars"
+                               styleClass="form-field"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="2">
+                <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
+                <PasswordField fx:id="pfConfirm" promptText="Repeat new password"
+                               styleClass="form-field"/>
+            </VBox>
+        </GridPane>
+
+        <Label fx:id="lblPwdMsg" text="" wrapText="true" styleClass="form-errors" maxWidth="Infinity"/>
+
+        <HBox alignment="CENTER_RIGHT">
+            <Button text="Update Password" onAction="#onChangePassword"
+                    styleClass="btn-save"/>
+        </HBox>
+    </VBox>
+
+</VBox>
