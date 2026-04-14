@@ -7,11 +7,15 @@ import java.net.URL;
 
 public class MainFX extends Application {
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    // Make the primary stage globally accessible so we can swap scenes after login!
+    public static Stage primaryStage;
 
-        // 🎯 THE ONLY ENTRY POINT: Load the Dashboard
-        String path = "/views/NovaDashboard.fxml";
+    @Override
+    public void start(Stage stage) throws Exception {
+        primaryStage = stage;
+
+        // 🛑 THE FRONT DOOR: Load the Login Screen First
+        String path = "/views/users/login.fxml";
         URL fxmlLocation = getClass().getResource(path);
 
         if (fxmlLocation == null) {
@@ -22,19 +26,13 @@ public class MainFX extends Application {
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
-        // 1300x800 to match your wide Symfony web app layout!
-        Scene scene = new Scene(root, 1300, 800);
+        // Login screens are usually smaller and focused
+        Scene scene = new Scene(root, 900, 600);
 
-        // Add a nice CSS clear-up if you have one, otherwise just set the scene
-        primaryStage.setTitle("NOVA - Unified Learning Platform");
+        primaryStage.setTitle("NOVA - Login");
         primaryStage.setScene(scene);
-
-        // ✅ This is the ONLY window that should EVER be shown at startup
+        primaryStage.centerOnScreen();
         primaryStage.show();
-
-        /* 🛑 REMOVED: Extra stages for Study Session, Gamification, Quiz, and Library.
-           Everything is now handled by your NovaDashboardController's routing!
-        */
     }
 
     public static void main(String[] args) {

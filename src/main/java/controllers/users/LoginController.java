@@ -67,7 +67,10 @@ public class LoginController implements Initializable {
                 showError("Account inactive. Contact an administrator.");
                 return;
             }
-            openUserManagement(user);
+
+            // 🔥 THE MAGIC: Route the user based on their role!
+            routeUserBasedOnRole(user);
+
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());
         } finally {
@@ -87,6 +90,7 @@ public class LoginController implements Initializable {
             String storedHash = rs.getString("password");
             boolean passwordMatches;
 
+            // Excellent PHP/Symfony BCrypt workaround from your teammate!
             if (storedHash != null && storedHash.startsWith("$2")) {
                 String jbcryptHash = storedHash.replaceFirst("^\\$2y\\$", "\\$2a\\$");
                 try {
@@ -115,25 +119,43 @@ public class LoginController implements Initializable {
         }
     }
 
-    private void openUserManagement(User loggedInUser) {
+    // 🚦 THE TRAFFIC COP ROUTER
+    private void routeUserBasedOnRole(User loggedInUser) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/views/users/user-list.fxml"));
-            Parent root = loader.load();
-            UserListController listCtrl = loader.getController();
-            listCtrl.setCurrentUser(loggedInUser);
             Stage stage = (Stage) btnLogin.getScene().getWindow();
-            Scene scene = new Scene(root, 1200, 740);
-            scene.getStylesheets().add(
-                getClass().getResource("/css/users.css").toExternalForm());
-            stage.setTitle("NOVA - User Management");
+            FXMLLoader loader;
+            Parent root;
+            Scene scene;
+
+            // Route 1: ADMINISTRATORS
+            if (loggedInUser.getRole() == User.Role.ROLE_ADMIN) {
+                loader = new FXMLLoader(getClass().getResource("/views/users/user-list.fxml"));
+                root = loader.load();
+
+                // Pass user data to the admin controller
+                UserListController listCtrl = loader.getController();
+                listCtrl.setCurrentUser(loggedInUser);
+
+                scene = new Scene(root, 1200, 740);
+                scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+                stage.setTitle("NOVA - Admin Dashboard");
+
+                // Route 2: STUDENTS & TUTORS
+            } else {
+                loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
+                root = loader.load();
+
+                scene = new Scene(root, 1300, 800);
+                stage.setTitle("NOVA - Student Hub");
+            }
+
+            // Apply the scene and center the window on the screen
             stage.setScene(scene);
-            stage.setResizable(true);
-            stage.setMinWidth(900);
-            stage.setMinHeight(600);
             stage.centerOnScreen();
+
         } catch (IOException e) {
-            showError("Cannot open User Management: " + e.getMessage());
+            showError("Cannot load dashboard: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
