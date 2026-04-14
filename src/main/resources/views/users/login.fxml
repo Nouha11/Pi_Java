@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<!--
+  Desktop-style split login:
+  LEFT  — dark branding panel
+  RIGHT — white form panel
+  Total size: 900 × 580
+-->
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.users.LoginController"
+      styleClass="login-root" prefWidth="900" prefHeight="580"
+      maxWidth="Infinity" maxHeight="Infinity">
+
+    <!-- ══════════════════════════════════════════════
+         LEFT — Branding panel (dark)
+         ══════════════════════════════════════════════ -->
+    <VBox styleClass="brand-panel" alignment="CENTER" spacing="18" prefWidth="420">
+        <padding><Insets top="60" right="50" bottom="60" left="50"/></padding>
+
+        <Label text="🎓" style="-fx-font-size:64px;"/>
+
+        <Label text="NOVA" styleClass="brand-title"/>
+        <Label text="Intelligent Study Coaching Platform"
+               styleClass="brand-subtitle" wrapText="true" textAlignment="CENTER"/>
+
+        <Region prefHeight="30"/>
+
+        <!-- Feature bullets -->
+        <VBox spacing="12" alignment="CENTER_LEFT">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="✦" styleClass="bullet"/>
+                <Label text="Full user lifecycle management" styleClass="brand-feature"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="✦" styleClass="bullet"/>
+                <Label text="Role-based access control" styleClass="brand-feature"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="✦" styleClass="bullet"/>
+                <Label text="Real-time statistics &amp; analytics" styleClass="brand-feature"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="✦" styleClass="bullet"/>
+                <Label text="Search, filter &amp; export" styleClass="brand-feature"/>
+            </HBox>
+        </VBox>
+
+        <Region VBox.vgrow="ALWAYS"/>
+        <Label text="© 2026 NOVA Platform" styleClass="brand-footer"/>
+    </VBox>
+
+    <!-- ══════════════════════════════════════════════
+         RIGHT — Form panel (white)
+         ══════════════════════════════════════════════ -->
+    <VBox styleClass="form-panel" alignment="CENTER" spacing="0" HBox.hgrow="ALWAYS">
+        <padding><Insets top="0" right="60" bottom="0" left="60"/></padding>
+
+        <!-- Top bar -->
+        <HBox styleClass="form-topbar" alignment="CENTER_RIGHT">
+            <padding><Insets top="16" bottom="16"/></padding>
+            <Label text="Admin Portal" styleClass="form-topbar-label"/>
+        </HBox>
+
+        <Region prefHeight="20"/>
+
+        <!-- Title -->
+        <VBox spacing="6">
+            <Label text="Welcome back" styleClass="form-title"/>
+            <Label text="Sign in to your account to continue" styleClass="form-hint"/>
+        </VBox>
+
+        <Region prefHeight="32"/>
+
+        <!-- Username field -->
+        <VBox spacing="7">
+            <Label text="USERNAME" styleClass="field-label"/>
+            <TextField fx:id="tfUsername"
+                       promptText="Enter your username"
+                       styleClass="form-field"/>
+        </VBox>
+
+        <Region prefHeight="18"/>
+
+        <!-- Password field -->
+        <VBox spacing="7">
+            <Label text="PASSWORD" styleClass="field-label"/>
+            <PasswordField fx:id="pfPassword"
+                           promptText="••••••••"
+                           styleClass="form-field"/>
+        </VBox>
+
+        <Region prefHeight="10"/>
+
+        <!-- Error -->
+        <Label fx:id="lblError" text="" wrapText="true"
+               styleClass="form-error" maxWidth="340"/>
+
+        <!-- Spinner — hidden by default, shown only during login -->
+        <ProgressIndicator fx:id="spinner" prefWidth="28" prefHeight="28"
+                           styleClass="form-spinner" visible="false" managed="false"/>
+
+        <Region prefHeight="18"/>
+
+        <!-- Sign In button -->
+        <Button fx:id="btnLogin" text="SIGN IN"
+                onAction="#onLogin"
+                styleClass="form-btn"
+                maxWidth="Infinity"/>
+
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Bottom hint -->
+        <HBox alignment="CENTER">
+            <padding><Insets bottom="24"/></padding>
+            <Label text="NOVA User Management  v1.0" styleClass="form-version"/>
+        </HBox>
+    </VBox>
+
+</HBox>
