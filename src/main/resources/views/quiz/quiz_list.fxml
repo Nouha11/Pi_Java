@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="600" prefWidth="800" styleClass="module-pane"
+      stylesheets="@../../css/quiz.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.quiz.QuizListController">
+
+    <!-- TOOLBAR -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar">
+        <padding><Insets bottom="12" left="16" right="16" top="12"/></padding>
+        <Label style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#1a237e;" text="📝 Quizzes"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button onAction="#handleCreate" styleClass="btn-primary" text="＋ New Quiz"/>
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="quizTable" styleClass="data-table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId"          prefWidth="60"  text="ID"/>
+            <TableColumn fx:id="colTitle"        prefWidth="300" text="Title"/>
+            <TableColumn fx:id="colDescription"  prefWidth="340" text="Description"/>
+            <TableColumn fx:id="colActions"      prefWidth="160" text="Actions"/>
+        </columns>
+        <placeholder><Label text="No quizzes yet. Click '＋ New Quiz' to get started."/></placeholder>
+    </TableView>
+
+    <!-- STATUS BAR -->
+    <HBox styleClass="toolbar">
+        <padding><Insets bottom="6" left="16" right="16" top="6"/></padding>
+        <Label fx:id="lblStatus" style="-fx-text-fill:#546e7a; -fx-font-size:12px;" text=""/>
+    </HBox>
+
+</VBox>

@@ -7,10 +7,14 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import models.gamification.Game;
 import models.gamification.Reward;
 import services.gamification.GameService;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.List;
 
 public class GameController {
@@ -18,7 +22,6 @@ public class GameController {
     @FXML private TableView<Game>            gamesTable;
     @FXML private TableColumn<Game, String>  nameCol, typeCol, difficultyCol, categoryCol;
     @FXML private TableColumn<Game, Integer> tokenCostCol;
-    @FXML private TableColumn<Game, Boolean> activeCol;
     @FXML private TableColumn<Game, Void>    actionsCol;
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> typeFilter;
@@ -34,7 +37,6 @@ public class GameController {
         difficultyCol.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
         categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
         tokenCostCol.setCellValueFactory(new PropertyValueFactory<>("tokenCost"));
-        activeCol.setCellValueFactory(new PropertyValueFactory<>("active"));
 
         setupActionsColumn();
 
@@ -50,20 +52,26 @@ public class GameController {
         actionsCol.setCellFactory(col -> new TableCell<>() {
             private final Button viewBtn   = styledBtn("👁 View",   "#0f3460", "#c0c0e0");
             private final Button editBtn   = styledBtn("✏ Edit",   "#0f3460", "#c0c0e0");
-            private final Button deleteBtn = styledBtn("🗑 Delete", "transparent", "#e94560");
-            private final HBox   box       = new HBox(6, viewBtn, editBtn, deleteBtn);
-            { box.setPadding(new Insets(2, 0, 2, 0)); }
+            private final Button toggleBtn = styledBtn("⏸",        "#0f3460", "#f0c040");
+            private final Button deleteBtn = styledBtn("🗑",        "transparent", "#e94560");
+            private final HBox   box       = new HBox(5, viewBtn, editBtn, toggleBtn, deleteBtn);
+            { box.setPadding(new Insets(2, 0, 2, 0));
+              deleteBtn.setStyle(deleteBtn.getStyle() + "-fx-border-color: #e94560;"); }
 
             {
-                deleteBtn.setStyle(deleteBtn.getStyle() + "-fx-border-color: #e94560;");
                 viewBtn.setOnAction(e   -> showGameDetails(getTableView().getItems().get(getIndex())));
                 editBtn.setOnAction(e   -> openGameForm(getTableView().getItems().get(getIndex())));
+                toggleBtn.setOnAction(e -> handleToggleActive(getTableView().getItems().get(getIndex())));
                 deleteBtn.setOnAction(e -> handleDelete(getTableView().getItems().get(getIndex())));
             }
 
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : box);
+                if (empty) { setGraphic(null); return; }
+                Game g = getTableView().getItems().get(getIndex());
+                toggleBtn.setText(g.isActive() ? "⏸ Deactivate" : "▶ Activate");
+                toggleBtn.setStyle(styledBtn("", "#0f3460", g.isActive() ? "#f0c040" : "#4caf50").getStyle());
+                setGraphic(box);
                 setStyle("-fx-background-color: transparent;");
             }
         });
@@ -99,8 +107,37 @@ public class GameController {
 
     @FXML private void handleAddGame() { openGameForm(null); }
 
-    private void handleDelete(Game g) {
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION,
+    @FXML
+    private void handleExportCSV() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Export Games to CSV");
+        fc.setInitialFileName("games_export.csv");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = fc.showSaveDialog(gamesTable.getScene().getWindow());
+        if (file == null) return;
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
+            pw.println("Name,Type,Difficulty,Category,TokenCost,RewardTokens,RewardXP,EnergyPoints,Active");
+            for (Game g : gamesTable.getItems()) {
+                pw.printf("\"%s\",%s,%s,%s,%d,%d,%d,%s,%s%n",
+                        g.getName(), g.getType(), g.getDifficulty(), g.getCategory(),
+                        g.getTokenCost(), g.getRewardTokens(), g.getRewardXP(),
+                        g.getEnergyPoints() != null ? g.getEnergyPoints() : "",
+                        g.isActive());
+            }
+            showStatus("Exported " + gamesTable.getItems().size() + " games to " + file.getName(), false);
+        } catch (Exception e) { showStatus("Export error: " + e.getMessage(), true); }
+    }
+
+    private void handleToggleActive(Game g) {
+        try {
+            g.setActive(!g.isActive());
+            gameService.updateGame(g);
+            loadGames();
+            showStatus(g.getName() + " is now " + (g.isActive() ? "active" : "inactive") + ".", false);
+        } catch (Exception e) { showStatus("Toggle error: " + e.getMessage(), true); }
+    }
+
+    private void handleDelete(Game g) {        Alert a = new Alert(Alert.AlertType.CONFIRMATION,
                 "Delete '" + g.getName() + "'? This removes all reward links too.",
                 ButtonType.YES, ButtonType.NO);
         a.setTitle("Confirm Delete");

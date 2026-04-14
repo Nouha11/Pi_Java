@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.library.LibrariesController"
+            style="-fx-background-color: #f8f9fa;">
+
+    <!-- Header -->
+    <top>
+        <VBox style="-fx-background-color: #cfe2ff; -fx-padding: 20 24 20 24;">
+            <Label text="🏛 Available Libraries"
+                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+            <HBox spacing="6">
+                <Label text="Home › Books ›" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                <Label fx:id="lblBookName" text="Book" style="-fx-font-size: 12; -fx-text-fill: #0d6efd;"/>
+                <Label text="› Libraries" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="16" style="-fx-padding: 24;">
+
+            <!-- Book info card -->
+            <HBox spacing="16" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-padding: 16 20; -fx-background-radius: 8;
+                         -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);">
+                <Label text="📖" style="-fx-font-size: 40;"/>
+                <VBox spacing="4">
+                    <Label fx:id="lblBookTitle"
+                           style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    <Label fx:id="lblBookAuthor" style="-fx-font-size: 13; -fx-text-fill: #6c757d;"/>
+                    <Label text="Physical Book"
+                           style="-fx-background-color: #cfe2ff; -fx-text-fill: #084298;
+                                  -fx-padding: 2 10; -fx-background-radius: 20; -fx-font-size: 11;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Map + Libraries side by side -->
+            <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+                <!-- Map panel replaced with library info panel -->
+                <VBox spacing="0" prefWidth="300"
+                      style="-fx-background-color: white; -fx-background-radius: 8;
+                             -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);">
+                    <HBox alignment="CENTER_LEFT" spacing="10"
+                          style="-fx-padding: 12 16; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;">
+                        <Label text="📍 Location Info"
+                               style="-fx-font-size: 14; -fx-font-weight: bold;" HBox.hgrow="ALWAYS"/>
+                        <Button text="📍 My Location" onAction="#handleGetLocation"
+                                style="-fx-background-color: #0d6efd; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 6 12; -fx-cursor: hand;"/>
+                    </HBox>
+                    <VBox alignment="CENTER" spacing="12" VBox.vgrow="ALWAYS"
+                          style="-fx-padding: 30; -fx-background-color: #f8f9fa;">
+                        <Label text="🗺️" style="-fx-font-size: 60;"/>
+                        <Label text="Select a library from the list"
+                               style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #212529;"
+                               wrapText="true"/>
+                        <Label text="Click 'Request Loan' on any library card to proceed with your loan request."
+                               style="-fx-font-size: 12; -fx-text-fill: #6c757d;" wrapText="true"/>
+                    </VBox>
+                    <Label fx:id="lblLocationStatus" text=""
+                           style="-fx-padding: 6 16; -fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+
+                <!-- Libraries list -->
+                <VBox spacing="12" HBox.hgrow="ALWAYS">
+                    <Label text="Libraries where this book is available"
+                           style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+
+                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                        <VBox fx:id="librariesContainer" spacing="12"/>
+                    </ScrollPane>
+                </VBox>
+            </HBox>
+
+            <!-- Back button -->
+            <HBox>
+                <Button text="← Back to Book" onAction="#handleBack"
+                        style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057;
+                               -fx-border-color: #dee2e6; -fx-border-radius: 6;
+                               -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

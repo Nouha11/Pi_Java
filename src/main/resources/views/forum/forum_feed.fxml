@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="760.0" prefWidth="1000.0" spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
+    <padding>
+        <Insets bottom="20.0" left="40.0" right="40.0" top="30.0" />
+    </padding>
+    <children>
+
+        <HBox alignment="CENTER_LEFT" onMouseClicked="#handleGoToCreatePost" prefHeight="65.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <Label alignment="CENTER" prefHeight="40.0" prefWidth="40.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 16px;" text="👤" />
+
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 15px;" text="Create Post..." />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <HBox alignment="CENTER" spacing="15.0">
+                    <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="📷" />
+                    <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="🔗" />
+                </HBox>
+            </children>
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <Label style="-fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="🔥 Hot" />
+                <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="✨ New" />
+                <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="📈 Top" />
+            </children>
+        </HBox>
+
+        <ListView fx:id="postsListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-width: 0;" />
+    </children>
+</VBox>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.AddPostController">
+    <children>
+        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" spacing="15.0">
+            <padding>
+                <Insets bottom="25.0" left="30.0" right="30.0" top="25.0" />
+            </padding>
+            <children>
+                <Label text="Create a New Post" textFill="#333333">
+                    <font>
+                        <Font name="System Bold" size="26.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="10.0" />
+                    </VBox.margin>
+                </Label>
+
+                <HBox spacing="20.0">
+                    <children>
+                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label text="Title:" textFill="#555555" />
+                                <TextField fx:id="titleField" promptText="Enter post title..." style="-fx-pref-height: 35;" />
+                            </children>
+                        </VBox>
+                        <VBox prefWidth="220.0" spacing="5.0">
+                            <children>
+                                <Label text="Space:" textFill="#555555" />
+                                <ComboBox fx:id="spaceCombo" maxWidth="1.7976931348623157E308" promptText="Select Space" style="-fx-pref-height: 35;" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <HBox spacing="20.0">
+                    <children>
+                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label text="Tags (comma separated):" textFill="#555555" />
+                                <TextField fx:id="tagsField" promptText="e.g. Science, Exams" style="-fx-pref-height: 35;" />
+                            </children>
+                        </VBox>
+                        <VBox prefWidth="220.0" spacing="5.0">
+                            <children>
+                                <Label text="URL Link:" textFill="#555555" />
+                                <TextField fx:id="linkField" promptText="https://..." style="-fx-pref-height: 35;" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <HBox alignment="BOTTOM_LEFT" spacing="10.0">
+                    <children>
+                        <Label text="Content:" textFill="#555555" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="fileNameLabel" text="No file selected" textFill="#888888">
+                            <font>
+                                <Font name="System Italic" size="12.0" />
+                            </font>
+                        </Label>
+                        <Button mnemonicParsing="false" onAction="#handleUploadFile" style="-fx-background-color: #e0e0e0; -fx-text-fill: #333333;" text="📎 Attach File" />
+                    </children>
+                    <VBox.margin>
+                        <Insets top="10.0" />
+                    </VBox.margin>
+                </HBox>
+
+                <TextArea fx:id="contentArea" promptText="What do you want to share?" wrapText="true" VBox.vgrow="ALWAYS" />
+
+                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45;" text="Submit Post">
+                    <VBox.margin>
+                        <Insets top="10.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
