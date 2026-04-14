@@ -130,6 +130,11 @@
                             <Label text="💬" styleClass="admin-nav-icon"/>
                             <Label text="Manage Forum" styleClass="admin-nav-text"/>
                         </HBox>
+                        <HBox fx:id="navForumStats" styleClass="admin-nav-row"
+                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForumStats">
+                            <Label text="📊" styleClass="admin-nav-icon"/>
+                            <Label text="Forum Statistics" styleClass="admin-nav-text"/>
+                        </HBox>
                     </VBox>
 
                 </VBox>

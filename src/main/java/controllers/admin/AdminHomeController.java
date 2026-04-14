@@ -6,12 +6,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import models.library.Loan;
+import models.forum.Post; // 🔥 Forum Import
 import services.gamification.GameService;
 import services.gamification.RewardService;
 import services.library.BookService;
 import services.library.LoanService;
 import services.quiz.QuizService;
 import services.quiz.QuestionService;
+import services.forum.PostService; // 🔥 Forum Import
 import utils.MyConnection;
 
 import java.sql.*;
@@ -29,6 +31,7 @@ public class AdminHomeController {
     @FXML private Label statGames, statGamesDetail;
     @FXML private Label statRewards, statRewardsDetail;
     @FXML private Label statQuizzes, statQuizzesDetail;
+    @FXML private Label statForum, statForumDetail; // 🔥 NEW FORUM LABELS
 
     // Role breakdown
     @FXML private Label roleStudents, roleTutors, roleAdmins;
@@ -44,6 +47,7 @@ public class AdminHomeController {
     private final RewardService   rewardService = new RewardService();
     private final QuizService     quizService   = new QuizService();
     private final QuestionService questionService = new QuestionService();
+    private final PostService     postService   = new PostService(); // 🔥 NEW FORUM SERVICE
 
     @FXML
     public void initialize() {
@@ -64,8 +68,8 @@ public class AdminHomeController {
             // Users
             ResultSet rs = conn.createStatement().executeQuery(
                     "SELECT COUNT(*) total, SUM(is_active) active, " +
-                    "SUM(role='ROLE_STUDENT') students, SUM(role='ROLE_TUTOR') tutors, SUM(role='ROLE_ADMIN') admins " +
-                    "FROM user");
+                            "SUM(role='ROLE_STUDENT') students, SUM(role='ROLE_TUTOR') tutors, SUM(role='ROLE_ADMIN') admins " +
+                            "FROM user");
             if (rs.next()) {
                 statUsers.setText(String.valueOf(rs.getInt("total")));
                 statUsersDetail.setText(rs.getInt("active") + " active");
@@ -109,6 +113,12 @@ public class AdminHomeController {
                     .sum();
             statQuizzes.setText(String.valueOf(quizzes.size()));
             statQuizzesDetail.setText(totalQuestions + " questions total");
+
+            // 🔥 FORUM STATS 🔥
+            List<Post> posts = postService.afficher();
+            long openDiscussions = posts.stream().filter(p -> !p.isLocked()).count();
+            statForum.setText(String.valueOf(posts.size()));
+            statForumDetail.setText(openDiscussions + " open discussions");
 
         } catch (Exception e) {
             System.err.println("AdminHome stats error: " + e.getMessage());
@@ -155,23 +165,14 @@ public class AdminHomeController {
 
     @FXML
     private void quickAddBook() {
-        // Delegate to parent dashboard
-        try {
-            var scene = recentLoansTable.getScene();
-            if (scene == null) return;
-            var root = scene.getRoot();
-            // Walk up to find AdminDashboardController via lookup
-            var ctrl = (AdminDashboardController)
-                    root.getProperties().get("adminDashboardController");
-            if (ctrl != null) ctrl.showBooks();
-        } catch (Exception ignored) {}
+        navigateDashboard("books");
     }
 
     @FXML private void quickUsers()     { navigateDashboard("users"); }
     @FXML private void quickGameStats() { navigateDashboard("gameStats"); }
+    @FXML private void quickForum()     { navigateDashboard("forum"); } // 🔥 NEW BUTTON ROUTE
 
     private void navigateDashboard(String target) {
-        // Best-effort: find the AdminDashboardController via scene userData
         try {
             var scene = recentLoansTable.getScene();
             if (scene == null) return;
@@ -179,7 +180,9 @@ public class AdminHomeController {
             if (ctrl instanceof AdminDashboardController adc) {
                 switch (target) {
                     case "users"     -> adc.showUsers();
+                    case "books"     -> adc.showBooks();
                     case "gameStats" -> adc.showGameStats();
+                    case "forum"     -> adc.showForum(); // 🔥 NEW FORUM ROUTE
                 }
             }
         } catch (Exception ignored) {}

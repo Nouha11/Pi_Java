@@ -167,4 +167,32 @@ public class PostService {
             System.err.println("❌ Error toggling lock: " + e.getMessage());
         }
     }
+
+    // --- ADMIN STATISTICS ---
+    public int getTotalPostsCount() {
+        int count = 0;
+        try {
+            ResultSet rs = cnx.createStatement().executeQuery("SELECT COUNT(*) FROM post");
+            if (rs.next()) count = rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("Error fetching total posts: " + e.getMessage());
+        }
+        return count;
+    }
+
+    public java.util.Map<String, Integer> getPostsPerSpace() {
+        java.util.Map<String, Integer> stats = new java.util.HashMap<>();
+        // Join with space table to get names, group by space ID
+        String req = "SELECT s.name, COUNT(p.id) FROM post p LEFT JOIN space s ON p.space_id = s.id GROUP BY p.space_id";
+        try {
+            ResultSet rs = cnx.createStatement().executeQuery(req);
+            while (rs.next()) {
+                String space = rs.getString(1) != null ? rs.getString(1) : "General";
+                stats.put(space, rs.getInt(2));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching space stats: " + e.getMessage());
+        }
+        return stats;
+    }
 }

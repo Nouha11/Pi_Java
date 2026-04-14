@@ -20,9 +20,7 @@ public class AdminDashboardController {
     @FXML private Label     lblCurrentRole;
     @FXML private Label     lblPageTitle;
 
-    // 🔥 Added Forum Toggle Button
     @FXML private Button btnToggleUsers, btnToggleLibrary, btnToggleStudy, btnToggleGame, btnToggleQuiz, btnToggleForum;
-    // 🔥 Added Forum VBox Group
     @FXML private VBox   usersGroup, libraryGroup, studyGroup, gameGroup, quizGroup, forumGroup;
 
     @FXML private HBox navHome;
@@ -31,7 +29,8 @@ public class AdminDashboardController {
     @FXML private HBox navCourses, navPlannings, navSessions, navStudyStats;
     @FXML private HBox navGames, navRewards, navGameStats;
     @FXML private HBox navQuizzes;
-    @FXML private HBox navForum; // 🔥 Added Forum Nav Item
+    @FXML private HBox navForum;
+    @FXML private HBox navForumStats; // 🔥 Added Stats Nav Item
 
     private List<HBox> allNavItems;
 
@@ -42,7 +41,7 @@ public class AdminDashboardController {
                 navBooks, navLoans, navPayments,
                 navCourses, navPlannings, navSessions, navStudyStats,
                 navGames, navRewards, navGameStats,
-                navQuizzes, navForum // 🔥 Added to the list so highlighting works perfectly
+                navQuizzes, navForum, navForumStats // 🔥 Added to the highlighting list
         );
         // Show homepage by default instead of users
         loadView("/views/admin/AdminHome.fxml");
@@ -68,7 +67,7 @@ public class AdminDashboardController {
     @FXML public void toggleStudy()   { toggle(studyGroup,   btnToggleStudy,   "STUDY SESSION"); }
     @FXML public void toggleGame()    { toggle(gameGroup,    btnToggleGame,    "GAMIFICATION"); }
     @FXML public void toggleQuiz()    { toggle(quizGroup,    btnToggleQuiz,    "QUIZ"); }
-    @FXML public void toggleForum()   { toggle(forumGroup,   btnToggleForum,   "FORUM"); } // 🔥 New Toggle
+    @FXML public void toggleForum()   { toggle(forumGroup,   btnToggleForum,   "FORUM"); }
 
     private void toggle(VBox group, Button btn, String label) {
         boolean open = !group.isVisible();
@@ -93,8 +92,9 @@ public class AdminDashboardController {
     @FXML public void showGameStats()  { nav(navGameStats,  "Game Stats",     "/views/gamification/stats.fxml"); }
     @FXML public void showQuizzes()    { nav(navQuizzes,    "Quizzes",        "/views/quiz/quiz_list.fxml"); }
 
-    // 🔥 NEW: Routes to your beautiful Admin Forum Data Grid
+    // 🔥 FORUM ROUTES
     @FXML public void showForum()      { nav(navForum,      "Forum Management", "/views/forum/admin/admin_forum.fxml"); }
+    @FXML public void showForumStats() { nav(navForumStats, "Forum Statistics", "/views/forum/admin/forum_stats.fxml"); } // 🔥 Added routing method
 
     // ── HELPERS ───────────────────────────────────────────────────────────────
 

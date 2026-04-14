@@ -11,7 +11,6 @@
 
     <VBox spacing="28" style="-fx-padding: 32 36 40 36; -fx-background-color: #f8fafc;">
 
-        <!-- ── Page header ── -->
         <HBox spacing="16" alignment="CENTER_LEFT">
             <ImageView fitWidth="56" fitHeight="56" preserveRatio="true" smooth="true">
                 <image><Image url="@/images/nova-logo.png"/></image>
@@ -24,97 +23,107 @@
             </VBox>
         </HBox>
 
-        <!-- ── Stat cards ── -->
-        <HBox spacing="16">
-            <!-- Users -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-blue">
-                        <Label text="👥" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Total Users" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statUsers" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statUsersDetail" text="— active"
-                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
-            </VBox>
+        <VBox spacing="16">
+            <HBox spacing="16">
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-blue">
+                            <Label text="👥" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Total Users" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statUsers" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statUsersDetail" text="— active"
+                           style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+                </VBox>
 
-            <!-- Books -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-violet">
-                        <Label text="📚" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Books" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statBooks" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statBooksDetail" text="— digital  ·  — physical"
-                       style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
-            </VBox>
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-violet">
+                            <Label text="📚" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Books" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statBooks" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statBooksDetail" text="— digital  ·  — physical"
+                           style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
+                </VBox>
 
-            <!-- Loans -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-amber">
-                        <Label text="📋" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Loans" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statLoans" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statLoansDetail" text="— pending approval"
-                       style="-fx-font-size:12px; -fx-text-fill:#f59e0b;"/>
-            </VBox>
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-amber">
+                            <Label text="📋" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Loans" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statLoans" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statLoansDetail" text="— pending approval"
+                           style="-fx-font-size:12px; -fx-text-fill:#f59e0b;"/>
+                </VBox>
 
-            <!-- Games -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-emerald">
-                        <Label text="🎮" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Games" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statGames" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statGamesDetail" text="— active"
-                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
-            </VBox>
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-emerald">
+                            <Label text="🎮" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Games" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statGames" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statGamesDetail" text="— active"
+                           style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+                </VBox>
+            </HBox>
 
-            <!-- Rewards -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-rose">
-                        <Label text="🏆" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Rewards" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statRewards" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statRewardsDetail" text="— active"
-                       style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
-            </VBox>
+            <HBox spacing="16">
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-rose">
+                            <Label text="🏆" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Rewards" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statRewards" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statRewardsDetail" text="— active"
+                           style="-fx-font-size:12px; -fx-text-fill:#22c55e;"/>
+                </VBox>
 
-            <!-- Quizzes -->
-            <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="admin-stat-icon-bg-blue">
-                        <Label text="📝" style="-fx-font-size:18px;"/>
-                    </StackPane>
-                    <Label text="Quizzes" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
-                </HBox>
-                <Label fx:id="statQuizzes" text="—"
-                       style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
-                <Label fx:id="statQuizzesDetail" text="— questions total"
-                       style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
-            </VBox>
-        </HBox>
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-blue">
+                            <Label text="📝" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Quizzes" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statQuizzes" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statQuizzesDetail" text="— questions total"
+                           style="-fx-font-size:12px; -fx-text-fill:#64748b;"/>
+                </VBox>
 
-        <!-- ── Two-column section ── -->
+                <VBox styleClass="admin-stat-card" HBox.hgrow="ALWAYS" spacing="12">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane styleClass="admin-stat-icon-bg-blue" style="-fx-background-color: #e0e7ff; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32;">
+                            <Label text="💬" style="-fx-font-size:18px;"/>
+                        </StackPane>
+                        <Label text="Forum Posts" style="-fx-text-fill:#64748b; -fx-font-size:13px;"/>
+                    </HBox>
+                    <Label fx:id="statForum" text="—"
+                           style="-fx-font-size:32px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"/>
+                    <Label fx:id="statForumDetail" text="— open discussions"
+                           style="-fx-font-size:12px; -fx-text-fill:#10b981;"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+            </HBox>
+        </VBox>
+
         <HBox spacing="20" alignment="TOP_LEFT">
 
-            <!-- Recent loans table -->
             <VBox styleClass="admin-card" HBox.hgrow="ALWAYS" spacing="0">
                 <HBox alignment="CENTER_LEFT"
                       style="-fx-padding: 16 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
@@ -124,7 +133,7 @@
                     <Label text="View all →"
                            style="-fx-text-fill:#6366f1; -fx-font-size:12px; -fx-cursor:hand;"/>
                 </HBox>
-                <TableView fx:id="recentLoansTable" prefHeight="220"
+                <TableView fx:id="recentLoansTable" prefHeight="265"
                            style="-fx-background-color:transparent; -fx-border-color:transparent;">
                     <columns>
                         <TableColumn fx:id="loanColBook"   text="Book"      prefWidth="180"/>
@@ -138,10 +147,8 @@
                 </TableView>
             </VBox>
 
-            <!-- Quick actions + user breakdown -->
             <VBox spacing="16" prefWidth="280">
 
-                <!-- Quick actions -->
                 <VBox styleClass="admin-card" spacing="0">
                     <Label text="Quick Actions"
                            style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;
@@ -164,10 +171,15 @@
                                        -fx-border-color:#e2e8f0; -fx-border-width:1;
                                        -fx-background-radius:6; -fx-padding:9 14;
                                        -fx-cursor:hand; -fx-font-size:13px;"/>
+                        <Button text="💬  Manage Forum" maxWidth="Infinity"
+                                onAction="#quickForum"
+                                style="-fx-background-color:#f1f5f9; -fx-text-fill:#0f172a;
+                                       -fx-border-color:#e2e8f0; -fx-border-width:1;
+                                       -fx-background-radius:6; -fx-padding:9 14;
+                                       -fx-cursor:hand; -fx-font-size:13px;"/>
                     </VBox>
                 </VBox>
 
-                <!-- User role breakdown -->
                 <VBox styleClass="admin-card" spacing="0">
                     <Label text="Users by Role"
                            style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#0f172a;
