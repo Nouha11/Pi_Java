@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
@@ -8,255 +7,102 @@
             fx:controller="controllers.gamification.GameFormController"
             stylesheets="@/css/gamification.css"
             prefWidth="580" prefHeight="700"
-            style="-fx-background-color: #1a1a2e;">
+            style="-fx-background-color: #f0f2f8;">
 
     <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
-          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
-          spacing="0">
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="0">
 
-        <!-- ── HEADER ─────────────────────────────────────────────── -->
-        <VBox style="-fx-background-color: #16213e;
-                     -fx-padding: 20 24 16 24;
-                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 0, 2);">
-            <Label text="🎮 GAME FORM"
-                   style="-fx-text-fill: #e94560;
-                          -fx-font-size: 20px;
-                          -fx-font-weight: bold;
-                          -fx-font-family: 'Consolas';"/>
-            <Label text="Fields marked * are required"
-                   style="-fx-text-fill: #6060a0;
-                          -fx-font-family: 'Consolas';
-                          -fx-font-size: 12px;"/>
-        </VBox>
-
-        <!-- ── ERROR LABEL ───────────────────────────────────────── -->
-        <Label fx:id="errorLabel" text=""
-               wrapText="true"
-               style="-fx-font-family: 'Consolas';
-                      -fx-font-size: 12px;
-                      -fx-padding: 8 24 0 24;"/>
-
-        <!-- ── SCROLL AREA ───────────────────────────────────────── -->
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                    style="-fx-background-color: transparent;
-                           -fx-background: #1a1a2e;">
-
-            <GridPane hgap="14" vgap="14"
-                      style="-fx-padding: 20 24;">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="140" prefWidth="150"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                </columnConstraints>
-
-                <!-- Row 0: Game Name -->
-                <Label text="* Game Name" GridPane.rowIndex="0" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <TextField fx:id="nameField"
-                           promptText="Min. 3 characters, must be unique"
-                           GridPane.rowIndex="0" GridPane.columnIndex="1"
-                           style="-fx-background-color: #0d2137;
-                                  -fx-text-fill: #e0e0f0;
-                                  -fx-prompt-text-fill: #5050a0;
-                                  -fx-border-color: #2a2a5e;
-                                  -fx-border-radius: 4;
-                                  -fx-background-radius: 4;
-                                  -fx-padding: 8 10;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 13px;"/>
-
-                <!-- Row 1: Description -->
-                <Label text="* Description" GridPane.rowIndex="1" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"
-                       GridPane.valignment="TOP"/>
-                <TextArea fx:id="descriptionArea"
-                          promptText="Describe the game..."
-                          prefRowCount="3" wrapText="true"
-                          GridPane.rowIndex="1" GridPane.columnIndex="1"
-                          style="-fx-background-color: #0d2137;
-                                 -fx-text-fill: #e0e0f0;
-                                 -fx-prompt-text-fill: #5050a0;
-                                 -fx-border-color: #2a2a5e;
-                                 -fx-border-radius: 4;
-                                 -fx-background-radius: 4;
-                                 -fx-font-family: 'Consolas';
-                                 -fx-font-size: 13px;"/>
-
-                <!-- Row 2: Type -->
-                <Label text="* Type" GridPane.rowIndex="2" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <ComboBox fx:id="typeCombo"
-                          promptText="Select type"
-                          maxWidth="Infinity"
-                          GridPane.rowIndex="2" GridPane.columnIndex="1"
-                          style="-fx-background-color: #0d2137;
-                                 -fx-border-color: #2a2a5e;
-                                 -fx-border-radius: 4;
-                                 -fx-background-radius: 4;
-                                 -fx-font-family: 'Consolas';
-                                 -fx-font-size: 13px;"/>
-
-                <!-- Row 3: Difficulty -->
-                <Label text="* Difficulty" GridPane.rowIndex="3" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <ComboBox fx:id="difficultyCombo"
-                          promptText="Select difficulty"
-                          maxWidth="Infinity"
-                          GridPane.rowIndex="3" GridPane.columnIndex="1"
-                          style="-fx-background-color: #0d2137;
-                                 -fx-border-color: #2a2a5e;
-                                 -fx-border-radius: 4;
-                                 -fx-background-radius: 4;
-                                 -fx-font-family: 'Consolas';
-                                 -fx-font-size: 13px;"/>
-
-                <!-- Row 4: Category -->
-                <Label text="* Category" GridPane.rowIndex="4" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <ComboBox fx:id="categoryCombo"
-                          promptText="Select category"
-                          maxWidth="Infinity"
-                          GridPane.rowIndex="4" GridPane.columnIndex="1"
-                          style="-fx-background-color: #0d2137;
-                                 -fx-border-color: #2a2a5e;
-                                 -fx-border-radius: 4;
-                                 -fx-background-radius: 4;
-                                 -fx-font-family: 'Consolas';
-                                 -fx-font-size: 13px;"/>
-
-                <!-- Row 5: Token Cost -->
-                <Label text="* Token Cost" GridPane.rowIndex="5" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <TextField fx:id="tokenCostField"
-                           promptText="0"
-                           GridPane.rowIndex="5" GridPane.columnIndex="1"
-                           style="-fx-background-color: #0d2137;
-                                  -fx-text-fill: #e0e0f0;
-                                  -fx-prompt-text-fill: #5050a0;
-                                  -fx-border-color: #2a2a5e;
-                                  -fx-border-radius: 4;
-                                  -fx-background-radius: 4;
-                                  -fx-padding: 8 10;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 13px;"/>
-
-                <!-- Row 6: Reward Tokens -->
-                <Label text="* Reward Tokens" GridPane.rowIndex="6" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <TextField fx:id="rewardTokensField"
-                           promptText="0"
-                           GridPane.rowIndex="6" GridPane.columnIndex="1"
-                           style="-fx-background-color: #0d2137;
-                                  -fx-text-fill: #e0e0f0;
-                                  -fx-prompt-text-fill: #5050a0;
-                                  -fx-border-color: #2a2a5e;
-                                  -fx-border-radius: 4;
-                                  -fx-background-radius: 4;
-                                  -fx-padding: 8 10;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 13px;"/>
-
-                <!-- Row 7: Reward XP -->
-                <Label text="* Reward XP" GridPane.rowIndex="7" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <TextField fx:id="rewardXPField"
-                           promptText="0"
-                           GridPane.rowIndex="7" GridPane.columnIndex="1"
-                           style="-fx-background-color: #0d2137;
-                                  -fx-text-fill: #e0e0f0;
-                                  -fx-prompt-text-fill: #5050a0;
-                                  -fx-border-color: #2a2a5e;
-                                  -fx-border-radius: 4;
-                                  -fx-background-radius: 4;
-                                  -fx-padding: 8 10;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 13px;"/>
-
-                <!-- Row 8: Energy Points (MINI_GAME only) -->
-                <Label text="Energy Points" GridPane.rowIndex="8" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <VBox GridPane.rowIndex="8" GridPane.columnIndex="1" spacing="4">
-                    <TextField fx:id="energyPointsField"
-                               promptText="Only for MINI_GAME"
-                               disable="true"
-                               style="-fx-background-color: #0d2137;
-                                      -fx-text-fill: #e0e0f0;
-                                      -fx-prompt-text-fill: #5050a0;
-                                      -fx-border-color: #2a2a5e;
-                                      -fx-border-radius: 4;
-                                      -fx-background-radius: 4;
-                                      -fx-padding: 8 10;
-                                      -fx-font-family: 'Consolas';
-                                      -fx-font-size: 13px;"/>
-                    <Label text="Enabled automatically when MINI_GAME is selected"
-                           style="-fx-text-fill: #5050a0;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 11px;"/>
-                </VBox>
-
-                <!-- Row 9: Is Active -->
-                <Label text="Active" GridPane.rowIndex="9" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <CheckBox fx:id="isActiveCheck"
-                          text="Game is active and visible to students"
-                          selected="true"
-                          GridPane.rowIndex="9" GridPane.columnIndex="1"
-                          style="-fx-text-fill: #e0e0f0;
-                                 -fx-font-family: 'Consolas';
-                                 -fx-font-size: 13px;"/>
-
-                <!-- Row 10: Rewards -->
-                <Label text="Link Rewards" GridPane.rowIndex="10" GridPane.columnIndex="0"
-                       style="-fx-text-fill: #a0a0c0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"
-                       GridPane.valignment="TOP"/>
-                <VBox GridPane.rowIndex="10" GridPane.columnIndex="1" spacing="4">
-                    <Label text="Hold Ctrl to select multiple rewards"
-                           style="-fx-text-fill: #5050a0;
-                                  -fx-font-family: 'Consolas';
-                                  -fx-font-size: 11px;"/>
-                    <ListView fx:id="rewardsList"
-                              prefHeight="130"
-                              style="-fx-background-color: #0d2137;
-                                     -fx-border-color: #2a2a5e;
-                                     -fx-border-radius: 4;
-                                     -fx-background-radius: 4;
-                                     -fx-font-family: 'Consolas';
-                                     -fx-font-size: 13px;"/>
-                </VBox>
-
-            </GridPane>
-        </ScrollPane>
-
-        <!-- ── FOOTER BUTTONS ─────────────────────────────────────── -->
-        <HBox spacing="12" alignment="CENTER_RIGHT"
-              style="-fx-background-color: #16213e;
-                     -fx-padding: 14 24;
-                     -fx-border-color: #0d2137;
-                     -fx-border-width: 1 0 0 0;">
-            <Button fx:id="cancelBtn"
-                    text="CANCEL"
-                    onAction="#handleCancel"
-                    style="-fx-background-color: transparent;
-                           -fx-text-fill: #a0a0c0;
-                           -fx-border-color: #a0a0c0;
-                           -fx-border-radius: 4;
-                           -fx-background-radius: 4;
-                           -fx-font-family: 'Consolas';
-                           -fx-font-size: 13px;
-                           -fx-padding: 8 20;
-                           -fx-cursor: hand;"/>
-            <Button fx:id="saveBtn"
-                    text="💾  SAVE GAME"
-                    onAction="#handleSave"
-                    style="-fx-background-color: #e94560;
-                           -fx-text-fill: white;
-                           -fx-font-weight: bold;
-                           -fx-font-family: 'Consolas';
-                           -fx-font-size: 13px;
-                           -fx-padding: 8 24;
-                           -fx-border-radius: 4;
-                           -fx-background-radius: 4;
-                           -fx-cursor: hand;"/>
+        <!-- HEADER -->
+        <HBox styleClass="form-header" alignment="CENTER_LEFT" style="-fx-padding: 20 24;">
+            <Label text="🎮  Game Form" styleClass="form-title"/>
         </HBox>
 
+        <!-- ERROR -->
+        <Label fx:id="errorLabel" text="" wrapText="true" styleClass="error-banner"
+               managed="false" visible="false">
+            <VBox.margin><Insets left="20" right="20" top="12"/></VBox.margin>
+        </Label>
+
+        <!-- FIELDS -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox spacing="16" style="-fx-padding: 20 24;">
+
+                <!-- Main info card -->
+                <VBox styleClass="section-card" spacing="14" style="-fx-padding: 20;">
+                    <Label text="Game Details"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
+
+                    <VBox spacing="4">
+                        <Label text="* Game Name" styleClass="field-label"/>
+                        <TextField fx:id="nameField" promptText="Min. 3 characters, must be unique"/>
+                    </VBox>
+
+                    <VBox spacing="4">
+                        <Label text="* Description" styleClass="field-label"/>
+                        <TextArea fx:id="descriptionArea" promptText="Describe the game..."
+                                  prefRowCount="3" wrapText="true"/>
+                    </VBox>
+
+                    <HBox spacing="14">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Type" styleClass="field-label"/>
+                            <ComboBox fx:id="typeCombo" promptText="Select type" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Difficulty" styleClass="field-label"/>
+                            <ComboBox fx:id="difficultyCombo" promptText="Select difficulty" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Category" styleClass="field-label"/>
+                            <ComboBox fx:id="categoryCombo" promptText="Select category" maxWidth="Infinity"/>
+                        </VBox>
+                    </HBox>
+
+                    <HBox spacing="14">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Token Cost" styleClass="field-label"/>
+                            <TextField fx:id="tokenCostField" promptText="0"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Reward Tokens" styleClass="field-label"/>
+                            <TextField fx:id="rewardTokensField" promptText="0"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="* Reward XP" styleClass="field-label"/>
+                            <TextField fx:id="rewardXPField" promptText="0"/>
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="4">
+                        <Label text="Energy Points (MINI_GAME only)" styleClass="field-label"/>
+                        <TextField fx:id="energyPointsField" promptText="Only for MINI_GAME" disable="true"/>
+                        <Label text="Enabled automatically when MINI_GAME is selected"
+                               style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                    </VBox>
+
+                    <CheckBox fx:id="isActiveCheck" text="Game is active and visible to students"
+                              selected="true"
+                              style="-fx-font-size: 13px; -fx-text-fill: #2d3748;"/>
+                </VBox>
+
+                <!-- Link Rewards card -->
+                <VBox styleClass="section-card" spacing="10" style="-fx-padding: 20;">
+                    <Label text="Link Rewards"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
+                    <Label text="Hold Ctrl to select multiple rewards"
+                           style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                    <ListView fx:id="rewardsList" prefHeight="130"/>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+
+        <!-- FOOTER -->
+        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="form-footer"
+              style="-fx-padding: 14 24;">
+            <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel" styleClass="btn-ghost"/>
+            <Button fx:id="saveBtn"   text="💾  Save Game" onAction="#handleSave" styleClass="btn-primary"/>
+        </HBox>
     </VBox>
 </AnchorPane>

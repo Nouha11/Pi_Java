@@ -6,57 +6,43 @@
 <BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.gamification.GameRewardController"
             stylesheets="@/css/gamification.css"
-            style="-fx-background-color: #1a1a2e;">
+            style="-fx-background-color: #f0f2f8;">
     <top>
-        <VBox style="-fx-background-color: #16213e; -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.5),10,0,0,3);">
+        <VBox styleClass="toolbar">
             <HBox alignment="CENTER_LEFT" style="-fx-padding: 16 20 8 20;">
-                <Label text="🏆 REWARD MANAGEMENT  —  NOVA"
-                       style="-fx-text-fill: #e94560; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Consolas';"/>
+                <Label text="🏆  Reward Management" styleClass="toolbar-title"/>
             </HBox>
             <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 20 14 20;">
                 <TextField fx:id="searchField" promptText="🔍  Search name or type..."
-                           prefWidth="280"
-                           style="-fx-background-color: #0d2137; -fx-text-fill: #e0e0f0;
-                                  -fx-prompt-text-fill: #6060a0; -fx-border-color: #e94560;
-                                  -fx-border-radius: 4; -fx-background-radius: 4;
-                                  -fx-padding: 8 12; -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
-                <ComboBox fx:id="typeFilter" prefWidth="180"
-                          style="-fx-background-color: #0d2137; -fx-border-color: #2a2a5e;
-                                 -fx-border-radius: 4; -fx-background-radius: 4;
-                                 -fx-font-family: 'Consolas'; -fx-font-size: 13px;"/>
+                           prefWidth="280" styleClass="search-field"/>
+                <ComboBox fx:id="typeFilter" prefWidth="180"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="📥  EXPORT CSV" onAction="#handleExportCSV"
-                        style="-fx-background-color: #0d2137; -fx-text-fill: #a0c0e0;
-                               -fx-font-family: 'Consolas'; -fx-font-size: 13px;
-                               -fx-padding: 9 16; -fx-border-radius: 4; -fx-background-radius: 4;
-                               -fx-border-color: #2a4a6e; -fx-cursor: hand;"/>
-                <Button text="＋  ADD REWARD" onAction="#handleAddReward"
-                        style="-fx-background-color: #e94560; -fx-text-fill: white;
-                               -fx-font-weight: bold; -fx-font-family: 'Consolas'; -fx-font-size: 13px;
-                               -fx-padding: 9 20; -fx-border-radius: 4; -fx-background-radius: 4; -fx-cursor: hand;"/>
+                <Button text="📥  Export CSV"  onAction="#handleExportCSV" styleClass="btn-ghost"/>
+                <Button text="＋  Add Reward"  onAction="#handleAddReward" styleClass="btn-primary"/>
             </HBox>
         </VBox>
     </top>
     <center>
-        <TableView fx:id="rewardsTable"
-                   style="-fx-background-color: #1a1a2e; -fx-border-color: #0f3460;
-                          -fx-table-cell-border-color: #1e2a4a; -fx-text-fill: #e0e0f0;">
-            <BorderPane.margin><Insets top="14" right="20" bottom="0" left="20"/></BorderPane.margin>
+        <TableView fx:id="rewardsTable" styleClass="table-view">
+            <BorderPane.margin><Insets top="16" right="20" bottom="0" left="20"/></BorderPane.margin>
             <columns>
-                <TableColumn fx:id="iconCol"    text="ICON"        prefWidth="60"  style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="nameCol"    text="REWARD NAME" prefWidth="190"/>
-                <TableColumn fx:id="typeCol"    text="TYPE"        prefWidth="150" style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="valueCol"   text="VALUE"       prefWidth="80"  style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="actionsCol" text="ACTIONS"     prefWidth="230" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="iconCol"    text="Icon"         prefWidth="60"  style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="nameCol"    text="Reward Name"  prefWidth="190"/>
+                <TableColumn fx:id="typeCol"    text="Type"         prefWidth="150" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="valueCol"   text="Value"        prefWidth="80"  style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="actionsCol" text="Actions"      prefWidth="240" style="-fx-alignment: CENTER;"/>
             </columns>
             <placeholder>
-                <Label text="No rewards found." style="-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 14px;"/>
+                <VBox alignment="CENTER" spacing="8" style="-fx-padding: 40;">
+                    <Label text="🏆" style="-fx-font-size: 40;"/>
+                    <Label text="No rewards found." style="-fx-font-size: 15px; -fx-text-fill: #a0aec0;"/>
+                </VBox>
             </placeholder>
         </TableView>
     </center>
     <bottom>
-        <HBox style="-fx-background-color: #16213e; -fx-padding: 10 20; -fx-border-color: #0f3460; -fx-border-width: 1 0 0 0;">
-            <Label fx:id="statusLabel" text="" style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-text-fill: #a0a0c0;"/>
+        <HBox styleClass="status-bar" style="-fx-padding: 10 20;">
+            <Label fx:id="statusLabel" text="" styleClass="status-label"/>
         </HBox>
     </bottom>
 </BorderPane>
