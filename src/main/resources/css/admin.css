@@ -1,0 +1,264 @@
+/* ═══════════════════════════════════════════════════════════════
+   NOVA Admin — Premium Dark Sidebar Design
+   Sidebar: #0f172a (slate-900)  |  Content: #f8fafc
+   Accent:  #6366f1 (indigo-500) |  Text:    #e2e8f0
+   ═══════════════════════════════════════════════════════════════ */
+
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f8fafc;
+}
+
+/* ── Sidebar shell ───────────────────────────────────────────── */
+.admin-sidebar {
+    -fx-background-color: #0f172a;
+    -fx-pref-width: 248px;
+    -fx-min-width: 248px;
+    -fx-pref-height: 10000px;   /* stretches to fill BorderPane left slot */
+}
+
+/* ── Brand header ────────────────────────────────────────────── */
+.admin-brand {
+    -fx-background-color: #0f172a;
+    -fx-padding: 22 20 18 20;
+    -fx-border-color: rgba(255,255,255,0.06);
+    -fx-border-width: 0 0 1 0;
+}
+
+.admin-brand-name {
+    -fx-text-fill: #f1f5f9;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.admin-brand-tag {
+    -fx-text-fill: #475569;
+    -fx-font-size: 10px;
+    -fx-font-weight: normal;
+}
+
+/* ── Scrollpane inside sidebar ───────────────────────────────── */
+.admin-nav-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.admin-nav-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.admin-nav-scroll .scroll-bar:vertical {
+    -fx-pref-width: 4px;
+    -fx-background-color: transparent;
+}
+
+.admin-nav-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-background-radius: 2;
+}
+
+.admin-nav-scroll .scroll-bar:vertical .track,
+.admin-nav-scroll .scroll-bar:vertical .increment-button,
+.admin-nav-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-pref-height: 0;
+}
+
+/* ── Section header button ───────────────────────────────────── */
+.admin-group-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 16 20 6 20;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+    -fx-letter-spacing: 0.08em;
+}
+
+.admin-group-btn:hover {
+    -fx-text-fill: #94a3b8;
+}
+
+/* ── Nav item ────────────────────────────────────────────────── */
+.admin-nav-item {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+    -fx-padding: 0 8 0 8;
+}
+
+.admin-nav-item:hover > * {
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 6;
+}
+
+.admin-nav-item-active {
+    -fx-background-color: transparent;
+}
+
+/* Inner HBox that gets the highlight */
+.admin-nav-row {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+
+.admin-nav-row:hover {
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+.admin-nav-row-active {
+    -fx-background-color: rgba(99,102,241,0.15);
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+
+/* Nav text labels */
+.admin-nav-text {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+}
+
+.admin-nav-text:hover {
+    -fx-text-fill: #e2e8f0;
+}
+
+.admin-nav-text-active {
+    -fx-text-fill: #a5b4fc;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Nav icon */
+.admin-nav-icon {
+    -fx-text-fill: #475569;
+    -fx-font-size: 14px;
+}
+
+.admin-nav-icon-active {
+    -fx-text-fill: #818cf8;
+    -fx-font-size: 14px;
+}
+
+/* ── Sidebar bottom user card ────────────────────────────────── */
+.admin-user-card {
+    -fx-background-color: rgba(255,255,255,0.03);
+    -fx-border-color: rgba(255,255,255,0.06);
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 14 16 14 16;
+}
+
+.admin-user-name {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.admin-user-role {
+    -fx-text-fill: #475569;
+    -fx-font-size: 11px;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────── */
+.admin-topbar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 28 0 28;
+    -fx-pref-height: 54px;
+    -fx-min-height: 54px;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.04), 6, 0, 0, 2);
+}
+
+.admin-page-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.admin-breadcrumb-sep {
+    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 14px;
+    -fx-padding: 0 4 0 4;
+}
+
+.admin-breadcrumb-sub {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+}
+
+/* ── Content area ────────────────────────────────────────────── */
+.admin-content {
+    -fx-background-color: #f8fafc;
+}
+
+/* ── Divider ─────────────────────────────────────────────────── */
+.admin-divider {
+    -fx-background-color: rgba(255,255,255,0.06);
+    -fx-pref-height: 1px;
+    -fx-max-height: 1px;
+}
+
+/* ── Homepage stat cards ─────────────────────────────────────── */
+.admin-stat-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-padding: 20 20 16 20;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 8, 0, 0, 2);
+}
+
+.admin-stat-icon-bg-blue {
+    -fx-background-color: #eff6ff;
+    -fx-background-radius: 8;
+    -fx-min-width: 38; -fx-min-height: 38;
+    -fx-max-width: 38; -fx-max-height: 38;
+}
+
+.admin-stat-icon-bg-violet {
+    -fx-background-color: #f5f3ff;
+    -fx-background-radius: 8;
+    -fx-min-width: 38; -fx-min-height: 38;
+    -fx-max-width: 38; -fx-max-height: 38;
+}
+
+.admin-stat-icon-bg-amber {
+    -fx-background-color: #fffbeb;
+    -fx-background-radius: 8;
+    -fx-min-width: 38; -fx-min-height: 38;
+    -fx-max-width: 38; -fx-max-height: 38;
+}
+
+.admin-stat-icon-bg-emerald {
+    -fx-background-color: #f0fdf4;
+    -fx-background-radius: 8;
+    -fx-min-width: 38; -fx-min-height: 38;
+    -fx-max-width: 38; -fx-max-height: 38;
+}
+
+.admin-stat-icon-bg-rose {
+    -fx-background-color: #fff1f2;
+    -fx-background-radius: 8;
+    -fx-min-width: 38; -fx-min-height: 38;
+    -fx-max-width: 38; -fx-max-height: 38;
+}
+
+/* ── Generic card ────────────────────────────────────────────── */
+.admin-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 8, 0, 0, 2);
+}
