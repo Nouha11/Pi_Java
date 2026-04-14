@@ -387,3 +387,125 @@
     -fx-background-color: #fff5f5;
     -fx-border-color: #fc8181;
 }
+
+/* ── PLAY BUTTON (on browse cards) ──────────────────── */
+.btn-play {
+    -fx-background-color: linear-gradient(to bottom, #4a5ef7, #3b4fd8);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-padding: 9 24 9 24;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(59,79,216,0.35), 8, 0, 0, 2);
+}
+.btn-play:hover {
+    -fx-background-color: linear-gradient(to bottom, #5b6ef5, #4a5ef7);
+    -fx-effect: dropshadow(gaussian, rgba(59,79,216,0.5), 10, 0, 0, 3);
+}
+
+/* ── PLAY SCREEN ─────────────────────────────────────── */
+.play-progress {
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.play-progress-bar {
+    -fx-accent: #4a5ef7;
+    -fx-background-color: #e4e8f0;
+    -fx-pref-height: 6px;
+}
+.play-progress-bar .bar {
+    -fx-background-color: linear-gradient(to right, #4a5ef7, #7c8ff7);
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+.play-progress-bar .track {
+    -fx-background-color: #e4e8f0;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.play-xp-badge {
+    -fx-background-color: #fff8e1;
+    -fx-text-fill: #d97706;
+    -fx-border-color: #fde68a;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 3 12 3 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.play-question-text {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e2a5e;
+    -fx-line-spacing: 4;
+}
+
+/* ── CHOICE RADIO BUTTONS ────────────────────────────── */
+.play-choice {
+    -fx-background-color: white;
+    -fx-border-color: #dde2f5;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-border-width: 2;
+    -fx-padding: 12 16 12 16;
+    -fx-font-size: 13px;
+    -fx-text-fill: #2d3748;
+    -fx-cursor: hand;
+}
+.play-choice:hover {
+    -fx-border-color: #3b4fd8;
+    -fx-background-color: #f5f7ff;
+}
+.play-choice:selected {
+    -fx-border-color: #3b4fd8;
+    -fx-background-color: #eef0fd;
+    -fx-text-fill: #1e2a5e;
+}
+
+.choice-correct {
+    -fx-border-color: #27ae60;
+    -fx-background-color: #f0fff4;
+    -fx-text-fill: #1a6b3c;
+}
+.choice-wrong {
+    -fx-border-color: #e53e3e;
+    -fx-background-color: #fff5f5;
+    -fx-text-fill: #c53030;
+}
+
+/* ── FEEDBACK ────────────────────────────────────────── */
+.play-feedback-correct {
+    -fx-background-color: #f0fff4;
+    -fx-text-fill: #27ae60;
+    -fx-border-color: #9ae6b4;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1;
+    -fx-padding: 10 14 10 14;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+.play-feedback-wrong {
+    -fx-background-color: #fff5f5;
+    -fx-text-fill: #c53030;
+    -fx-border-color: #feb2b2;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1;
+    -fx-padding: 10 14 10 14;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* ── RESULTS ─────────────────────────────────────────── */
+.play-results-text {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e2a5e;
+    -fx-line-spacing: 6;
+}
