@@ -11,22 +11,21 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
 public class NovaDashboardController {
 
-    // --- Elements for the Splash Screen Animation ---
+    // --- UI Shell Elements ---
     @FXML private BorderPane mainAppUI;
     @FXML private StackPane splashScreen;
-    @FXML private ImageView splashLogo; // ⬅️ The missing ImageView for the breathing animation!
+    @FXML private ImageView splashLogo;
 
-    // --- Existing Navigation Elements ---
     @FXML private StackPane contentArea;
     private static StackPane staticContentArea;
 
-    // --- Buttons for Active State Logic ---
+    // --- Navigation Buttons ---
     @FXML private Button btnHome, btnCourses, btnLibrary, btnForum, btnQuiz, btnGames, btnRewards;
     private List<Button> navButtons;
 
@@ -35,28 +34,27 @@ public class NovaDashboardController {
         if (contentArea != null) {
             staticContentArea = contentArea;
 
-            // Group buttons for easy management (Check for null to prevent crashes if FXML isn't linked yet)
+            // Group buttons safely
             if (btnHome != null && btnCourses != null) {
                 navButtons = Arrays.asList(btnHome, btnCourses, btnLibrary, btnForum, btnQuiz, btnGames, btnRewards);
             }
 
-            // 1. Pre-load the home page silently in the background
+            // 1. Pre-load Home
             loadPageSilently("/views/home.fxml");
 
-            // 2. Play the awesome startup animation
+            // 2. Play Splash
             if (splashScreen != null && mainAppUI != null) {
                 playCinematicStartup();
             }
         }
     }
 
-    // 🎬 THE CINEMATIC SPLASH ANIMATION 🎬
+    // --- CINEMATIC STARTUP ---
     private void playCinematicStartup() {
         mainAppUI.setOpacity(0);
         mainAppUI.setScaleX(0.92);
         mainAppUI.setScaleY(0.92);
 
-        // 1. Make the logo "breathe" while syncing (only if linked in FXML)
         ScaleTransition pulse = null;
         if (splashLogo != null) {
             pulse = new ScaleTransition(Duration.millis(800), splashLogo);
@@ -67,23 +65,19 @@ public class NovaDashboardController {
             pulse.play();
         }
 
-        // 2. Hold for 1.2 seconds, then transition
         PauseTransition holdSplash = new PauseTransition(Duration.seconds(1.2));
-        ScaleTransition finalPulse = pulse; // For use inside the lambda
+        ScaleTransition finalPulse = pulse;
 
         holdSplash.setOnFinished(e -> {
-            if (finalPulse != null) finalPulse.stop(); // Stop the breathing
+            if (finalPulse != null) finalPulse.stop();
 
-            // Fade out splash
             FadeTransition fadeOutSplash = new FadeTransition(Duration.millis(600), splashScreen);
             fadeOutSplash.setToValue(0);
             fadeOutSplash.setOnFinished(event -> splashScreen.setVisible(false));
 
-            // Fade in the App UI
             FadeTransition fadeInApp = new FadeTransition(Duration.millis(800), mainAppUI);
             fadeInApp.setToValue(1);
 
-            // Buttery Smooth Scale Up
             ScaleTransition scaleInApp = new ScaleTransition(Duration.millis(800), mainAppUI);
             scaleInApp.setToX(1);
             scaleInApp.setToY(1);
@@ -98,17 +92,17 @@ public class NovaDashboardController {
         holdSplash.play();
     }
 
-    // --- BUTTON CLICK LOGIC (Keeps them 'Clicked') ---
+    // --- BUTTON ACTIVE STATE LOGIC ---
     private void setActiveButton(Button clickedBtn) {
-        if (navButtons == null) return; // Safety check
+        if (navButtons == null || clickedBtn == null) return;
 
-        // Clear active states from ALL buttons
         for (Button btn : navButtons) {
-            btn.getStyleClass().remove("nav-btn-active");
-            btn.getStyleClass().remove("nav-btn-hub-active");
+            if (btn != null) {
+                btn.getStyleClass().remove("nav-btn-active");
+                btn.getStyleClass().remove("nav-btn-hub-active");
+            }
         }
 
-        // Add active state to the specific button
         if (clickedBtn == btnHome) {
             clickedBtn.getStyleClass().add("nav-btn-hub-active");
         } else {
@@ -116,7 +110,8 @@ public class NovaDashboardController {
         }
     }
 
-    // --- NAVIGATION HANDLERS ---
+    // --- BULLETPROOF ROUTER METHODS ---
+    // Make sure these exact paths match the folders in your project!
     @FXML void handleShowHome(ActionEvent event) {
         setActiveButton(btnHome);
         loadPage("/views/home.fxml");
@@ -134,7 +129,6 @@ public class NovaDashboardController {
 
     @FXML void handleShowForum(ActionEvent event) {
         setActiveButton(btnForum);
-        // Note: Using the path from your folder screenshot!
         loadPage("/views/forum/forum_feed.fxml");
     }
 
@@ -153,26 +147,35 @@ public class NovaDashboardController {
         loadPage("/views/gamification/reward_list.fxml");
     }
 
-    // --- EXISTING ROUTING / PAGE ANIMATION ENGINE ---
+    // --- THE ANIMATION ENGINE & ERROR HANDLER ---
     private void loadPageSilently(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent view = loader.load();
+            URL resource = getClass().getResource(fxmlPath);
+            if (resource == null) return; // Fail silently on startup
+            Parent view = FXMLLoader.load(resource);
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
-        } catch (IOException e) {
-            System.err.println("❌ Could not load silently: " + fxmlPath);
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("❌ Startup Error: Could not load " + fxmlPath);
         }
     }
 
     public static void loadPage(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(NovaDashboardController.class.getResource(fxmlPath));
-            Parent view = loader.load();
+            URL resource = NovaDashboardController.class.getResource(fxmlPath);
+
+            // 🔥 The Bulletproof Check 🔥
+            if (resource == null) {
+                System.out.println("⚠️ ERROR: Cannot find the file at path: " + fxmlPath);
+                System.out.println("👉 Please check your 'src/main/resources/views/' folder to make sure the file exists and the spelling is exactly right.");
+                return; // Stop here, don't crash the app!
+            }
+
+            Parent view = FXMLLoader.load(resource);
             setView(view);
-        } catch (IOException e) {
-            System.err.println("❌ Could not load: " + fxmlPath);
+
+        } catch (Exception e) {
+            System.out.println("💥 CRASH AVOIDED: The file " + fxmlPath + " was found, but it has an error inside it (like a missing controller or bad CSS).");
             e.printStackTrace();
         }
     }
@@ -190,7 +193,7 @@ public class NovaDashboardController {
 
             TranslateTransition slideUp = new TranslateTransition(Duration.millis(450), view);
             slideUp.setToY(0);
-            slideUp.setInterpolator(Interpolator.EASE_OUT); // Smooth slide
+            slideUp.setInterpolator(Interpolator.EASE_OUT);
 
             ParallelTransition transition = new ParallelTransition(fadeIn, slideUp);
             transition.play();
