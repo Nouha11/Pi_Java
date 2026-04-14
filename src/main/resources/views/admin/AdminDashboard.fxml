@@ -9,14 +9,10 @@
             stylesheets="@/css/admin.css"
             prefWidth="1300" prefHeight="820">
 
-    <!-- ══════════════════════════════════════════════
-         SIDEBAR
-         ══════════════════════════════════════════════ -->
     <left>
         <VBox styleClass="admin-sidebar" spacing="0"
               BorderPane.alignment="TOP_LEFT">
 
-            <!-- Brand -->
             <HBox styleClass="admin-brand" alignment="CENTER_LEFT" spacing="12">
                 <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" smooth="true">
                     <image>
@@ -29,12 +25,10 @@
                 </VBox>
             </HBox>
 
-            <!-- Nav — takes all remaining space, user card stays pinned -->
             <ScrollPane styleClass="admin-nav-scroll" fitToWidth="true"
                         VBox.vgrow="ALWAYS" maxHeight="Infinity">
                 <VBox spacing="0" style="-fx-padding: 4 0 12 0;">
 
-                    <!-- ── HOME ── -->
                     <VBox style="-fx-padding: 8 8 4 8;">
                         <HBox fx:id="navHome" styleClass="admin-nav-row-active"
                               alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showHome">
@@ -43,7 +37,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- ── USERS ── -->
                     <Button fx:id="btnToggleUsers" styleClass="admin-group-btn"
                             text="USERS  ▾" onAction="#toggleUsers" maxWidth="Infinity"/>
                     <VBox fx:id="usersGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
@@ -54,7 +47,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- ── LIBRARY ── -->
                     <Button fx:id="btnToggleLibrary" styleClass="admin-group-btn"
                             text="LIBRARY  ▾" onAction="#toggleLibrary" maxWidth="Infinity"/>
                     <VBox fx:id="libraryGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
@@ -75,7 +67,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- ── STUDY SESSION ── -->
                     <Button fx:id="btnToggleStudy" styleClass="admin-group-btn"
                             text="STUDY SESSION  ▾" onAction="#toggleStudy" maxWidth="Infinity"/>
                     <VBox fx:id="studyGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
@@ -101,7 +92,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- ── GAMIFICATION ── -->
                     <Button fx:id="btnToggleGame" styleClass="admin-group-btn"
                             text="GAMIFICATION  ▾" onAction="#toggleGame" maxWidth="Infinity"/>
                     <VBox fx:id="gameGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
@@ -122,7 +112,6 @@
                         </HBox>
                     </VBox>
 
-                    <!-- ── QUIZ ── -->
                     <Button fx:id="btnToggleQuiz" styleClass="admin-group-btn"
                             text="QUIZ  ▾" onAction="#toggleQuiz" maxWidth="Infinity"/>
                     <VBox fx:id="quizGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
@@ -133,10 +122,19 @@
                         </HBox>
                     </VBox>
 
+                    <Button fx:id="btnToggleForum" styleClass="admin-group-btn"
+                            text="FORUM  ▾" onAction="#toggleForum" maxWidth="Infinity"/>
+                    <VBox fx:id="forumGroup" spacing="1" style="-fx-padding: 0 8 4 8;">
+                        <HBox fx:id="navForum" styleClass="admin-nav-row"
+                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForum">
+                            <Label text="💬" styleClass="admin-nav-icon"/>
+                            <Label text="Manage Forum" styleClass="admin-nav-text"/>
+                        </HBox>
+                    </VBox>
+
                 </VBox>
             </ScrollPane>
 
-            <!-- User card -->
             <HBox styleClass="admin-user-card" alignment="CENTER_LEFT" spacing="10">
                 <StackPane style="-fx-background-color: #1e293b; -fx-background-radius: 20;
                                   -fx-min-width: 34; -fx-min-height: 34; -fx-max-width: 34; -fx-max-height: 34;">
@@ -151,9 +149,6 @@
         </VBox>
     </left>
 
-    <!-- ══════════════════════════════════════════════
-         TOP BAR
-         ══════════════════════════════════════════════ -->
     <top>
         <HBox styleClass="admin-topbar" alignment="CENTER_LEFT" spacing="6">
             <Label text="NOVA" styleClass="admin-page-title"/>
@@ -170,9 +165,6 @@
         </HBox>
     </top>
 
-    <!-- ══════════════════════════════════════════════
-         CONTENT
-         ══════════════════════════════════════════════ -->
     <center>
         <StackPane fx:id="contentArea" styleClass="admin-content"/>
     </center>

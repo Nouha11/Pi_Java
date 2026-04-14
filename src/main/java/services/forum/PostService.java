@@ -137,4 +137,17 @@ public class PostService {
             System.err.println("❌ Error updating upvotes: " + e.getMessage());
         }
     }
+    // --- ADMIN FEATURE: LOCK / UNLOCK POST ---
+    public void toggleLock(int postId, boolean isLocked) {
+        String req = "UPDATE post SET is_locked = ? WHERE id = ?";
+        try {
+            PreparedStatement ps = cnx.prepareStatement(req);
+            ps.setBoolean(1, isLocked);
+            ps.setInt(2, postId);
+            ps.executeUpdate();
+            System.out.println("🔒 Post " + postId + " lock status updated to: " + isLocked);
+        } catch (SQLException e) {
+            System.err.println("❌ Error toggling lock: " + e.getMessage());
+        }
+    }
 }
