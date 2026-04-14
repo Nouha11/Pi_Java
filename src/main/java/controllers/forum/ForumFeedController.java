@@ -50,33 +50,54 @@ public class ForumFeedController {
                     voteBox.setPadding(new Insets(12, 12, 0, 12));
                     voteBox.setStyle("-fx-background-color: #f8fafc; -fx-border-color: transparent #e2e8f0 transparent transparent; -fx-border-width: 0 1 0 0; -fx-background-radius: 8 0 0 8;");
 
-                    // Added -fx-cursor: hand so it looks clickable!
                     Label upArrow = new Label("↑");
-                    upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold; -fx-cursor: hand;");
-
                     Label voteCount = new Label(String.valueOf(post.getUpvotes()));
                     voteCount.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1e293b;");
-
                     Label downArrow = new Label("↓");
-                    downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
 
-                    // 🔥 MAGIC SAUCE: Update DB directly from feed, e.consume() stops the post from opening
+                    String defaultStyle = "-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;";
+                    String activeUpStyle = "-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold; -fx-cursor: hand;";
+                    String activeDownStyle = "-fx-font-size: 16px; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;";
+
+                    upArrow.setStyle(post.getMyVote() == 1 ? activeUpStyle : defaultStyle);
+                    downArrow.setStyle(post.getMyVote() == -1 ? activeDownStyle : defaultStyle);
+
+                    // 🔥 UP ARROW LOGIC
                     upArrow.setOnMouseClicked(e -> {
                         e.consume();
-                        postService.updateUpvotes(post.getId(), 1);
-                        post.setUpvotes(post.getUpvotes() + 1);
-                        voteCount.setText(String.valueOf(post.getUpvotes()));
-                        upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #ff4500; -fx-font-weight: bold; -fx-cursor: hand;");
-                        downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
+                        if (post.getMyVote() != 1) {
+                            int change = (post.getMyVote() == -1) ? 2 : 1;
+                            postService.updateUpvotes(post.getId(), change);
+                            post.setUpvotes(post.getUpvotes() + change);
+                            post.setMyVote(1);
+                            utils.ForumSession.upvotedPosts.add(post.getId());
+                            utils.ForumSession.downvotedPosts.remove(post.getId());
+                        } else {
+                            postService.updateUpvotes(post.getId(), -1);
+                            post.setUpvotes(post.getUpvotes() - 1);
+                            post.setMyVote(0);
+                            utils.ForumSession.upvotedPosts.remove(post.getId());
+                        }
+                        refreshFeed(); // Rerender to show colors instantly
                     });
 
+                    // 🔥 DOWN ARROW LOGIC
                     downArrow.setOnMouseClicked(e -> {
                         e.consume();
-                        postService.updateUpvotes(post.getId(), -1);
-                        post.setUpvotes(post.getUpvotes() - 1);
-                        voteCount.setText(String.valueOf(post.getUpvotes()));
-                        downArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;");
-                        upArrow.setStyle("-fx-font-size: 16px; -fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-cursor: hand;");
+                        if (post.getMyVote() != -1) {
+                            int change = (post.getMyVote() == 1) ? -2 : -1;
+                            postService.updateUpvotes(post.getId(), change);
+                            post.setUpvotes(post.getUpvotes() + change);
+                            post.setMyVote(-1);
+                            utils.ForumSession.downvotedPosts.add(post.getId());
+                            utils.ForumSession.upvotedPosts.remove(post.getId());
+                        } else {
+                            postService.updateUpvotes(post.getId(), 1);
+                            post.setUpvotes(post.getUpvotes() + 1);
+                            post.setMyVote(0);
+                            utils.ForumSession.downvotedPosts.remove(post.getId());
+                        }
+                        refreshFeed();
                     });
 
                     voteBox.getChildren().addAll(upArrow, voteCount, downArrow);
@@ -142,8 +163,16 @@ public class ForumFeedController {
         });
     }
 
+    // 🔥 PERFECT MEMORY INJECTION: Restores your votes when DB refreshes
     private void refreshFeed() {
         ObservableList<Post> postList = FXCollections.observableArrayList(postService.afficher());
+        for (Post p : postList) {
+            if (utils.ForumSession.upvotedPosts.contains(p.getId())) {
+                p.setMyVote(1);
+            } else if (utils.ForumSession.downvotedPosts.contains(p.getId())) {
+                p.setMyVote(-1);
+            }
+        }
         postsListView.setItems(postList);
     }
 
@@ -165,6 +194,7 @@ public class ForumFeedController {
 
     private void openPostDetails(Post post) {
         utils.ForumSession.currentPost = post;
+        // Check this path based on where you kept the details file!
         controllers.NovaDashboardController.loadPage("/views/forum/student/post_details.fxml");
     }
 }

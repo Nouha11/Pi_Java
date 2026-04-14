@@ -21,7 +21,7 @@ import java.util.List;
 public class PostDetailsController {
 
     @FXML private Button backButton;
-    @FXML private Button upvoteButton; // 🔥 Added the Upvote button
+    @FXML private Button upvoteButton;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
     @FXML private Label contentLabel;
@@ -32,9 +32,7 @@ public class PostDetailsController {
 
     private Post currentPost;
     private CommentService commentService = new CommentService();
-    private PostService postService = new PostService(); // 🔥 Added PostService to interact with DB
-
-    private boolean isUpvotedLocally = false; // Tracks if the user clicked the button on this screen
+    private PostService postService = new PostService();
 
     @FXML
     public void initialize() {
@@ -62,9 +60,19 @@ public class PostDetailsController {
 
         contentLabel.setText(post.getContent());
 
-        String upvotes = post.getUpvotes() + " Upvotes";
-        upvoteBadgeLabel.setText(upvotes);
+        upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
         statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
+
+        // 🔥 READ GLOBAL MEMORY to keep button blue if already clicked!
+        if (utils.ForumSession.upvotedPosts.contains(post.getId())) {
+            currentPost.setMyVote(1);
+            upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
+            upvoteButton.setText("👍 Upvoted");
+        } else {
+            currentPost.setMyVote(0);
+            upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
+            upvoteButton.setText("👍 Upvote");
+        }
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
@@ -124,23 +132,31 @@ public class PostDetailsController {
         loadComments();
     }
 
-    // 🔥 NEW: Handles the Upvote Button click
+    // 🔥 PREVENTS INFINITE UPVOTES AND SAVES TO DB
     @FXML
     void handleUpvote(ActionEvent event) {
-        if (!isUpvotedLocally) {
-            postService.updateUpvotes(currentPost.getId(), 1);
-            currentPost.setUpvotes(currentPost.getUpvotes() + 1);
+        if (currentPost.getMyVote() != 1) {
+            int changeAmount = (currentPost.getMyVote() == -1) ? 2 : 1;
+            postService.updateUpvotes(currentPost.getId(), changeAmount);
+            currentPost.setUpvotes(currentPost.getUpvotes() + changeAmount);
+
+            // Save to memory
+            currentPost.setMyVote(1);
+            utils.ForumSession.upvotedPosts.add(currentPost.getId());
+            utils.ForumSession.downvotedPosts.remove(currentPost.getId());
 
             upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
             upvoteButton.setText("👍 Upvoted");
-            isUpvotedLocally = true;
         } else {
             postService.updateUpvotes(currentPost.getId(), -1);
             currentPost.setUpvotes(currentPost.getUpvotes() - 1);
 
+            // Remove from memory
+            currentPost.setMyVote(0);
+            utils.ForumSession.upvotedPosts.remove(currentPost.getId());
+
             upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
             upvoteButton.setText("👍 Upvote");
-            isUpvotedLocally = false;
         }
 
         upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
@@ -149,6 +165,6 @@ public class PostDetailsController {
 
     @FXML
     void handleBack(ActionEvent event) {
-        controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml"); // Adjust this path if needed
+        controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml");
     }
 }
