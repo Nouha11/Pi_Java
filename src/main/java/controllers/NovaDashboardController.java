@@ -119,7 +119,7 @@ public class NovaDashboardController {
 
     @FXML void handleShowStudySessions(ActionEvent event) {
         setActiveButton(btnCourses);
-        loadPage("/views/studysession/MainDashboard.fxml");
+        loadPage("/views/studysession/UserStudyDashboard.fxml");
     }
 
     @FXML void handleShowLibrary(ActionEvent event) {
