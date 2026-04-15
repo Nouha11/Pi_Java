@@ -30,7 +30,7 @@
                 <TableColumn fx:id="nameCol"    text="Reward Name"  prefWidth="190"/>
                 <TableColumn fx:id="typeCol"    text="Type"         prefWidth="150" style="-fx-alignment: CENTER;"/>
                 <TableColumn fx:id="valueCol"   text="Value"        prefWidth="80"  style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="actionsCol" text="Actions"      prefWidth="240" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="actionsCol" text="Actions"      prefWidth="320" style="-fx-alignment: CENTER;"/>
             </columns>
             <placeholder>
                 <VBox alignment="CENTER" spacing="8" style="-fx-padding: 40;">

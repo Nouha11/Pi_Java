@@ -50,13 +50,12 @@ public class GameController {
 
     private void setupActionsColumn() {
         actionsCol.setCellFactory(col -> new TableCell<>() {
-            private final Button viewBtn   = styledBtn("👁 View",   "#0f3460", "#c0c0e0");
-            private final Button editBtn   = styledBtn("✏ Edit",   "#0f3460", "#c0c0e0");
-            private final Button toggleBtn = styledBtn("⏸",        "#0f3460", "#f0c040");
-            private final Button deleteBtn = styledBtn("🗑",        "transparent", "#e94560");
-            private final HBox   box       = new HBox(5, viewBtn, editBtn, toggleBtn, deleteBtn);
-            { box.setPadding(new Insets(2, 0, 2, 0));
-              deleteBtn.setStyle(deleteBtn.getStyle() + "-fx-border-color: #e94560;"); }
+            private final Button viewBtn   = styledBtn("View",       "#eef0fd", "#3b4fd8");
+            private final Button editBtn   = styledBtn("Edit",       "#f0fdf4", "#16a34a");
+            private final Button toggleBtn = styledBtn("Deactivate", "#fffbeb", "#d97706");
+            private final Button deleteBtn = styledBtn("Delete",     "#fff5f5", "#e53e3e");
+            private final HBox   box       = new HBox(6, viewBtn, editBtn, toggleBtn, deleteBtn);
+            { box.setPadding(new Insets(3, 4, 3, 4)); }
 
             {
                 viewBtn.setOnAction(e   -> showGameDetails(getTableView().getItems().get(getIndex())));
@@ -69,8 +68,9 @@ public class GameController {
                 super.updateItem(item, empty);
                 if (empty) { setGraphic(null); return; }
                 Game g = getTableView().getItems().get(getIndex());
-                toggleBtn.setText(g.isActive() ? "⏸ Deactivate" : "▶ Activate");
-                toggleBtn.setStyle(styledBtn("", "#0f3460", g.isActive() ? "#f0c040" : "#4caf50").getStyle());
+                toggleBtn.setText(g.isActive() ? "Deactivate" : "Activate");
+                toggleBtn.setStyle(styledBtn("", g.isActive() ? "#fffbeb" : "#f0fdf4",
+                        g.isActive() ? "#d97706" : "#16a34a").getStyle());
                 setGraphic(box);
                 setStyle("-fx-background-color: transparent;");
             }
@@ -80,8 +80,8 @@ public class GameController {
     private Button styledBtn(String text, String bg, String fg) {
         Button b = new Button(text);
         b.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + ";" +
-                   "-fx-font-family: 'Consolas'; -fx-font-size: 11px;" +
-                   "-fx-padding: 4 10; -fx-border-radius: 3; -fx-background-radius: 3; -fx-cursor: hand;");
+                   "-fx-font-size: 12px; -fx-font-weight: bold;" +
+                   "-fx-padding: 5 12; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
         return b;
     }
 

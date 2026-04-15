@@ -13,28 +13,28 @@
 /* ── Sidebar shell ───────────────────────────────────────────── */
 .admin-sidebar {
     -fx-background-color: #0f172a;
-    -fx-pref-width: 248px;
-    -fx-min-width: 248px;
-    -fx-pref-height: 10000px;   /* stretches to fill BorderPane left slot */
+    -fx-pref-width: 268px;
+    -fx-min-width: 268px;
+    -fx-pref-height: 10000px;
 }
 
 /* ── Brand header ────────────────────────────────────────────── */
 .admin-brand {
     -fx-background-color: #0f172a;
-    -fx-padding: 22 20 18 20;
+    -fx-padding: 24 20 20 20;
     -fx-border-color: rgba(255,255,255,0.06);
     -fx-border-width: 0 0 1 0;
 }
 
 .admin-brand-name {
     -fx-text-fill: #f1f5f9;
-    -fx-font-size: 17px;
+    -fx-font-size: 22px;
     -fx-font-weight: bold;
 }
 
 .admin-brand-tag {
     -fx-text-fill: #475569;
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
     -fx-font-weight: normal;
 }
 
@@ -71,9 +71,9 @@
 .admin-group-btn {
     -fx-background-color: transparent;
     -fx-text-fill: #64748b;
-    -fx-font-size: 10px;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-padding: 16 20 6 20;
+    -fx-padding: 18 20 6 20;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
     -fx-border-color: transparent;
@@ -106,7 +106,7 @@
 .admin-nav-row {
     -fx-background-color: transparent;
     -fx-background-radius: 6;
-    -fx-padding: 8 12 8 12;
+    -fx-padding: 10 14 10 14;
     -fx-cursor: hand;
 }
 
@@ -117,14 +117,14 @@
 .admin-nav-row-active {
     -fx-background-color: rgba(99,102,241,0.15);
     -fx-background-radius: 6;
-    -fx-padding: 8 12 8 12;
+    -fx-padding: 10 14 10 14;
     -fx-cursor: hand;
 }
 
 /* Nav text labels */
 .admin-nav-text {
     -fx-text-fill: #94a3b8;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
 }
 
 .admin-nav-text:hover {
@@ -133,19 +133,19 @@
 
 .admin-nav-text-active {
     -fx-text-fill: #a5b4fc;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 
 /* Nav icon */
 .admin-nav-icon {
     -fx-text-fill: #475569;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 .admin-nav-icon-active {
     -fx-text-fill: #818cf8;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 /* ── Sidebar bottom user card ────────────────────────────────── */

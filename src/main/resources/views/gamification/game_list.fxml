@@ -31,7 +31,7 @@
                 <TableColumn fx:id="difficultyCol" text="Difficulty" prefWidth="110" style="-fx-alignment: CENTER;"/>
                 <TableColumn fx:id="categoryCol"   text="Category"   prefWidth="120" style="-fx-alignment: CENTER;"/>
                 <TableColumn fx:id="tokenCostCol"  text="Tokens"     prefWidth="90"  style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="actionsCol"    text="Actions"    prefWidth="240" style="-fx-alignment: CENTER;"/>
+                <TableColumn fx:id="actionsCol"    text="Actions"    prefWidth="320" style="-fx-alignment: CENTER;"/>
             </columns>
             <placeholder>
                 <VBox alignment="CENTER" spacing="8" style="-fx-padding: 40;">
