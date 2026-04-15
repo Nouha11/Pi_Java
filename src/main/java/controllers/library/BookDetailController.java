@@ -15,6 +15,7 @@ public class BookDetailController {
     @FXML private Label lblBreadcrumb;
     @FXML private Label lblPrice;
     @FXML private Label lblTypeBadge;
+    @FXML private Label lblCoverPlaceholder;
     @FXML private Label detailTitle;
     @FXML private Label detailAuthor;
     @FXML private Label detailIsbn;
@@ -22,6 +23,7 @@ public class BookDetailController {
     @FXML private Label detailType;
     @FXML private Button btnBuyDigital;
     @FXML private Button btnBuyDigital2;
+    @FXML private Button btnBorrow;
 
     private Book book;
 
@@ -58,12 +60,10 @@ public class BookDetailController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
             init.init(loader);
-
-            // ✅ FIXED: This is the magic line that stops the window replacement
             controllers.NovaDashboardController.setView(root);
-
-        } catch (IOException e) {
-            new Alert(Alert.AlertType.ERROR, "Navigation error: " + e.getMessage()).showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Navigation error: " + e.getClass().getSimpleName() + ": " + e.getMessage()).showAndWait();
         }
     }
 

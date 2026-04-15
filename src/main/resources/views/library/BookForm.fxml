@@ -52,7 +52,7 @@
                                style="-fx-border-color: #dee2e6; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 10;"/>
 
                     <!-- Price -->
-                    <Label text="Price ($) *" GridPane.rowIndex="3" GridPane.columnIndex="0"
+                    <Label text="Price (USD) *" GridPane.rowIndex="3" GridPane.columnIndex="0"
                            style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
                     <VBox GridPane.rowIndex="3" GridPane.columnIndex="1" spacing="3">
                         <TextField fx:id="txtPrice" promptText="0.00"

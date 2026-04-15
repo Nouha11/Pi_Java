@@ -29,7 +29,7 @@ public class PaymentFormController {
         this.book = book;
         this.paymentMethod = paymentMethod;
         sideBookTitle.setText(book.getTitle());
-        sideBookAuthor.setText(book.getAuthor());
+        sideBookAuthor.setText(book.getAuthor() != null ? book.getAuthor() : "Unknown");
         String price = "$" + String.format("%.2f", book.getPrice());
         sidePrice.setText(price); sideTotal.setText(price);
 
