@@ -120,6 +120,26 @@ public class ProfileController implements Initializable {
     }
 
     @FXML
+    private void onLogout() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/login.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 580);
+            scene.getStylesheets().add(
+                getClass().getResource("/css/login.css").toExternalForm());
+            // Get the current stage from any node in the scene
+            javafx.stage.Stage stage = (javafx.stage.Stage) lblFullName.getScene().getWindow();
+            stage.setTitle("NOVA - Sign In");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            showMsg("Logout error: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
     private void onBackToList() {
         try {
             if (mainLayout != null) {

@@ -7,11 +7,12 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.users.ProfileController"
             styleClass="app-root">
+
     <stylesheets>
         <String fx:value="/css/users.css"/>
     </stylesheets>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Top bar Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!-- ── Top bar ── -->
     <top>
         <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="12">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
@@ -24,13 +25,13 @@
         </HBox>
     </top>
 
-    <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Content Ã¢â€â‚¬Ã¢â€â‚¬ -->
+    <!-- ── Content ── -->
     <center>
         <ScrollPane fitToWidth="true" styleClass="form-scroll">
             <VBox styleClass="content-area" spacing="20">
                 <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Profile header card Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!-- ── Profile header card ── -->
                 <HBox styleClass="profile-card" spacing="0">
 
                     <!-- Left: avatar + name -->
@@ -48,6 +49,15 @@
                                styleClass="profile-name"/>
                         <Label fx:id="lblRoleBadge" text="ROLE"
                                styleClass="profile-role-badge"/>
+
+                        <Region prefHeight="12"/>
+
+                        <Button text="Sign Out" onAction="#onLogout"
+                                maxWidth="Infinity"
+                                style="-fx-background-color:#ef4444;-fx-text-fill:white;
+                                       -fx-font-weight:bold;-fx-font-size:12px;
+                                       -fx-padding:8 0;-fx-background-radius:8;
+                                       -fx-cursor:hand;"/>
                     </VBox>
 
                     <!-- Divider -->
@@ -94,7 +104,7 @@
                     </GridPane>
                 </HBox>
 
-                <!-- Ã¢â€â‚¬Ã¢â€â‚¬ Change password card Ã¢â€â‚¬Ã¢â€â‚¬ -->
+                <!-- ── Change password card ── -->
                 <VBox styleClass="profile-card" spacing="0">
 
                     <!-- Card header -->
