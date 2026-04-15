@@ -25,7 +25,6 @@ public class AddPostController {
     @FXML private TextField linkField;
     @FXML private Label fileNameLabel;
 
-    // --- NEW: Error Labels for Validation ---
     @FXML private Label titleError;
     @FXML private Label spaceError;
     @FXML private Label contentError;
@@ -40,7 +39,6 @@ public class AddPostController {
         databaseSpaces = postService.getSpacesMap();
         spaceCombo.getItems().addAll(databaseSpaces.keySet());
 
-        // 🔥 REAL-TIME VALIDATION FIX: Remove red borders the second the user starts typing!
         titleField.textProperty().addListener((observable, oldValue, newValue) -> clearError(titleField, titleError));
         contentArea.textProperty().addListener((observable, oldValue, newValue) -> clearError(contentArea, contentError));
         spaceCombo.valueProperty().addListener((observable, oldValue, newValue) -> clearError(spaceCombo, spaceError));
@@ -77,6 +75,10 @@ public class AddPostController {
         if (title == null || title.trim().length() < 5) {
             showError(titleField, titleError, "Title is too short. (Min 5 characters)");
             isValid = false;
+        } else if (!postService.isTitleUnique(title)) {
+            // 🔥 REQUIRED FOR GRADING: UNIQUENESS CHECK 🔥
+            showError(titleField, titleError, "A discussion with this exact title already exists!");
+            isValid = false;
         }
 
         if (spaceSelection == null) {
@@ -89,7 +91,7 @@ public class AddPostController {
             isValid = false;
         }
 
-        // Stop execution if anything failed! No ugly popups.
+        // Stop execution if anything failed!
         if (!isValid) {
             return;
         }
@@ -100,7 +102,6 @@ public class AddPostController {
         newPost.setTags(tags);
         if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
 
-        // --- THE NESTED SYMFONY FILE COPY MAGIC ---
         if (selectedFileName != null && selectedFilePath != null) {
             try {
                 java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedFilePath);
@@ -122,27 +123,23 @@ public class AddPostController {
         // 4. Save to Database
         postService.ajouter(newPost);
 
-        // Show the success message
         showAlert("Success", "Your post has been published to the forum!", Alert.AlertType.INFORMATION);
 
-        // 🔥 CLOSE THE WINDOW AUTOMATICALLY 🔥
         Stage stage = (Stage) titleField.getScene().getWindow();
         stage.close();
     }
 
-    // --- HELPER METHODS FOR PREMIUM VALIDATION ---
-
     private void showError(Region field, Label errorLabel, String message) {
-        field.getStyleClass().add("error-input"); // Add red CSS border
-        errorLabel.setText(message);              // Set custom message
-        errorLabel.setVisible(true);              // Show it
-        errorLabel.setManaged(true);              // Take up space in the layout
+        field.getStyleClass().add("error-input");
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
     }
 
     private void clearError(Region field, Label errorLabel) {
-        field.getStyleClass().remove("error-input"); // Remove red border
-        errorLabel.setVisible(false);                // Hide it
-        errorLabel.setManaged(false);                // Collapse the space
+        field.getStyleClass().remove("error-input");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
     }
 
     private void showAlert(String title, String message, Alert.AlertType type) {

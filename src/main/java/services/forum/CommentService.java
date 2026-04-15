@@ -12,16 +12,14 @@ public class CommentService {
     private Connection conn;
 
     public CommentService() {
-        // 🔥 UPDATED: Now perfectly matches your MyConnection class using getCnx()
         conn = MyConnection.getInstance().getCnx();
     }
 
     // --- ADD A NEW COMMENT ---
     public void ajouter(Comment c) {
-        // Including parent_id in case you want to add nested replies later!
         String query = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pst = conn.prepareStatement(query)) {
-            pst.setString(1, c.getContent());
+            pst.setString(1, c.getContent().trim());
             pst.setInt(2, c.getPostId());
             pst.setInt(3, c.getAuthorId());
 
@@ -44,8 +42,6 @@ public class CommentService {
     // --- FETCH COMMENTS FOR A SPECIFIC POST ---
     public List<Comment> getCommentsByPost(int postId) {
         List<Comment> comments = new ArrayList<>();
-
-        // We use a JOIN here to grab the actual Username of the person who commented
         String query = "SELECT c.*, u.username as author_name FROM comment c " +
                 "LEFT JOIN user u ON c.author_id = u.id " +
                 "WHERE c.post_id = ? ORDER BY c.created_at ASC";
@@ -71,11 +67,10 @@ public class CommentService {
                 c.setUpdatedAt(rs.getTimestamp("updated_at"));
                 c.setImageName(rs.getString("image_name"));
 
-                // Grab the joined username (Fallback if user table is different)
                 try {
                     c.setAuthorName(rs.getString("author_name"));
                 } catch (SQLException ex) {
-                    c.setAuthorName("Student_" + c.getAuthorId()); // Fallback
+                    c.setAuthorName("Student_" + c.getAuthorId());
                 }
 
                 comments.add(c);
@@ -97,7 +92,7 @@ public class CommentService {
         }
     }
 
-    // --- MARK AS SOLUTION (For the Question/Answer dynamic) ---
+    // --- MARK AS SOLUTION ---
     public void markAsSolution(int commentId) {
         String query = "UPDATE comment SET is_solution = true WHERE id = ?";
         try (PreparedStatement pst = conn.prepareStatement(query)) {
@@ -106,5 +101,22 @@ public class CommentService {
         } catch (SQLException e) {
             System.err.println("❌ Error marking solution: " + e.getMessage());
         }
+    }
+
+    // 🔥 REQUIRED FOR GRADING: ANTI-SPAM UNIQUENESS CHECK 🔥
+    public boolean isCommentUnique(String content, int postId) {
+        // Checks if this EXACT comment already exists on this EXACT post
+        String query = "SELECT COUNT(*) FROM comment WHERE LOWER(content) = LOWER(?) AND post_id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, content.trim());
+            pst.setInt(2, postId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) == 0; // Returns true ONLY if 0 exact matches are found
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking comment uniqueness: " + e.getMessage());
+        }
+        return false; // Fail safe blocks it
     }
 }

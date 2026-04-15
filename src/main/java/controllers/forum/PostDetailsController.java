@@ -1,5 +1,6 @@
 package controllers.forum;
 
+import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -10,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import models.forum.Comment;
 import models.forum.Post;
 import services.forum.CommentService;
@@ -23,10 +25,10 @@ import java.util.Optional;
 public class PostDetailsController {
 
     @FXML private Button backButton, upvoteButton, editButton, deleteButton;
-    @FXML private Button lockButton, submitCommentBtn; // 🔥 NEW
+    @FXML private Button lockButton, submitCommentBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
-    @FXML private Label contentLabel, statusLabel; // 🔥 NEW
+    @FXML private Label contentLabel, statusLabel;
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
     @FXML private TextArea commentArea;
@@ -41,6 +43,11 @@ public class PostDetailsController {
         if (utils.ForumSession.currentPost != null) {
             setPostData(utils.ForumSession.currentPost);
         }
+
+        // 🔥 REAL-TIME VALIDATION: Reset styles when the user starts typing
+        commentArea.textProperty().addListener((obs, oldVal, newVal) -> {
+            commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
+        });
     }
 
     public void setPostData(Post post) {
@@ -73,7 +80,6 @@ public class PostDetailsController {
             upvoteButton.setText("👍 Upvote");
         }
 
-        // 🔥 UI UPDATES FOR LOCKED POSTS
         updateLockUI();
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
@@ -85,34 +91,27 @@ public class PostDetailsController {
         loadComments();
     }
 
-    //  DYNAMIC UI UPDATER FOR LOCKING (Now Highly Visible)
     private void updateLockUI() {
         if (currentPost.isLocked()) {
-            // Change Main Title
             topTitleLabel.setText("🔒 " + currentPost.getTitle());
-            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"); // Muted Gray
+            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
 
-            // Change Side Status
             statusLabel.setText("🔒 Status: Locked");
             statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
             lockButton.setText("🔓 Unlock");
 
-            // Visibly Disable Comments
             commentArea.setDisable(true);
             commentArea.setPromptText("🔒 This discussion has been locked by the author or an admin.");
             submitCommentBtn.setDisable(true);
             submitCommentBtn.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6;");
         } else {
-            // Restore Main Title
             topTitleLabel.setText(currentPost.getTitle());
-            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"); // Dark Blue
+            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
 
-            // Restore Side Status
             statusLabel.setText("🛡 Status: Open");
             statusLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             lockButton.setText("🔒 Lock");
 
-            // Enable Comments
             commentArea.setDisable(false);
             commentArea.setPromptText("Write a reply...");
             submitCommentBtn.setDisable(false);
@@ -120,13 +119,12 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 HANDLE AUTHOR LOCKING
     @FXML
     void handleLockPost(ActionEvent event) {
         boolean newState = !currentPost.isLocked();
         currentPost.setLocked(newState);
         postService.toggleLock(currentPost.getId(), newState);
-        updateLockUI(); // Instantly update view
+        updateLockUI();
     }
 
     private void loadComments() {
@@ -164,16 +162,45 @@ public class PostDetailsController {
         }
     }
 
+    // 🔥 UPDATED: Added Contrôle de Saisie & Anti-Spam Check 🔥
     @FXML
     void handleSubmitComment(ActionEvent event) {
-        if (currentPost.isLocked()) return; // Extra security check
-        String text = commentArea.getText();
-        if (text == null || text.trim().isEmpty()) return;
+        if (currentPost.isLocked()) return;
 
+        String text = commentArea.getText();
+
+        // 1. Mandatory Field Check
+        if (text == null || text.trim().length() < 2) {
+            applyErrorStyle("Reply must be at least 2 characters!");
+            return;
+        }
+
+        // 2. Uniqueness Check (Anti-Spam)
+        if (!commentService.isCommentUnique(text, currentPost.getId())) {
+            applyErrorStyle("You already posted this exact reply!");
+            return;
+        }
+
+        // 3. Process Valid Comment
         Comment newComment = new Comment(text, currentPost.getId(), 1, null);
         commentService.ajouter(newComment);
+
         commentArea.clear();
+        commentArea.setPromptText("Write a reply...");
+        commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
+
         loadComments();
+    }
+
+    private void applyErrorStyle(String errorMessage) {
+        commentArea.setStyle("-fx-background-color: #fef2f2; -fx-border-color: #ef4444; -fx-border-radius: 4;");
+        commentArea.clear();
+        commentArea.setPromptText("⚠️ " + errorMessage);
+
+        // Brief pause then reset prompt text
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(e -> commentArea.setPromptText("Write a reply..."));
+        pause.play();
     }
 
     @FXML
