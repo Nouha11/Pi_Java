@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,9 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.fxml.FXML;
-import javafx.scene.layout.StackPane;
 import models.users.User;
 import controllers.users.ProfileController;
 
@@ -31,14 +31,24 @@ public class NovaDashboardController {
 
     // --- Navigation Buttons ---
     @FXML private Button btnHome, btnCourses, btnLibrary, btnForum, btnQuiz, btnGames, btnRewards;
+    @FXML private Button btnFullscreen; // Added for the fullscreen toggle
     private List<Button> navButtons;
 
-    // Logged-in user (set by LoginController)
+    // --- User Session ---
     private User currentUser;
     @FXML private StackPane avatarPane;
 
     @FXML
     public void initialize() {
+        // --- AUTO-MAXIMIZE LOGIC ---
+        Platform.runLater(() -> {
+            if (mainAppUI != null && mainAppUI.getScene() != null) {
+                Stage stage = (Stage) mainAppUI.getScene().getWindow();
+                stage.setMaximized(true);
+                stage.setFullScreenExitHint("");
+            }
+        });
+
         if (contentArea != null) {
             staticContentArea = contentArea;
 
@@ -53,6 +63,42 @@ public class NovaDashboardController {
             // 2. Play Splash
             if (splashScreen != null && mainAppUI != null) {
                 playCinematicStartup();
+            }
+        }
+    }
+
+    // --- TEAMMATE'S USER SESSION LOGIC ---
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
+
+    @FXML
+    private void onAvatarClick(javafx.scene.input.MouseEvent event) {
+        if (currentUser == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/users/profile.fxml"));
+            Parent profileView = loader.load();
+            ProfileController ctrl = loader.getController();
+            ctrl.setCurrentUser(currentUser, null);
+            setView(profileView);
+        } catch (Exception e) {
+            System.err.println("Profile error: " + e.getMessage());
+        }
+    }
+
+    // --- FULLSCREEN TOGGLE LOGIC ---
+    @FXML
+    void toggleFullscreen(ActionEvent event) {
+        if (mainAppUI != null && mainAppUI.getScene() != null) {
+            Stage stage = (Stage) mainAppUI.getScene().getWindow();
+
+            boolean isCurrentlyFullscreen = stage.isFullScreen();
+            stage.setFullScreen(!isCurrentlyFullscreen);
+
+            if (!isCurrentlyFullscreen) {
+                btnFullscreen.setText("↙️");
+            } else {
+                btnFullscreen.setText("⛶");
             }
         }
     }
@@ -139,7 +185,6 @@ public class NovaDashboardController {
         loadPage("/views/forum/forum_feed.fxml");
     }
 
-    // 🔥 FIXED: Now routing to the Student Play List instead of the Admin List!
     @FXML void handleShowQuiz(ActionEvent event) {
         setActiveButton(btnQuiz);
         loadPage("/views/quiz/quiz_play_list.fxml");
@@ -159,12 +204,12 @@ public class NovaDashboardController {
     private void loadPageSilently(String fxmlPath) {
         try {
             URL resource = getClass().getResource(fxmlPath);
-            if (resource == null) return; // Fail silently on startup
+            if (resource == null) return;
             Parent view = FXMLLoader.load(resource);
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
         } catch (Exception e) {
-            System.err.println("âŒ Startup Error: Could not load " + fxmlPath);
+            System.err.println("❌ Startup Error: Could not load " + fxmlPath);
         }
     }
 
@@ -172,41 +217,19 @@ public class NovaDashboardController {
         try {
             URL resource = NovaDashboardController.class.getResource(fxmlPath);
 
-            // ðŸ”¥ The Bulletproof Check ðŸ”¥
             if (resource == null) {
-                System.out.println("âš ï¸ ERROR: Cannot find the file at path: " + fxmlPath);
-                System.out.println("ðŸ‘‰ Please check your 'src/main/resources/views/' folder to make sure the file exists and the spelling is exactly right.");
-                return; // Stop here, don't crash the app!
+                System.out.println("⚠️ ERROR: Cannot find the file at path: " + fxmlPath);
+                return;
             }
 
             Parent view = FXMLLoader.load(resource);
             setView(view);
 
         } catch (Exception e) {
-            System.out.println("ðŸ’¥ CRASH AVOIDED: The file " + fxmlPath + " was found, but it has an error inside it (like a missing controller or bad CSS).");
+            System.out.println("💥 CRASH AVOIDED: The file " + fxmlPath + " has an error inside it.");
             e.printStackTrace();
         }
     }
-    public void setCurrentUser(User user) {
-        this.currentUser = user;
-    }
-
-    @FXML
-    private void onAvatarClick() {
-        if (currentUser == null) return;
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/views/users/profile.fxml"));
-            javafx.scene.Parent profileView = loader.load();
-            ProfileController ctrl = loader.getController();
-            ctrl.setCurrentUser(currentUser, null);
-            setView(profileView);
-        } catch (Exception e) {
-            System.err.println("Profile error: " + e.getMessage());
-        }
-    }
-
-    
 
     public static void setView(Parent view) {
         if (staticContentArea != null) {
