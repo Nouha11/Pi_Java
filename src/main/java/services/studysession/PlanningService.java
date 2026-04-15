@@ -144,6 +144,7 @@ public class PlanningService {
     //  QUERIES
     // ─────────────────────────────────────────────
 
+    //left join for the jointure
     public List<Planning> findAll() throws SQLException {
         return mapResultSet(cnx.createStatement().executeQuery(
                 "SELECT p.*, c.course_name FROM planning p " +

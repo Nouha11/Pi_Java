@@ -17,11 +17,14 @@
             <TextField fx:id="searchField" promptText="Search courses…" prefWidth="200"
                        style="-fx-background-radius: 20; -fx-padding: 6 14;
                               -fx-border-color: #e2e8f0; -fx-border-radius: 20;"/>
-            <ComboBox fx:id="filterDifficulty" prefWidth="140" promptText="All Difficulties"
+            <Label text="Difficulty:" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+            <ComboBox fx:id="filterDifficulty" prefWidth="140" promptText="All"
                       style="-fx-background-radius: 8;"/>
-            <ComboBox fx:id="filterCategory"   prefWidth="150" promptText="All Categories"
+            <Label text="Category:" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+            <ComboBox fx:id="filterCategory"   prefWidth="150" promptText="All"
                       style="-fx-background-radius: 8;"/>
-            <ComboBox fx:id="filterStatus"     prefWidth="140" promptText="All Statuses"
+            <Label text="Status:" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+            <ComboBox fx:id="filterStatus"     prefWidth="140" promptText="All"
                       style="-fx-background-radius: 8;"/>
             <Button text="🔄" onAction="#handleRefresh"
                     style="-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;

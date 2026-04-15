@@ -11,7 +11,7 @@ public class Planning {
     public static final String STATUS_CANCELLED  = "CANCELLED";
 
     private int id;
-    private int courseId;
+    private int courseId; //jointure between course and planning
     private String courseNameCache; // for display without extra query
     private String title;
     private LocalDate scheduledDate;

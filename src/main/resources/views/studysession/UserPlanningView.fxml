@@ -42,9 +42,11 @@
                     <TextField fx:id="searchField" promptText="Search by title…" prefWidth="180"
                                style="-fx-background-radius: 8; -fx-border-color: #e2e8f0;
                                       -fx-border-radius: 8; -fx-padding: 5 10;"/>
-                    <ComboBox fx:id="filterStatus" prefWidth="130" promptText="Status"
+                    <Label text="Status:" style="-fx-text-fill: #0f172a; -fx-font-size: 13px;"/>
+                    <ComboBox fx:id="filterStatus" prefWidth="130" promptText="All"
                               style="-fx-background-radius: 8;"/>
-                    <ComboBox fx:id="filterCourse" prefWidth="180" promptText="Course"
+                    <Label text="Course:" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                    <ComboBox fx:id="filterCourse" prefWidth="180" promptText="All"
                               style="-fx-background-radius: 8;"/>
                     <Label text="From:" style="-fx-text-fill: #64748b; -fx-font-weight: bold;"/>
                     <DatePicker fx:id="dateFrom" prefWidth="130"/>
