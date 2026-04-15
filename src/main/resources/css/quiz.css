@@ -509,3 +509,13 @@
     -fx-text-fill: #1e2a5e;
     -fx-line-spacing: 6;
 }
+
+/* ── FIELD VALIDATION STATE ──────────────────────────── */
+.field-invalid {
+    -fx-border-color: #e53e3e;
+    -fx-background-color: #fff5f5;
+}
+.field-invalid:focused {
+    -fx-border-color: #c53030;
+    -fx-effect: dropshadow(gaussian, rgba(229,62,62,0.2), 6, 0, 0, 0);
+}
