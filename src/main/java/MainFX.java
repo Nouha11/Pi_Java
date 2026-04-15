@@ -14,12 +14,12 @@ public class MainFX extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
 
-        // 🛑 THE FRONT DOOR: Load the Login Screen First
+        // ðŸ›‘ THE FRONT DOOR: Load the Login Screen First
         String path = "/views/users/login.fxml";
         URL fxmlLocation = getClass().getResource(path);
 
         if (fxmlLocation == null) {
-            System.out.println("❌ CRITICAL ERROR ❌: Cannot find " + path);
+            System.out.println("âŒ CRITICAL ERROR âŒ: Cannot find " + path);
             System.exit(1);
         }
 
