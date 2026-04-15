@@ -30,7 +30,7 @@ public class LibrariesController {
         lblBookTitle.setText(book.getTitle());
         lblBookAuthor.setText(book.getAuthor() != null ? book.getAuthor() : "Unknown Author");
 
-        libraries = libraryService.findAll();
+        libraries = libraryService.findByBook(book.getId());
         buildLibraryCards();
     }
 
