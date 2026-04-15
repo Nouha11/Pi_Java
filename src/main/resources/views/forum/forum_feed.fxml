@@ -1,48 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="760.0" prefWidth="1000.0" spacing="20.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
-    <padding>
-        <Insets bottom="20.0" left="40.0" right="40.0" top="30.0" />
-    </padding>
-    <children>
+<HBox prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f1f5f9;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
 
-        <HBox alignment="CENTER_LEFT" onMouseClicked="#handleGoToCreatePost" prefHeight="65.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
-            <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-            </padding>
-            <children>
-                <Label alignment="CENTER" prefHeight="40.0" prefWidth="40.0" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 50; -fx-font-size: 16px;" text="👤" />
+    <VBox prefWidth="280.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;" spacing="25.0">
+        <padding>
+            <Insets top="30.0" right="20.0" bottom="30.0" left="25.0"/>
+        </padding>
 
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 15px;" text="Create Post..." />
+        <VBox spacing="8.0">
+            <Label text="FEEDS" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-font-size: 12px;"/>
 
-                <Region HBox.hgrow="ALWAYS" />
+            <HBox fx:id="btnHome" alignment="CENTER_LEFT" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #eff6ff;" onMouseClicked="#handleShowAllPosts">
+                <Label text="🏠" style="-fx-font-size: 18px;"/>
+                <Label text="Home" style="-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 14px;"/>
+            </HBox>
 
-                <HBox alignment="CENTER" spacing="15.0">
-                    <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="📷" />
-                    <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="🔗" />
+            <HBox fx:id="btnPopular" alignment="CENTER_LEFT" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;">
+                <Label text="🔥" style="-fx-font-size: 18px;"/>
+                <Label text="Popular" style="-fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-size: 14px;"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="8.0">
+            <Label text="STUDY SPACES" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+            <VBox fx:id="spacesContainer" spacing="4.0"/>
+        </VBox>
+    </VBox>
+
+    <ScrollPane fx:id="mainScrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #f1f5f9; -fx-border-color: transparent;" HBox.hgrow="ALWAYS">
+        <content>
+            <VBox spacing="20.0">
+                <padding>
+                    <Insets top="30.0" right="40.0" bottom="40.0" left="40.0"/>
+                </padding>
+
+                <VBox style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-padding: 20 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
+                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                        <Circle fx:id="bannerIcon" fill="#2563eb" radius="25.0" />
+                        <VBox alignment="CENTER_LEFT">
+                            <Label fx:id="lblBannerTitle" text="NOVA / Home" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                            <Label fx:id="lblBannerDesc" text="All discussions across all spaces." style="-fx-text-fill: #64748b; -fx-font-size: 14px;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <HBox alignment="CENTER_LEFT" onMouseClicked="#handleGoToCreatePost" prefHeight="65.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
+                    <padding>
+                        <Insets top="10.0" right="20.0" bottom="10.0" left="20.0" />
+                    </padding>
+                    <Label alignment="CENTER" prefHeight="40.0" prefWidth="40.0" style="-fx-background-color: #e2e8f0; -fx-text-fill: #475569; -fx-background-radius: 50; -fx-font-size: 16px;" text="👤" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 15px;" text="Create Post..." />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <HBox alignment="CENTER" spacing="15.0">
+                        <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="📷" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-size: 18px;" text="🔗" />
+                    </HBox>
                 </HBox>
-            </children>
-        </HBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
-            <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-            </padding>
-            <children>
-                <Label style="-fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="🔥 Hot" />
-                <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="✨ New" />
-                <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="📈 Top" />
-            </children>
-        </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
+                    <padding>
+                        <Insets top="12.0" right="20.0" bottom="12.0" left="20.0" />
+                    </padding>
+                    <Label style="-fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="🔥 Hot" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="✨ New" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="📈 Top" />
+                </HBox>
 
-        <ListView fx:id="postsListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-width: 0;" />
-    </children>
-</VBox>
+                <VBox fx:id="postsContainer" spacing="15.0" />
+
+                <HBox fx:id="paginationContainer" alignment="CENTER" spacing="8.0">
+                    <padding>
+                        <Insets top="20.0" bottom="20.0" />
+                    </padding>
+                </HBox>
+
+            </VBox>
+        </content>
+    </ScrollPane>
+</HBox>
