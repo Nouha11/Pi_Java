@@ -1,67 +1,13 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<!--
-  Desktop main window â€” BorderPane layout:
-  LEFT   = dark sidebar
-  TOP    = top bar (title + user info)
-  CENTER = content (stats cards + toolbar + table)
--->
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.users.UserListController"
-            styleClass="app-root" prefWidth="1200" prefHeight="740">
+            styleClass="app-root">
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         LEFT â€” Sidebar
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-    <left>
-        <VBox styleClass="sidebar" prefWidth="220" spacing="4">
-            <padding><Insets top="0" right="0" bottom="16" left="0"/></padding>
-
-            <!-- App logo -->
-            <VBox styleClass="sidebar-logo" alignment="CENTER" spacing="4">
-                <padding><Insets top="24" bottom="24"/></padding>
-                <Label text="ðŸŽ“" style="-fx-font-size:36px;"/>
-                <Label text="NOVA" styleClass="sidebar-app-name"/>
-                <Label text="Admin Panel" styleClass="sidebar-app-sub"/>
-            </VBox>
-
-            <Separator styleClass="sidebar-sep"/>
-            <Region prefHeight="8"/>
-
-            <!-- Nav label -->
-            <Label text="USER MANAGEMENT" styleClass="sidebar-section-label">
-                <padding><Insets left="20" bottom="4"/></padding>
-            </Label>
-
-            <!-- Nav items (active = Users) -->
-            <HBox styleClass="nav-item nav-item-active" alignment="CENTER_LEFT" spacing="12">
-                <padding><Insets top="11" right="16" bottom="11" left="20"/></padding>
-                <Label text="ðŸ‘¥" style="-fx-font-size:16px;"/>
-                <Label text="All Users" styleClass="nav-label-active"/>
-            </HBox>
-
-            <Region VBox.vgrow="ALWAYS"/>
-
-            <Separator styleClass="sidebar-sep"/>
-
-            <!-- Logged-in user info -->
-            <HBox fx:id="hboxCurrentUser" onMouseClicked="#onProfileClick" styleClass="sidebar-user" alignment="CENTER_LEFT" spacing="10" style="-fx-cursor:hand;">
-                <padding><Insets top="14" right="16" bottom="14" left="16"/></padding>
-                <Label text="ðŸ‘¤" style="-fx-font-size:22px;"/>
-                <VBox spacing="2">
-                    <Label fx:id="lblCurrentUser" text="Admin" styleClass="sidebar-username"/>
-                    <Label fx:id="lblCurrentRole" text="ROLE_ADMIN" styleClass="sidebar-role"/>
-                </VBox>
-            </HBox>
-        </VBox>
-    </left>
-
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         TOP â€” Top bar
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ── Top bar ── -->
     <top>
         <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
@@ -72,71 +18,57 @@
 
             <Region HBox.hgrow="ALWAYS"/>
 
-            <!-- Search -->
             <TextField fx:id="tfSearch"
-                       promptText="  ðŸ”  Search username or emailâ€¦"
+                       promptText="Search username or email..."
                        prefWidth="280" onAction="#onSearch"
                        styleClass="topbar-search"/>
             <Button text="Search" onAction="#onSearch" styleClass="btn-primary"/>
 
-            <!-- Role filter -->
             <ComboBox fx:id="cbRoleFilter" onAction="#onFilter"
                       prefWidth="140" styleClass="topbar-combo"/>
 
-            <!-- Buttons -->
-            <Button text="ï¼‹  Add User" onAction="#onAddUser" styleClass="btn-success"/>
-            <Button text="â†º" onAction="#onRefresh" styleClass="btn-icon">
-                <tooltip><Tooltip text="Refresh"/></tooltip>
-            </Button>
+            <Button text="+ Add User" onAction="#onAddUser" styleClass="btn-success"/>
+            <Button text="Refresh" onAction="#onRefresh" styleClass="btn-icon"/>
         </HBox>
     </top>
 
-    <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-         CENTER â€” Content
-         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+    <!-- ── Center content ── -->
     <center>
         <VBox styleClass="content-area" spacing="16">
             <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
-            <!-- â”€â”€ Stats cards row â”€â”€ -->
+            <!-- Stats cards -->
             <HBox spacing="14">
-                <!-- Total -->
                 <VBox styleClass="stat-card stat-card-blue" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="TOTAL USERS" styleClass="stat-label"/>
                     <Label fx:id="lblTotal" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Active -->
                 <VBox styleClass="stat-card stat-card-green" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="ACTIVE" styleClass="stat-label"/>
                     <Label fx:id="lblActive" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Banned -->
                 <VBox styleClass="stat-card stat-card-red" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="BANNED" styleClass="stat-label"/>
                     <Label fx:id="lblBanned" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Verified -->
                 <VBox styleClass="stat-card stat-card-purple" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="VERIFIED" styleClass="stat-label"/>
                     <Label fx:id="lblVerified" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Students -->
                 <VBox styleClass="stat-card stat-card-orange" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="STUDENTS" styleClass="stat-label"/>
                     <Label fx:id="lblStudents" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Tutors -->
                 <VBox styleClass="stat-card stat-card-teal" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="TUTORS" styleClass="stat-label"/>
                     <Label fx:id="lblTutors" text="0" styleClass="stat-value"/>
                 </VBox>
-                <!-- Admins -->
                 <VBox styleClass="stat-card stat-card-dark" HBox.hgrow="ALWAYS" spacing="4">
                     <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
                     <Label text="ADMINS" styleClass="stat-label"/>
@@ -144,7 +76,7 @@
                 </VBox>
             </HBox>
 
-            <!-- â”€â”€ Table â”€â”€ -->
+            <!-- Table -->
             <TableView fx:id="tableUsers" VBox.vgrow="ALWAYS" styleClass="main-table">
                 <columns>
                     <TableColumn fx:id="colId"       text="ID"       prefWidth="55"/>
@@ -163,4 +95,3 @@
     </center>
 
 </BorderPane>
-

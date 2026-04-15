@@ -26,10 +26,6 @@ import java.util.ResourceBundle;
 
 public class UserListController implements Initializable {
 
-    @FXML private Label lblCurrentUser;
-    @FXML private Label lblCurrentRole;
-    @FXML private HBox  hboxCurrentUser;
-
     @FXML private TableView<User>            tableUsers;
     @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String>  colUsername;
@@ -56,14 +52,6 @@ public class UserListController implements Initializable {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        if (lblCurrentUser != null) lblCurrentUser.setText(user.getUsername());
-        if (lblCurrentRole != null) lblCurrentRole.setText(user.getRole().name());
-
-        // Wire sidebar profile click -> navigate to profile page
-        if (hboxCurrentUser != null) {
-            hboxCurrentUser.setStyle("-fx-cursor:hand;");
-            hboxCurrentUser.setOnMouseClicked(e -> openProfile());
-        }
     }
 
     @Override
@@ -73,31 +61,6 @@ public class UserListController implements Initializable {
         loadUsers();
         refreshStats();
     }
-
-    // â”€â”€ Profile navigation (same window, no popup) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    @FXML
-    private void onProfileClick() { openProfile(); }
-
-    private void openProfile() {
-        if (currentUser == null) return;
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/views/users/profile.fxml"));
-            Parent profileView = loader.load();
-
-            ProfileController ctrl = loader.getController();
-            // Pass the BorderPane root so profile can navigate back
-            BorderPane root = (BorderPane) hboxCurrentUser.getScene().getRoot();
-            ctrl.setCurrentUser(currentUser, root);
-
-            root.setCenter(profileView);
-        } catch (IOException e) {
-            showError("Navigation error", e.getMessage());
-        }
-    }
-
-    // â”€â”€ Column setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void setupColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -110,8 +73,7 @@ public class UserListController implements Initializable {
 
         colStatus.setCellValueFactory(c -> {
             User u = c.getValue();
-            String s = u.isBanned() ? "Banned" : (u.isActive() ? "Active" : "Inactive");
-            return new SimpleStringProperty(s);
+            return new SimpleStringProperty(u.isBanned() ? "Banned" : u.isActive() ? "Active" : "Inactive");
         });
 
         colStatus.setCellFactory(col -> new TableCell<>() {
@@ -206,7 +168,7 @@ public class UserListController implements Initializable {
             ctrl.setUser(user);
             ctrl.setOnSaved(() -> { loadUsers(); refreshStats(); });
             Stage stage = new Stage();
-            stage.setTitle(user == null ? "Add User" : "Edit â€” " + user.getUsername());
+            stage.setTitle(user == null ? "Add User" : "Edit - " + user.getUsername());
             Scene scene = new Scene(root, 700, 480);
             scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
             stage.setScene(scene);
