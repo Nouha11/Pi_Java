@@ -463,3 +463,72 @@
 }
 
 .profile-card{-fx-background-color:white;-fx-background-radius:10;-fx-border-color:#e5e7eb;-fx-border-radius:10;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.05),8,0,0,2);}.profile-avatar{-fx-font-size:64px;-fx-background-color:#eff6ff;-fx-background-radius:50;-fx-padding:16;}.profile-name{-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#111827;}.profile-role-badge{-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:white;-fx-background-color:#4f8ef7;-fx-background-radius:20;-fx-padding:4 12;}.profile-value{-fx-font-size:14px;-fx-text-fill:#374151;}
+/* ══════════════════════════════════════════════════════════════
+   PROFILE PAGE — matches app theme
+   ══════════════════════════════════════════════════════════════ */
+
+.profile-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);
+}
+
+.profile-avatar-panel {
+    -fx-background-color: #1a1f36;
+    -fx-background-radius: 10 0 0 10;
+}
+
+.profile-card-header {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-color: transparent transparent #e5e7eb transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.profile-section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.avatar-circle {
+    -fx-background-color: #4f8ef7;
+    -fx-background-radius: 50;
+    -fx-min-width: 80;
+    -fx-min-height: 80;
+    -fx-max-width: 80;
+    -fx-max-height: 80;
+}
+
+.avatar-initials {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.profile-name {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.profile-role-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(79,142,247,0.35);
+    -fx-background-radius: 20;
+    -fx-padding: 4 14;
+    -fx-border-color: rgba(79,142,247,0.6);
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+.profile-value {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+    -fx-padding: 0 0 12 0;
+}

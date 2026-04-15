@@ -19,14 +19,14 @@ import java.util.ResourceBundle;
 
 public class ProfileController implements Initializable {
 
-    @FXML private Label lblAvatar;
-    @FXML private Label lblFullName;
-    @FXML private Label lblRoleBadge;
-    @FXML private Label lblEmail;
-    @FXML private Label lblStatus;
-    @FXML private Label lblVerified;
-    @FXML private Label lblXp;
-    @FXML private Label lblCreatedAt;
+    @FXML private Label         lblInitials;
+    @FXML private Label         lblFullName;
+    @FXML private Label         lblRoleBadge;
+    @FXML private Label         lblEmail;
+    @FXML private Label         lblStatus;
+    @FXML private Label         lblVerified;
+    @FXML private Label         lblXp;
+    @FXML private Label         lblCreatedAt;
 
     @FXML private PasswordField pfCurrent;
     @FXML private PasswordField pfNew;
@@ -38,7 +38,12 @@ public class ProfileController implements Initializable {
     private final UserService userService = new UserService();
 
     @Override
-    public void initialize(URL url, ResourceBundle rb) {}
+    public void initialize(URL url, ResourceBundle rb) {
+        if (lblPwdMsg != null) {
+            lblPwdMsg.setVisible(false);
+            lblPwdMsg.setManaged(false);
+        }
+    }
 
     public void setCurrentUser(User user, BorderPane layout) {
         this.currentUser = user;
@@ -47,15 +52,23 @@ public class ProfileController implements Initializable {
     }
 
     private void populateProfile() {
-        lblFullName.setText(currentUser.getUsername());
+        String username = currentUser.getUsername();
+
+        // Initials: first 2 chars of username, uppercase
+        String initials = username.length() >= 2
+            ? username.substring(0, 2).toUpperCase()
+            : username.toUpperCase();
+        lblInitials.setText(initials);
+
+        lblFullName.setText(username);
         lblEmail.setText(currentUser.getEmail());
         lblRoleBadge.setText(currentUser.getRole().name().replace("ROLE_", ""));
         lblXp.setText(String.valueOf(currentUser.getXp()));
 
-        String status = currentUser.isBanned() ? "Banned"
-                      : currentUser.isActive()  ? "Active"
-                      : "Inactive";
-        lblStatus.setText(status);
+        lblStatus.setText(currentUser.isBanned() ? "Banned"
+                        : currentUser.isActive()  ? "Active"
+                        : "Inactive");
+
         lblVerified.setText(currentUser.isVerified() ? "Yes" : "No");
 
         if (currentUser.getCreatedAt() != null) {
@@ -68,16 +81,13 @@ public class ProfileController implements Initializable {
 
     @FXML
     private void onChangePassword() {
-        lblPwdMsg.setText("");
-        lblPwdMsg.setStyle("");
+        hideMsg();
 
         String current = pfCurrent.getText();
         String newPwd  = pfNew.getText();
         String confirm = pfConfirm.getText();
 
-        if (current.isBlank()) {
-            showMsg("Current password is required.", true); return;
-        }
+        if (current.isBlank()) { showMsg("Current password is required.", true); return; }
 
         String storedHash = currentUser.getPassword();
         boolean currentOk;
@@ -89,21 +99,15 @@ public class ProfileController implements Initializable {
             currentOk = current.equals(storedHash);
         }
 
-        if (!currentOk) {
-            showMsg("Current password is incorrect.", true); return;
-        }
+        if (!currentOk) { showMsg("Current password is incorrect.", true); return; }
 
         List<String> errors = ValidationUtil.validateUser(
-            currentUser.getEmail(), currentUser.getUsername(), newPwd,
-            currentUser.getRole().name(), true
+            currentUser.getEmail(), currentUser.getUsername(),
+            newPwd, currentUser.getRole().name(), true
         );
-        if (!errors.isEmpty()) {
-            showMsg(errors.get(0), true); return;
-        }
+        if (!errors.isEmpty()) { showMsg(errors.get(0), true); return; }
 
-        if (!newPwd.equals(confirm)) {
-            showMsg("New passwords do not match.", true); return;
-        }
+        if (!newPwd.equals(confirm)) { showMsg("New passwords do not match.", true); return; }
 
         try {
             currentUser.setPassword(BCrypt.hashpw(newPwd, BCrypt.gensalt(13)));
@@ -138,7 +142,14 @@ public class ProfileController implements Initializable {
     private void showMsg(String msg, boolean isError) {
         lblPwdMsg.setText(msg);
         lblPwdMsg.setStyle(isError
-            ? "-fx-text-fill:#dc2626;-fx-background-color:#fef2f2;"
-            : "-fx-text-fill:#059669;-fx-background-color:#f0fdf4;");
+            ? "-fx-text-fill:#dc2626;-fx-background-color:#fef2f2;-fx-padding:10 14;-fx-background-radius:8;"
+            : "-fx-text-fill:#059669;-fx-background-color:#f0fdf4;-fx-padding:10 14;-fx-background-radius:8;");
+        lblPwdMsg.setVisible(true);
+        lblPwdMsg.setManaged(true);
+    }
+
+    private void hideMsg() {
+        lblPwdMsg.setVisible(false);
+        lblPwdMsg.setManaged(false);
     }
 }
