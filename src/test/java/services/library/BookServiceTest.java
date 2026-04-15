@@ -18,6 +18,8 @@ class BookServiceTest {
     // ─────────────────────────────────────────────
     //  VALIDATION
     // ─────────────────────────────────────────────
+    //more stuff
+    //i think we need to fix this
 
     @Test
     void testValidBook() {
