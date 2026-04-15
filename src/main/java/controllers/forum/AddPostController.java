@@ -76,7 +76,6 @@ public class AddPostController {
             showError(titleField, titleError, "Title is too short. (Min 5 characters)");
             isValid = false;
         } else if (!postService.isTitleUnique(title)) {
-            // 🔥 REQUIRED FOR GRADING: UNIQUENESS CHECK 🔥
             showError(titleField, titleError, "A discussion with this exact title already exists!");
             isValid = false;
         }
@@ -91,14 +90,20 @@ public class AddPostController {
             isValid = false;
         }
 
-        // Stop execution if anything failed!
+        // Stop execution if anything failed
         if (!isValid) {
             return;
         }
 
         // 3. Create the Post
         Integer spaceId = databaseSpaces.get(spaceSelection);
-        Post newPost = new Post(title, content, 1, spaceId); // Assuming user ID 1 for now
+
+        // 🔥 FIX: Grab the logged-in user's ID here! 🔥
+        // Replace '1' with your actual session logic. For example:
+        // int currentUserId = utils.UserSession.getInstance().getUser().getId();
+        int currentUserId = 1;
+
+        Post newPost = new Post(title, content, currentUserId, spaceId);
         newPost.setTags(tags);
         if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
 
