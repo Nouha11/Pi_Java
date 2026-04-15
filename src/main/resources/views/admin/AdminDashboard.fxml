@@ -129,6 +129,11 @@
                             <Label fx:id="iconQuizzes" styleClass="admin-nav-icon"/>
                             <Label text="Quizzes" styleClass="admin-nav-text"/>
                         </HBox>
+                        <HBox fx:id="navQuizStats" styleClass="admin-nav-row"
+                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showQuizStats">
+                            <Label fx:id="iconQuizStats" styleClass="admin-nav-icon"/>
+                            <Label text="Statistics" styleClass="admin-nav-text"/>
+                        </HBox>
                     </VBox>
 
                     <!-- FORUM -->

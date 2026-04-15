@@ -37,14 +37,14 @@ public class AdminDashboardController {
     @FXML private HBox navBooks, navLoans, navPayments;
     @FXML private HBox navCourses, navPlannings, navSessions, navStudyStats;
     @FXML private HBox navGames, navRewards, navGameStats;
-    @FXML private HBox navQuizzes;
+    @FXML private HBox navQuizzes, navQuizStats;
     @FXML private HBox navForum, navForumStats;
 
     // Icon labels injected from FXML — set text in Java to avoid encoding issues
     @FXML private Label iconHome, iconUsers, iconBooks, iconLoans, iconPayments;
     @FXML private Label iconCourses, iconPlannings, iconSessions, iconStudyStats;
     @FXML private Label iconGames, iconRewards, iconGameStats;
-    @FXML private Label iconQuizzes, iconForum, iconForumStats;
+    @FXML private Label iconQuizzes, iconQuizStats, iconForum, iconForumStats;
 
     private List<HBox> allNavItems;
     private String adminUsername = "Admin";
@@ -68,6 +68,7 @@ public class AdminDashboardController {
         iconRewards.setText("\uD83C\uDFC6"); // trophy
         iconGameStats.setText("\uD83D\uDCC8"); // chart up
         iconQuizzes.setText("\uD83D\uDCDD"); // memo
+        iconQuizStats.setText("\uD83D\uDCCA"); // bar chart
         iconForum.setText("\uD83D\uDCAC");   // speech bubble
         iconForumStats.setText("\uD83D\uDCCA"); // bar chart
 
@@ -84,7 +85,7 @@ public class AdminDashboardController {
                 navBooks, navLoans, navPayments,
                 navCourses, navPlannings, navSessions, navStudyStats,
                 navGames, navRewards, navGameStats,
-                navQuizzes, navForum, navForumStats
+                navQuizzes, navQuizStats, navForum, navForumStats
         );
 
         // Load overview
@@ -183,6 +184,7 @@ public class AdminDashboardController {
     @FXML public void showRewards()    { nav(navRewards,    "Rewards",          "/views/gamification/reward_list.fxml"); }
     @FXML public void showGameStats()  { nav(navGameStats,  "Game Stats",       "/views/gamification/stats.fxml"); }
     @FXML public void showQuizzes()    { nav(navQuizzes,    "Quizzes",          "/views/quiz/quiz_list.fxml"); }
+    @FXML public void showQuizStats()  { nav(navQuizStats,  "Quiz Statistics",  "/views/quiz/quiz_stats.fxml"); }
     @FXML public void showForum()      { nav(navForum,      "Forum Management", "/views/forum/admin/admin_forum.fxml"); }
     @FXML public void showForumStats() { nav(navForumStats, "Forum Statistics", "/views/forum/admin/forum_stats.fxml"); }
 

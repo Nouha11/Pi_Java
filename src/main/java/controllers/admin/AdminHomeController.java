@@ -638,6 +638,7 @@ public class AdminHomeController implements Initializable {
                     case "showLoans"     -> adc.showLoans();
                     case "showGames"     -> adc.showGames();
                     case "showQuizzes"   -> adc.showQuizzes();
+                    case "showQuizStats" -> adc.showQuizStats();
                     case "showRewards"   -> adc.showRewards();
                 }
             }
