@@ -56,7 +56,6 @@ class QuizServiceTest {
         Quiz quiz = buildQuiz("Unit Test Quiz");
         assertDoesNotThrow(() -> quizService.createQuiz(quiz));
 
-        // fetch it back to confirm it exists and grab its ID
         List<Quiz> all = quizService.getAllQuizzes();
         Quiz created = all.stream()
                 .filter(q -> "Unit Test Quiz".equals(q.getTitle()))

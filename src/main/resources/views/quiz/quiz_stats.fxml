@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.quiz.QuizStatsController"
+            style="-fx-background-color: #f0f2f8;">
+
+    <!-- ── Top bar ── -->
+    <top>
+        <VBox style="-fx-background-color: white;
+                     -fx-border-color: #e2e8f0;
+                     -fx-border-width: 0 0 1 0;
+                     -fx-padding: 16 24 14 24;">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox HBox.hgrow="ALWAYS" spacing="3">
+                    <Label text="📊  Quiz Statistics"
+                           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                    <Label text="Overview of quizzes, questions, difficulty and XP distribution."
+                           style="-fx-font-size: 13px; -fx-text-fill: #64748b;"/>
+                </VBox>
+                <Button text="🔄  Refresh"
+                        onAction="#handleRefresh"
+                        style="-fx-background-color: #6366f1; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-font-size: 13px;
+                               -fx-background-radius: 8; -fx-padding: 9 18;
+                               -fx-cursor: hand;
+                               -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.35), 8, 0, 0, 3);"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ── Content ── -->
+    <center>
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    style="-fx-background-color: #f0f2f8; -fx-background: #f0f2f8;">
+            <VBox spacing="20">
+                <padding>
+                    <Insets top="20" right="24" bottom="24" left="24"/>
+                </padding>
+
+                <!-- ══ ROW 1: Summary cards ══ -->
+                <HBox spacing="14">
+
+                    <!-- Total Quizzes -->
+                    <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-radius: 14; -fx-border-width: 1;
+                                 -fx-border-color: #3b82f6 transparent transparent transparent;
+                                 -fx-padding: 18 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 12, 0, 0, 3);">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <StackPane style="-fx-background-color: #eff6ff; -fx-background-radius: 10;
+                                             -fx-min-width: 38; -fx-min-height: 38;
+                                             -fx-pref-width: 38; -fx-pref-height: 38;">
+                                <Label text="📝" style="-fx-font-size: 18px;"/>
+                            </StackPane>
+                            <Label text="Total Quizzes"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                        </HBox>
+                        <Label fx:id="lblTotalQuizzes" text="—"
+                               style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
+
+                    <!-- Total Questions -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-radius: 14; -fx-border-width: 1;
+                                 -fx-border-color: #8b5cf6 transparent transparent transparent;
+                                 -fx-padding: 18 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 12, 0, 0, 3);">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <StackPane style="-fx-background-color: #f5f3ff; -fx-background-radius: 10;
+                                             -fx-min-width: 38; -fx-min-height: 38;
+                                             -fx-pref-width: 38; -fx-pref-height: 38;">
+                                <Label text="❓" style="-fx-font-size: 18px;"/>
+                            </StackPane>
+                            <Label text="Total Questions"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                        </HBox>
+                        <Label fx:id="lblTotalQuestions" text="—"
+                               style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
+
+                    <!-- Total XP Pool -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-radius: 14; -fx-border-width: 1;
+                                 -fx-border-color: #f59e0b transparent transparent transparent;
+                                 -fx-padding: 18 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 12, 0, 0, 3);">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <StackPane style="-fx-background-color: #fffbeb; -fx-background-radius: 10;
+                                             -fx-min-width: 38; -fx-min-height: 38;
+                                             -fx-pref-width: 38; -fx-pref-height: 38;">
+                                <Label text="⭐" style="-fx-font-size: 18px;"/>
+                            </StackPane>
+                            <Label text="Total XP Pool"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                        </HBox>
+                        <Label fx:id="lblTotalXP" text="—"
+                               style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #d97706; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
+
+                    <!-- Avg Questions / Quiz -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-radius: 14; -fx-border-width: 1;
+                                 -fx-border-color: #10b981 transparent transparent transparent;
+                                 -fx-padding: 18 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 12, 0, 0, 3);">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <StackPane style="-fx-background-color: #f0fdf4; -fx-background-radius: 10;
+                                             -fx-min-width: 38; -fx-min-height: 38;
+                                             -fx-pref-width: 38; -fx-pref-height: 38;">
+                                <Label text="📈" style="-fx-font-size: 18px;"/>
+                            </StackPane>
+                            <Label text="Avg Questions / Quiz"
+                                   style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
+                        </HBox>
+                        <Label fx:id="lblAvgQuestionsPerQuiz" text="—"
+                               style="-fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #10b981; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- ══ ROW 2: Pie chart + Bar chart ══ -->
+                <HBox spacing="14">
+
+                    <!-- Difficulty distribution pie -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="10"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e8ecf3; -fx-border-width: 1; -fx-border-radius: 14;
+                                 -fx-padding: 16 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 14, 0, 0, 4);">
+                        <Label text="Questions by Difficulty"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                        <Separator/>
+                        <PieChart fx:id="difficultyPie"
+                                  prefHeight="240"
+                                  legendVisible="true"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+
+                    <!-- XP per difficulty bar -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="10"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e8ecf3; -fx-border-width: 1; -fx-border-radius: 14;
+                                 -fx-padding: 16 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 14, 0, 0, 4);">
+                        <Label text="XP Pool by Difficulty"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                        <Separator/>
+                        <BarChart fx:id="xpPerDifficultyBar"
+                                  prefHeight="240"
+                                  legendVisible="false"
+                                  style="-fx-background-color: transparent;">
+                            <xAxis><CategoryAxis/></xAxis>
+                            <yAxis><NumberAxis/></yAxis>
+                        </BarChart>
+                    </VBox>
+
+                </HBox>
+
+                <!-- ══ ROW 3: Top quizzes + Questions per quiz chart ══ -->
+                <HBox spacing="14">
+
+                    <!-- Top 5 quizzes by question count -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="10"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e8ecf3; -fx-border-width: 1; -fx-border-radius: 14;
+                                 -fx-padding: 16 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 14, 0, 0, 4);">
+                        <Label text="🏆  Top 5 Quizzes by Question Count"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                        <Separator/>
+                        <VBox fx:id="topQuizzesBox" spacing="8"/>
+                    </VBox>
+
+                    <!-- Questions per quiz horizontal bar chart -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="10"
+                          style="-fx-background-color: white; -fx-background-radius: 14;
+                                 -fx-border-color: #e8ecf3; -fx-border-width: 1; -fx-border-radius: 14;
+                                 -fx-padding: 16 20 16 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 14, 0, 0, 4);">
+                        <Label text="📊  Questions per Quiz (Top 8)"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                        <Separator/>
+                        <VBox fx:id="questionsPerQuizChart" spacing="8"/>
+                    </VBox>
+
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
