@@ -9,11 +9,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 import models.gamification.Game;
 import models.gamification.Reward;
@@ -548,21 +550,64 @@ public class AdminHomeController implements Initializable {
         java.util.Random rnd = new java.util.Random();
         particlePane.prefWidthProperty().bind(headerPane.widthProperty());
         particlePane.prefHeightProperty().bind(headerPane.heightProperty());
-        for (int i = 0; i < 22; i++) {
-            int size = rnd.nextInt(14) + 5;
-            Rectangle rect = new Rectangle(size, size);
-            rect.setFill(Color.web("#ffffff", rnd.nextDouble() * 0.13 + 0.04));
-            rect.setX(rnd.nextInt(1200)); rect.setY(rnd.nextInt(220));
-            rect.setRotate(rnd.nextInt(360));
-            particlePane.getChildren().add(rect);
-            TranslateTransition tt = new TranslateTransition(Duration.seconds(rnd.nextInt(14) + 14), rect);
-            tt.setByY(-120 - rnd.nextInt(160)); tt.setByX((rnd.nextDouble() - 0.5) * 90);
-            tt.setCycleCount(TranslateTransition.INDEFINITE); tt.setAutoReverse(true); tt.play();
-            RotateTransition rt = new RotateTransition(Duration.seconds(rnd.nextInt(9) + 9), rect);
-            rt.setByAngle(360); rt.setCycleCount(RotateTransition.INDEFINITE); rt.play();
-            FadeTransition ft = new FadeTransition(Duration.seconds(rnd.nextInt(7) + 4), rect);
-            ft.setFromValue(0.05); ft.setToValue(0.55);
-            ft.setCycleCount(FadeTransition.INDEFINITE); ft.setAutoReverse(true); ft.play();
+
+        // Clip so particles don't bleed outside the banner
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+        clip.widthProperty().bind(particlePane.widthProperty());
+        clip.heightProperty().bind(particlePane.heightProperty());
+        particlePane.setClip(clip);
+
+        String[] colors = {"#818cf8", "#c7d2fe", "#6366f1", "#a5b4fc", "#e0e7ff"};
+
+        for (int i = 0; i < 32; i++) {
+            javafx.scene.Node particle;
+            int type = rnd.nextInt(3);
+            double size = rnd.nextDouble() * 9 + 4;
+
+            if (type == 0) {
+                // Outlined square
+                Rectangle rect = new Rectangle(size, size);
+                rect.setFill(Color.TRANSPARENT);
+                rect.setStroke(Color.web(colors[rnd.nextInt(colors.length)]));
+                rect.setStrokeWidth(1.5);
+                particle = rect;
+            } else if (type == 1) {
+                // "+" cross text
+                javafx.scene.text.Text cross = new javafx.scene.text.Text("+");
+                cross.setFont(javafx.scene.text.Font.font("Consolas", size * 1.6));
+                cross.setFill(Color.web(colors[rnd.nextInt(colors.length)]));
+                particle = cross;
+            } else {
+                // Glowing dot
+                javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(size / 2);
+                dot.setFill(Color.web(colors[rnd.nextInt(colors.length)]));
+                dot.setEffect(new javafx.scene.effect.GaussianBlur(4));
+                particle = dot;
+            }
+
+            particle.setOpacity(rnd.nextDouble() * 0.4 + 0.08);
+            particle.setTranslateX(rnd.nextDouble() * 1400);
+            particle.setTranslateY(rnd.nextDouble() * 160 + 60);
+            particlePane.getChildren().add(particle);
+
+            // Float upward
+            TranslateTransition tt = new TranslateTransition(
+                    Duration.seconds(rnd.nextInt(14) + 10), particle);
+            tt.setByY(-280);
+            tt.setByX((rnd.nextDouble() - 0.5) * 50);
+            tt.setCycleCount(TranslateTransition.INDEFINITE);
+            tt.setInterpolator(Interpolator.LINEAR);
+            tt.play();
+
+            // Spin (not for dots)
+            if (type != 2) {
+                RotateTransition rt = new RotateTransition(
+                        Duration.seconds(rnd.nextInt(8) + 5), particle);
+                rt.setByAngle(rnd.nextBoolean() ? 180 : -180);
+                rt.setCycleCount(RotateTransition.INDEFINITE);
+                rt.setInterpolator(Interpolator.LINEAR);
+                rt.play();
+            }
         }
     }
 
