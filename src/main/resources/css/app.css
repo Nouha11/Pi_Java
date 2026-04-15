@@ -62,19 +62,20 @@
 .scroll-bar:vertical .thumb:hover, .scroll-bar:horizontal .thumb:hover {
     -fx-background-color: #94a3b8;
 }
+
 /* Hide the ugly up/down arrows completely */
 .scroll-bar .increment-button, .scroll-bar .decrement-button {
     -fx-pref-height: 0;
     -fx-pref-width: 0;
     -fx-padding: 0;
     -fx-opacity: 0;
+} /* <-- THIS IS THE BRACE THAT WAS MISSING! */
 
-    /* --- FORM VALIDATION --- */
-    .error-input {
-        -fx-border-color: #ef4444; /* Bright Red */
-        -fx-border-width: 2px;
-        -fx-border-radius: 4px;
-        -fx-background-radius: 4px;
-        -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.2), 5, 0, 0, 2);
-    }
+/* --- FORM VALIDATION --- */
+.error-input {
+    -fx-border-color: #ef4444; /* Bright Red */
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.2), 5, 0, 0, 2);
 }
