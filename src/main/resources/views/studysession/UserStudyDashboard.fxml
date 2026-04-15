@@ -36,8 +36,6 @@
                         styleClass="nav-btn"/>
                 <Button fx:id="tabSessions"  text="⏱ My Sessions"   onAction="#showSessions"
                         styleClass="nav-btn"/>
-                <Button fx:id="tabStats"     text="📊 Statistics"    onAction="#showStats"
-                        styleClass="nav-btn"/>
             </HBox>
         </VBox>
     </top>

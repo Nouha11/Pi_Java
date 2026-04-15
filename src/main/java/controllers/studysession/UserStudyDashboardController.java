@@ -21,20 +21,18 @@ public class UserStudyDashboardController implements Initializable {
     @FXML private Button tabCourses;
     @FXML private Button tabPlannings;
     @FXML private Button tabSessions;
-    @FXML private Button tabStats;
 
     private List<Button> tabs;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        tabs = List.of(tabCourses, tabPlannings, tabSessions, tabStats);
+        tabs = List.of(tabCourses, tabPlannings, tabSessions);
         showCourses();
     }
 
     @FXML private void showCourses()   { loadTab("/views/studysession/UserCourseView.fxml",   tabCourses); }
     @FXML private void showPlannings() { loadTab("/views/studysession/UserPlanningView.fxml",  tabPlannings); }
     @FXML private void showSessions()  { loadTab("/views/studysession/UserSessionView.fxml",   tabSessions); }
-    @FXML private void showStats()     { loadTab("/views/studysession/StatsView.fxml",         tabStats); }
 
     private void loadTab(String fxmlPath, Button active) {
         try {
