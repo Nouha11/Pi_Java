@@ -3,10 +3,8 @@ package controllers.library;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Stage;
 import models.library.Book;
 import models.library.Library;
 import services.library.LibraryService;
@@ -32,7 +30,7 @@ public class LibrariesController {
         lblBookTitle.setText(book.getTitle());
         lblBookAuthor.setText(book.getAuthor() != null ? book.getAuthor() : "Unknown Author");
 
-        libraries = libraryService.findAll();
+        libraries = libraryService.findByBook(book.getId());
         buildLibraryCards();
     }
 
@@ -118,11 +116,13 @@ public class LibrariesController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/library/LoanFormView.fxml"));
             Parent root = loader.load();
-            LoanFormController ctrl = loader.getController();
-            ctrl.initData(book, library);
 
-            Stage stage = (Stage) lblBookName.getScene().getWindow();
-            stage.setScene(new Scene(root, stage.getWidth(), stage.getHeight()));
+            LoanFormController ctrl = loader.getController();
+            ctrl.initData(book, library); // Passing the data
+
+            // ✅ THE FIX: Send the pre-loaded screen perfectly to the dashboard!
+            controllers.NovaDashboardController.setView(root);
+
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Error: " + e.getMessage(), ButtonType.OK).showAndWait();
         }
@@ -133,11 +133,13 @@ public class LibrariesController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/library/BookDetailView.fxml"));
             Parent root = loader.load();
-            BookDetailController ctrl = loader.getController();
-            ctrl.initData(book);
 
-            Stage stage = (Stage) lblBookName.getScene().getWindow();
-            stage.setScene(new Scene(root, stage.getWidth(), stage.getHeight()));
+            BookDetailController ctrl = loader.getController();
+            ctrl.initData(book); // Passing the data back
+
+            // ✅ THE FIX: Seamlessly route back without a pop-up!
+            controllers.NovaDashboardController.setView(root);
+
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Error: " + e.getMessage(), ButtonType.OK).showAndWait();
         }

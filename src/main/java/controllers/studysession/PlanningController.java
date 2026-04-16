@@ -28,7 +28,6 @@ import java.util.ResourceBundle;
 public class PlanningController implements Initializable {
 
     @FXML private TableView<Planning> planningTable;
-    @FXML private TableColumn<Planning, Integer> colId;
     @FXML private TableColumn<Planning, String> colCourse;
     @FXML private TableColumn<Planning, String> colTitle;
     @FXML private TableColumn<Planning, String> colDate;
@@ -69,7 +68,6 @@ public class PlanningController implements Initializable {
     }
 
     private void setupColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colCourse.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCourseNameCache()));
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         colDate.setCellValueFactory(d -> new SimpleStringProperty(

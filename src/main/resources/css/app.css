@@ -1,0 +1,81 @@
+/* --- PREMIUM NAVBAR BUTTONS --- */
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 900;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-transition: -fx-background-color 0.2s, -fx-text-fill 0.2s;
+}
+
+.nav-btn:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #0f172a;
+}
+
+/* The clicked/active state for normal modules */
+.nav-btn-active {
+    -fx-background-color: #e0e7ff;
+    -fx-text-fill: #4f46e5;
+}
+
+/* --- THE UNIQUE HUB BUTTON --- */
+.nav-btn-hub {
+    -fx-background-color: #0f172a;
+    -fx-text-fill: white;
+}
+
+.nav-btn-hub:hover {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: white;
+}
+
+.nav-btn-hub-active {
+    -fx-background-color: #4f46e5;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(79, 70, 229, 0.4), 10, 0, 0, 4);
+}
+
+/* --- MAC-STYLE SCROLLBARS --- */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8px; /* Super slim */
+    -fx-pref-height: 8px;
+}
+.scroll-bar:vertical .track, .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+/* The actual dragger */
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 10px;
+}
+.scroll-bar:vertical .thumb:hover, .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #94a3b8;
+}
+
+/* Hide the ugly up/down arrows completely */
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+} /* <-- THIS IS THE BRACE THAT WAS MISSING! */
+
+/* --- FORM VALIDATION --- */
+.error-input {
+    -fx-border-color: #ef4444; /* Bright Red */
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.2), 5, 0, 0, 2);
+}

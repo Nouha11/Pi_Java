@@ -50,13 +50,12 @@ public class GameController {
 
     private void setupActionsColumn() {
         actionsCol.setCellFactory(col -> new TableCell<>() {
-            private final Button viewBtn   = styledBtn("👁 View",   "#0f3460", "#c0c0e0");
-            private final Button editBtn   = styledBtn("✏ Edit",   "#0f3460", "#c0c0e0");
-            private final Button toggleBtn = styledBtn("⏸",        "#0f3460", "#f0c040");
-            private final Button deleteBtn = styledBtn("🗑",        "transparent", "#e94560");
-            private final HBox   box       = new HBox(5, viewBtn, editBtn, toggleBtn, deleteBtn);
-            { box.setPadding(new Insets(2, 0, 2, 0));
-              deleteBtn.setStyle(deleteBtn.getStyle() + "-fx-border-color: #e94560;"); }
+            private final Button viewBtn   = styledBtn("View",       "#eef0fd", "#3b4fd8");
+            private final Button editBtn   = styledBtn("Edit",       "#f0fdf4", "#16a34a");
+            private final Button toggleBtn = styledBtn("Deactivate", "#fffbeb", "#d97706");
+            private final Button deleteBtn = styledBtn("Delete",     "#fff5f5", "#e53e3e");
+            private final HBox   box       = new HBox(6, viewBtn, editBtn, toggleBtn, deleteBtn);
+            { box.setPadding(new Insets(3, 4, 3, 4)); }
 
             {
                 viewBtn.setOnAction(e   -> showGameDetails(getTableView().getItems().get(getIndex())));
@@ -69,8 +68,9 @@ public class GameController {
                 super.updateItem(item, empty);
                 if (empty) { setGraphic(null); return; }
                 Game g = getTableView().getItems().get(getIndex());
-                toggleBtn.setText(g.isActive() ? "⏸ Deactivate" : "▶ Activate");
-                toggleBtn.setStyle(styledBtn("", "#0f3460", g.isActive() ? "#f0c040" : "#4caf50").getStyle());
+                toggleBtn.setText(g.isActive() ? "Deactivate" : "Activate");
+                toggleBtn.setStyle(styledBtn("", g.isActive() ? "#fffbeb" : "#f0fdf4",
+                        g.isActive() ? "#d97706" : "#16a34a").getStyle());
                 setGraphic(box);
                 setStyle("-fx-background-color: transparent;");
             }
@@ -80,8 +80,8 @@ public class GameController {
     private Button styledBtn(String text, String bg, String fg) {
         Button b = new Button(text);
         b.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + ";" +
-                   "-fx-font-family: 'Consolas'; -fx-font-size: 11px;" +
-                   "-fx-padding: 4 10; -fx-border-radius: 3; -fx-background-radius: 3; -fx-cursor: hand;");
+                   "-fx-font-size: 12px; -fx-font-weight: bold;" +
+                   "-fx-padding: 5 12; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;");
         return b;
     }
 
@@ -154,67 +154,72 @@ public class GameController {
             List<Reward> rewards = gameService.getRewardsForGame(g.getId());
 
             Dialog<Void> dlg = new Dialog<>();
-            dlg.setTitle("Game Details");
+            dlg.setTitle(g.getName());
 
             VBox root = new VBox(0);
-            root.setStyle("-fx-background-color: #1a1a2e;");
-            root.setPrefWidth(520);
+            root.setStyle("-fx-background-color: #f0f2f8;");
+            root.setPrefWidth(540);
 
-            // Header
-            VBox header = new VBox(4);
-            header.setStyle("-fx-background-color: #16213e; -fx-padding: 20 24 16 24;");
-            Label title = new Label("🎮  " + g.getName());
-            title.setStyle("-fx-text-fill: #e94560; -fx-font-size: 18px; -fx-font-weight: bold; -fx-font-family: 'Consolas';");
+            // ── Header ──
+            VBox header = new VBox(6);
+            header.setStyle("-fx-background-color: linear-gradient(to right, #3b4fd8, #5b6ef5); -fx-padding: 22 28 18 28;");
+            Label title = new Label("\uD83C\uDFAE  " + g.getName());
+            title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
             Label sub = new Label(g.getType() + "  ·  " + g.getDifficulty() + "  ·  " + g.getCategory());
-            sub.setStyle("-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 12px;");
+            sub.setStyle("-fx-text-fill: rgba(199,210,254,0.85); -fx-font-size: 13px;");
             header.getChildren().addAll(title, sub);
 
-            // Stats row
-            HBox stats = new HBox(0);
-            stats.setStyle("-fx-background-color: #0f3460; -fx-padding: 12 24;");
+            // ── Stat chips ──
+            HBox stats = new HBox(10);
+            stats.setStyle("-fx-background-color: white; -fx-padding: 14 28; " +
+                           "-fx-border-color: #e4e8f0; -fx-border-width: 0 0 1 0;");
             stats.getChildren().addAll(
-                statBox("🪙 Token Cost",    String.valueOf(g.getTokenCost())),
-                statBox("🎁 Reward Tokens", String.valueOf(g.getRewardTokens())),
-                statBox("⭐ Reward XP",     String.valueOf(g.getRewardXP())),
-                statBox("⚡ Energy",        g.getEnergyPoints() != null ? String.valueOf(g.getEnergyPoints()) : "—"),
-                statBox("✅ Active",        g.isActive() ? "Yes" : "No")
+                    chip("\uD83E\uDE99 " + g.getTokenCost(),    "Token Cost"),
+                    chip("\uD83C\uDF81 " + g.getRewardTokens(), "Reward Tokens"),
+                    chip("\u2B50 " + g.getRewardXP(),           "Reward XP"),
+                    chip("\u26A1 " + (g.getEnergyPoints() != null ? g.getEnergyPoints() : "—"), "Energy"),
+                    chip(g.isActive() ? "Active" : "Inactive",  "Status")
             );
 
-            // Description
+            // ── Description ──
             VBox descBox = new VBox(6);
-            descBox.setStyle("-fx-padding: 16 24 8 24;");
-            Label descTitle = new Label("Description");
-            descTitle.setStyle("-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;");
-            Label desc = new Label(g.getDescription() != null ? g.getDescription() : "—");
+            descBox.setStyle("-fx-background-color: white; -fx-padding: 16 28 16 28;");
+            Label descLbl = new Label("Description");
+            descLbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Label desc = new Label(g.getDescription() != null && !g.getDescription().isBlank()
+                    ? g.getDescription() : "No description provided.");
             desc.setWrapText(true);
-            desc.setStyle("-fx-text-fill: #c0c0e0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;");
-            descBox.getChildren().addAll(descTitle, desc);
+            desc.setStyle("-fx-text-fill: #334155; -fx-font-size: 13px;");
+            descBox.getChildren().addAll(descLbl, desc);
 
-            // Rewards section
+            // ── Linked rewards ──
             VBox rewardsBox = new VBox(8);
-            rewardsBox.setStyle("-fx-padding: 8 24 20 24;");
-            Label rwTitle = new Label("Linked Rewards  (" + rewards.size() + ")");
-            rwTitle.setStyle("-fx-text-fill: #8080b0; -fx-font-family: 'Consolas'; -fx-font-size: 11px; -fx-font-weight: bold;");
-            rewardsBox.getChildren().add(rwTitle);
+            rewardsBox.setStyle("-fx-background-color: #f8f9ff; -fx-padding: 16 28 22 28;");
+            Label rwLbl = new Label("\uD83C\uDFC6  Linked Rewards  (" + rewards.size() + ")");
+            rwLbl.setStyle("-fx-text-fill: #3b4fd8; -fx-font-size: 13px; -fx-font-weight: bold;");
+            rewardsBox.getChildren().add(rwLbl);
 
             if (rewards.isEmpty()) {
                 Label none = new Label("No rewards linked to this game.");
-                none.setStyle("-fx-text-fill: #5050a0; -fx-font-family: 'Consolas'; -fx-font-size: 12px;");
+                none.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
                 rewardsBox.getChildren().add(none);
             } else {
                 for (Reward r : rewards) {
-                    HBox chip = new HBox(8);
-                    chip.setStyle("-fx-background-color: #0f3460; -fx-padding: 8 14; " +
-                                  "-fx-border-radius: 4; -fx-background-radius: 4;");
-                    Label rName = new Label("🏆 " + r.getName());
-                    rName.setStyle("-fx-text-fill: #e0e0f0; -fx-font-family: 'Consolas'; -fx-font-size: 13px;");
-                    Label rType = new Label("[" + r.getType() + "]");
-                    rType.setStyle("-fx-text-fill: #e94560; -fx-font-family: 'Consolas'; -fx-font-size: 11px;");
-                    Label rVal = new Label("+" + r.getValue());
-                    rVal.setStyle("-fx-text-fill: #4caf50; -fx-font-family: 'Consolas'; -fx-font-size: 12px;");
+                    HBox row = new HBox(10);
+                    row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    row.setStyle("-fx-background-color: white; -fx-padding: 10 14; " +
+                                 "-fx-border-radius: 8; -fx-background-radius: 8; " +
+                                 "-fx-border-color: #e4e8f0; -fx-border-width: 1;");
+                    Label rName = new Label(r.getName());
+                    rName.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e2a5e; -fx-font-size: 13px;");
                     Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
-                    chip.getChildren().addAll(rName, rType, sp, rVal);
-                    rewardsBox.getChildren().add(chip);
+                    Label rType = new Label(r.getType());
+                    rType.setStyle("-fx-text-fill: #718096; -fx-font-size: 11px;");
+                    Label rVal = new Label("+" + r.getValue() + " pts");
+                    rVal.setStyle("-fx-text-fill: #3b4fd8; -fx-font-weight: bold; -fx-font-size: 12px; " +
+                                  "-fx-background-color: #eef0fd; -fx-background-radius: 6; -fx-padding: 2 8;");
+                    row.getChildren().addAll(rName, sp, rType, rVal);
+                    rewardsBox.getChildren().add(row);
                 }
             }
 
@@ -222,26 +227,28 @@ public class GameController {
 
             ScrollPane scroll = new ScrollPane(root);
             scroll.setFitToWidth(true);
-            scroll.setStyle("-fx-background-color: #1a1a2e; -fx-background: #1a1a2e;");
-            scroll.setPrefHeight(460);
+            scroll.setStyle("-fx-background-color: #f0f2f8; -fx-background: #f0f2f8;");
+            scroll.setPrefHeight(480);
 
             dlg.getDialogPane().setContent(scroll);
-            dlg.getDialogPane().setStyle("-fx-background-color: #1a1a2e; -fx-padding: 0;");
+            dlg.getDialogPane().setStyle("-fx-background-color: #f0f2f8; -fx-padding: 0;");
             dlg.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
             dlg.getDialogPane().lookupButton(ButtonType.CLOSE)
-               .setStyle("-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-family: 'Consolas';");
+               .setStyle("-fx-background-color: #3b4fd8; -fx-text-fill: white; " +
+                         "-fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 7 20;");
             dlg.showAndWait();
         } catch (Exception e) { showStatus("Error loading details: " + e.getMessage(), true); }
     }
 
-    private VBox statBox(String label, String value) {
+    private VBox chip(String value, String label) {
         VBox b = new VBox(2);
-        b.setStyle("-fx-padding: 0 20 0 0;");
-        Label lbl = new Label(label);
-        lbl.setStyle("-fx-text-fill: #6060a0; -fx-font-family: 'Consolas'; -fx-font-size: 10px;");
-        Label val = new Label(value);
-        val.setStyle("-fx-text-fill: #e0e0f0; -fx-font-family: 'Consolas'; -fx-font-size: 14px; -fx-font-weight: bold;");
-        b.getChildren().addAll(lbl, val);
+        b.setStyle("-fx-background-color: #f8f9ff; -fx-border-color: #e4e8f0; -fx-border-width: 1; " +
+                   "-fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 14; -fx-min-width: 80;");
+        Label v = new Label(value);
+        v.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;");
+        Label l = new Label(label);
+        l.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
+        b.getChildren().addAll(v, l);
         return b;
     }
 

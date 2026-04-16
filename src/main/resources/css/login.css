@@ -1,0 +1,141 @@
+/* ══════════════════════════════════════════════════════════════
+   NOVA Desktop Login  —  login.css
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
+.login-root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LEFT — Brand panel
+   ══════════════════════════════════════════════════════════════ */
+.brand-panel {
+    -fx-background-color: #1a1f36;
+}
+
+.brand-title {
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-family: "Segoe UI";
+}
+
+.brand-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255,255,255,0.55);
+    -fx-font-family: "Segoe UI";
+}
+
+.bullet {
+    -fx-text-fill: #4f8ef7;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.brand-feature {
+    -fx-text-fill: rgba(255,255,255,0.80);
+    -fx-font-size: 13px;
+}
+
+.brand-footer {
+    -fx-text-fill: rgba(255,255,255,0.30);
+    -fx-font-size: 11px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RIGHT — Form panel
+   ══════════════════════════════════════════════════════════════ */
+.form-panel {
+    -fx-background-color: #ffffff;
+}
+
+/* Top bar */
+.form-topbar {
+    -fx-border-color: transparent transparent #f0f0f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.form-topbar-label {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1px;
+}
+
+/* Heading */
+.form-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+
+.form-hint {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+}
+
+/* Field labels */
+.field-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+    -fx-letter-spacing: 0.8px;
+}
+
+/* Input fields */
+.form-field {
+    -fx-font-size: 14px;
+    -fx-padding: 11 14;
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 8;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-border-width: 1.5;
+    -fx-text-fill: #111827;
+}
+
+.form-field:focused {
+    -fx-background-color: white;
+    -fx-border-color: #4f8ef7;
+    -fx-effect: dropshadow(gaussian, rgba(79,142,247,0.20), 8, 0, 0, 0);
+}
+
+/* Error */
+.form-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Spinner */
+.form-spinner {
+    -fx-progress-color: #4f8ef7;
+}
+
+/* Sign In button */
+.form-btn {
+    -fx-background-color: #4f8ef7;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 13 0;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-letter-spacing: 1px;
+}
+
+.form-btn:hover {
+    -fx-background-color: #3b7de8;
+    -fx-effect: dropshadow(gaussian, rgba(79,142,247,0.35), 12, 0, 0, 3);
+}
+
+.form-btn:pressed {
+    -fx-background-color: #2d6fd4;
+}
+
+/* Version */
+.form-version {
+    -fx-text-fill: #d1d5db;
+    -fx-font-size: 11px;
+}

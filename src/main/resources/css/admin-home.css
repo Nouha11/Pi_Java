@@ -1,0 +1,311 @@
+/* ══════════════════════════════════════════════════════════
+   admin-home.css  —  Nova Admin Dashboard
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Root & scroll ── */
+.root-scroll {
+    -fx-background-color: #f0f2f8;
+    -fx-background: #f0f2f8;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.root-container {
+    -fx-background-color: #f0f2f8;
+}
+
+/* ══════════════════════════════════════════════
+   HERO HEADER
+══════════════════════════════════════════════ */
+.hero-header {
+    -fx-background-color: linear-gradient(to bottom right, #1e1b4b, #312e81, #4c1d95);
+    -fx-padding: 0;
+}
+
+.hero-inner {
+    -fx-padding: 48 44 48 44;
+}
+
+.logo-ring {
+    /* removed — no background behind logo */
+    -fx-background-color: transparent;
+    -fx-min-width: 120;
+    -fx-min-height: 120;
+    -fx-pref-width: 120;
+    -fx-pref-height: 120;
+}
+
+.hero-title {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Georgia";
+}
+
+.hero-subtitle {
+    -fx-font-size: 15px;
+    -fx-text-fill: rgba(199, 210, 254, 0.85);
+}
+
+.date-badge {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #c7d2fe;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.time-badge {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-alignment: CENTER_RIGHT;
+}
+
+/* ══════════════════════════════════════════════
+   STAT CARD ROWS
+══════════════════════════════════════════════ */
+.stats-row {
+    -fx-padding: 24 36 0 36;
+}
+
+.stat-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 18 20 16 20;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 12, 0, 0, 3);
+}
+
+/* Colored top-border accent per card type */
+.card-blue   { -fx-border-color: #3b82f6 transparent transparent transparent; }
+.card-violet { -fx-border-color: #8b5cf6 transparent transparent transparent; }
+.card-amber  { -fx-border-color: #f59e0b transparent transparent transparent; }
+.card-emerald{ -fx-border-color: #10b981 transparent transparent transparent; }
+.card-rose   { -fx-border-color: #f43f5e transparent transparent transparent; }
+.card-indigo { -fx-border-color: #6366f1 transparent transparent transparent; }
+
+.stat-icon-bg {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 10;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-pref-width: 38;
+    -fx-pref-height: 38;
+}
+
+.stat-icon      { -fx-font-size: 18px; }
+.stat-icon-tiny { -fx-font-size: 12px; }
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: normal;
+}
+
+.stat-number {
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+    -fx-padding: 4 0 0 0;
+}
+
+.stat-detail-positive { -fx-font-size: 12px; -fx-text-fill: #16a34a; }
+.stat-detail-warning  { -fx-font-size: 12px; -fx-text-fill: #d97706; }
+.stat-detail-neutral  { -fx-font-size: 12px; -fx-text-fill: #64748b; }
+
+.trend-arrow-up {
+    -fx-text-fill: #16a34a;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.live-dot {
+    -fx-text-fill: #10b981;
+    -fx-font-size: 8px;
+}
+
+/* ══════════════════════════════════════════════
+   CONTENT AREA
+══════════════════════════════════════════════ */
+.content-area {
+    -fx-padding: 20 36 0 36;
+}
+
+/* ── Content card shell ── */
+.content-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #e8ecf3;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 14, 0, 0, 4);
+}
+
+.card-header {
+    -fx-padding: 16 20 14 20;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+}
+
+.card-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94a3b8;
+}
+
+.card-link {
+    -fx-text-fill: #6366f1;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.card-link:hover {
+    -fx-text-fill: #4f46e5;
+}
+
+/* ── Loans TableView ── */
+.loans-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.loans-table .column-header-background {
+    -fx-background-color: #f8fafc;
+}
+
+.loans-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12;
+}
+
+.loans-table .column-header .label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #94a3b8;
+    -fx-text-transform: uppercase;
+}
+
+.loans-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.loans-table .table-row-cell:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.loans-table .table-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+    -fx-padding: 10 12;
+}
+
+.table-placeholder {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+}
+
+/* ── Quick Action Buttons ── */
+.btn-primary {
+    -fx-background-color: #6366f1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.35), 8, 0, 0, 3);
+}
+
+.btn-primary:hover {
+    -fx-background-color: #4f46e5;
+}
+
+.btn-primary:pressed {
+    -fx-background-color: #4338ca;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.2), 4, 0, 0, 1);
+}
+
+.btn-secondary {
+    -fx-background-color: #f8fafc;
+    -fx-text-fill: #374151;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #cbd5e1;
+}
+
+.btn-secondary:pressed {
+    -fx-background-color: #e2e8f0;
+}
+
+/* ── Role rows ── */
+.role-row {
+    -fx-padding: 10 0;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.role-row:last-child {
+    -fx-border-width: 0;
+}
+
+.role-dot-blue {
+    -fx-background-color: #3b82f6;
+    -fx-background-radius: 5;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-pref-width: 10;
+    -fx-pref-height: 10;
+}
+
+.role-dot-violet {
+    -fx-background-color: #8b5cf6;
+    -fx-background-radius: 5;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-pref-width: 10;
+    -fx-pref-height: 10;
+}
+
+.role-dot-amber {
+    -fx-background-color: #f59e0b;
+    -fx-background-radius: 5;
+    -fx-min-width: 10;
+    -fx-min-height: 10;
+    -fx-pref-width: 10;
+    -fx-pref-height: 10;
+}
+
+.role-name  { -fx-font-size: 13px; -fx-text-fill: #475569; }
+.role-count {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 6;
+    -fx-padding: 2 8;
+}
+

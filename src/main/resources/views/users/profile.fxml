@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.ProfileController"
+            styleClass="app-root">
+
+    <stylesheets>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <!-- ── Top bar ── -->
+    <top>
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="12">
+            <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
+            <Label text="My Profile" styleClass="topbar-title"/>
+            <Label text="/" styleClass="topbar-sep"/>
+            <Label text="Account Settings" styleClass="topbar-sub"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Users" onAction="#onBackToList"
+                    styleClass="btn-icon"/>
+        </HBox>
+    </top>
+
+    <!-- ── Content ── -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="form-scroll">
+            <VBox styleClass="content-area" spacing="20">
+                <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+                <!-- ── Profile header card ── -->
+                <HBox styleClass="profile-card" spacing="0">
+
+                    <!-- Left: avatar + name -->
+                    <VBox styleClass="profile-avatar-panel" alignment="CENTER"
+                          spacing="10" minWidth="220">
+                        <padding><Insets top="32" right="24" bottom="32" left="24"/></padding>
+
+                        <!-- Avatar circle with initials -->
+                        <StackPane styleClass="avatar-circle">
+                            <Label fx:id="lblInitials" text="?"
+                                   styleClass="avatar-initials"/>
+                        </StackPane>
+
+                        <Label fx:id="lblFullName" text="Username"
+                               styleClass="profile-name"/>
+                        <Label fx:id="lblRoleBadge" text="ROLE"
+                               styleClass="profile-role-badge"/>
+
+                        <Region prefHeight="12"/>
+
+                        <Button text="Sign Out" onAction="#onLogout"
+                                maxWidth="Infinity"
+                                style="-fx-background-color:#ef4444;-fx-text-fill:white;
+                                       -fx-font-weight:bold;-fx-font-size:12px;
+                                       -fx-padding:8 0;-fx-background-radius:8;
+                                       -fx-cursor:hand;"/>
+                    </VBox>
+
+                    <!-- Divider -->
+                    <Separator orientation="VERTICAL"
+                               style="-fx-background-color:#e5e7eb;"/>
+
+                    <!-- Right: info grid -->
+                    <GridPane hgap="0" vgap="0" HBox.hgrow="ALWAYS">
+                        <padding><Insets top="28" right="32" bottom="28" left="32"/></padding>
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="140" prefWidth="160"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <!-- Row headers -->
+                        <Label text="EMAIL" styleClass="field-label"
+                               GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblEmail" text="-" styleClass="profile-value"
+                               GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="STATUS" styleClass="field-label"
+                               GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblStatus" text="-" styleClass="profile-value"
+                               GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="VERIFIED" styleClass="field-label"
+                               GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblVerified" text="-" styleClass="profile-value"
+                               GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="XP POINTS" styleClass="field-label"
+                               GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblXp" text="0" styleClass="profile-value"
+                               GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="MEMBER SINCE" styleClass="field-label"
+                               GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblCreatedAt" text="-" styleClass="profile-value"
+                               GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <!-- Row padding -->
+                        <Region prefHeight="14" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                                GridPane.columnSpan="2"/>
+                    </GridPane>
+                </HBox>
+
+                <!-- ── Change password card ── -->
+                <VBox styleClass="profile-card" spacing="0">
+
+                    <!-- Card header -->
+                    <HBox styleClass="profile-card-header" alignment="CENTER_LEFT">
+                        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+                        <Label text="Change Password" styleClass="profile-section-title"/>
+                    </HBox>
+
+                    <Separator style="-fx-background-color:#e5e7eb;"/>
+
+                    <!-- Card body -->
+                    <VBox spacing="16">
+                        <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+                        <GridPane hgap="20" vgap="0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="34"/>
+                            </columnConstraints>
+
+                            <VBox spacing="6" GridPane.columnIndex="0">
+                                <Label text="CURRENT PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfCurrent"
+                                               promptText="Current password"
+                                               styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="6" GridPane.columnIndex="1">
+                                <Label text="NEW PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfNew"
+                                               promptText="Min 8 chars"
+                                               styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="6" GridPane.columnIndex="2">
+                                <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfConfirm"
+                                               promptText="Repeat new password"
+                                               styleClass="form-field"/>
+                            </VBox>
+                        </GridPane>
+
+                        <!-- Message -->
+                        <Label fx:id="lblPwdMsg" text="" wrapText="true"
+                               styleClass="form-errors" maxWidth="Infinity"
+                               visible="false" managed="false"/>
+
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Update Password"
+                                    onAction="#onChangePassword"
+                                    styleClass="btn-save"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

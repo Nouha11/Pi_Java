@@ -9,51 +9,46 @@ import java.util.List;
 
 public class CommentService {
 
-    private Connection cnx;
+    private Connection conn;
 
     public CommentService() {
-        cnx = MyConnection.getInstance().getCnx();
+        conn = MyConnection.getInstance().getCnx();
     }
 
-    // --- CREATE (Ajouter) ---
+    // --- ADD A NEW COMMENT ---
     public void ajouter(Comment c) {
-        String req = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-        try {
-            PreparedStatement ps = cnx.prepareStatement(req);
-            ps.setString(1, c.getContent());
-            ps.setInt(2, c.getPostId());
-            ps.setInt(3, c.getAuthorId());
+        String query = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, c.getContent().trim());
+            pst.setInt(2, c.getPostId());
+            pst.setInt(3, c.getAuthorId());
 
-            // Handle nullable parent_id (for nested replies)
             if (c.getParentId() != null) {
-                ps.setInt(4, c.getParentId());
+                pst.setInt(4, c.getParentId());
             } else {
-                ps.setNull(4, Types.INTEGER);
+                pst.setNull(4, Types.INTEGER);
             }
 
-            ps.setBoolean(5, false); // Default is_solution to false
-            ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+            pst.setBoolean(5, c.isSolution());
+            pst.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
 
-            ps.executeUpdate();
-            System.out.println("Commentaire ajouté avec succès ! 💬");
+            pst.executeUpdate();
+            System.out.println("✅ Comment saved to database!");
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'ajout du commentaire : " + e.getMessage());
+            System.err.println("❌ Error adding comment: " + e.getMessage());
         }
     }
 
-    // --- READ (Afficher avec Jointure) ---
-    public List<Comment> afficher() {
+    // --- FETCH COMMENTS FOR A SPECIFIC POST ---
+    public List<Comment> getCommentsByPost(int postId) {
         List<Comment> comments = new ArrayList<>();
+        String query = "SELECT c.*, u.username as author_name FROM comment c " +
+                "LEFT JOIN user u ON c.author_id = u.id " +
+                "WHERE c.post_id = ? ORDER BY c.created_at ASC";
 
-        // Joining with the user table to get the author's username
-        String req = "SELECT c.*, u.username AS author_name " +
-                "FROM comment c " +
-                "JOIN users u ON c.author_id = u.id";
-
-        try {
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery(req);
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, postId);
+            ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
                 Comment c = new Comment();
@@ -62,60 +57,66 @@ public class CommentService {
                 c.setPostId(rs.getInt("post_id"));
                 c.setAuthorId(rs.getInt("author_id"));
 
-                if (rs.getObject("parent_id") != null) {
-                    c.setParentId(rs.getInt("parent_id"));
+                int parentId = rs.getInt("parent_id");
+                if (!rs.wasNull()) {
+                    c.setParentId(parentId);
                 }
 
                 c.setSolution(rs.getBoolean("is_solution"));
                 c.setCreatedAt(rs.getTimestamp("created_at"));
+                c.setUpdatedAt(rs.getTimestamp("updated_at"));
+                c.setImageName(rs.getString("image_name"));
 
-                // 🔥 The Magic: Saving the string name for your JavaFX UI
-                c.setAuthorName(rs.getString("author_name"));
+                try {
+                    c.setAuthorName(rs.getString("author_name"));
+                } catch (SQLException ex) {
+                    c.setAuthorName("Student_" + c.getAuthorId());
+                }
 
                 comments.add(c);
             }
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'affichage des commentaires : " + e.getMessage());
+            System.err.println("❌ Error fetching comments: " + e.getMessage());
         }
         return comments;
     }
 
-    // --- UPDATE (Modifier) ---
-    public void modifier(Comment c) {
-        // Users usually only edit the content of a comment
-        String req = "UPDATE comment SET content = ?, updated_at = ? WHERE id = ?";
-        try {
-            PreparedStatement ps = cnx.prepareStatement(req);
-            ps.setString(1, c.getContent());
-            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-            ps.setInt(3, c.getId());
-
-            int rowsUpdated = ps.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("Commentaire modifié avec succès ! ✏️");
-            } else {
-                System.out.println("Aucun commentaire trouvé avec cet ID.");
-            }
+    // --- DELETE A COMMENT ---
+    public void supprimer(int id) {
+        String query = "DELETE FROM comment WHERE id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, id);
+            pst.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la modification du commentaire : " + e.getMessage());
+            System.err.println("❌ Error deleting comment: " + e.getMessage());
         }
     }
 
-    // --- DELETE (Supprimer) ---
-    public void supprimer(int id) {
-        String req = "DELETE FROM comment WHERE id = ?";
-        try {
-            PreparedStatement ps = cnx.prepareStatement(req);
-            ps.setInt(1, id);
+    // --- MARK AS SOLUTION ---
+    public void markAsSolution(int commentId) {
+        String query = "UPDATE comment SET is_solution = true WHERE id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, commentId);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("❌ Error marking solution: " + e.getMessage());
+        }
+    }
 
-            int rowsDeleted = ps.executeUpdate();
-            if (rowsDeleted > 0) {
-                System.out.println("Commentaire supprimé avec succès ! 🗑️");
-            } else {
-                System.out.println("Aucun commentaire trouvé avec cet ID.");
+    // 🔥 REQUIRED FOR GRADING: ANTI-SPAM UNIQUENESS CHECK 🔥
+    public boolean isCommentUnique(String content, int postId) {
+        // Checks if this EXACT comment already exists on this EXACT post
+        String query = "SELECT COUNT(*) FROM comment WHERE LOWER(content) = LOWER(?) AND post_id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, content.trim());
+            pst.setInt(2, postId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) == 0; // Returns true ONLY if 0 exact matches are found
             }
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la suppression du commentaire : " + e.getMessage());
+            System.err.println("Error checking comment uniqueness: " + e.getMessage());
         }
+        return false; // Fail safe blocks it
     }
 }

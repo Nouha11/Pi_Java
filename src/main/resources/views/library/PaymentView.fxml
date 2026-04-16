@@ -39,7 +39,7 @@
 
                         <!-- Amount -->
                         <VBox spacing="4">
-                            <Label text="Amount ($) *"
+                            <Label text="Amount (USD) *"
                                    style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
                             <TextField fx:id="txtAmount" promptText="29.99"
                                        style="-fx-border-color: #dee2e6; -fx-border-radius: 6;

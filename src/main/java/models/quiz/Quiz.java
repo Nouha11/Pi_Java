@@ -7,6 +7,7 @@ public class Quiz {
     private String title;
     private String description;
     private List<Question> questions;
+    private int questionCount; // populated by service via COUNT query
 
     // Constructors
     public Quiz() {}
@@ -53,6 +54,14 @@ public class Quiz {
 
     public void setQuestions(List<Question> questions) {
         this.questions = questions;
+    }
+
+    public int getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(int questionCount) {
+        this.questionCount = questionCount;
     }
 
     @Override
