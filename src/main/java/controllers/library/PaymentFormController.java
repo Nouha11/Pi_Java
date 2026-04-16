@@ -48,7 +48,7 @@ public class PaymentFormController {
     private void handlePay() {
         clearErrors();
         Payment payment = new Payment();
-        payment.setUserId(DEMO_USER_ID); payment.setBookId(book.getId());
+        payment.setUserId(utils.SessionManager.getCurrentUserId()); payment.setBookId(book.getId());
         payment.setAmount(book.getPrice()); payment.setPaymentMethod(paymentMethod); payment.setBookTitle(book.getTitle());
 
         String error;
@@ -62,15 +62,35 @@ public class PaymentFormController {
             try { paymentService.ajouter(payment); } catch (SQLException e) {}
             new Alert(Alert.AlertType.INFORMATION, "✅ Payment Successful!").showAndWait();
             NovaDashboardController.loadPage("/views/library/BookListView.fxml");
-        } else { lblError.setText("❌ " + error); lblError.setVisible(true); }
+        } else {
+            lblError.setText("❌ " + error);
+            lblError.setVisible(true);
+            lblError.setManaged(true);
+        }
     }
 
     private boolean validate() {
         boolean v = true;
-        if (!paymentService.validateCardNumber(txtCardNumber.getText())) { errCardNumber.setVisible(true); v = false; }
-        if (!paymentService.validateCardHolder(txtCardHolder.getText())) { errCardHolder.setVisible(true); v = false; }
-        if (!paymentService.validateExpiryDate(txtExpiry.getText())) { errExpiry.setVisible(true); v = false; }
-        if (!paymentService.validateCVC(txtCvc.getText())) { errCvc.setVisible(true); v = false; }
+        if (!paymentService.validateCardNumber(txtCardNumber.getText())) {
+            errCardNumber.setText("Invalid card number (Luhn check failed).");
+            errCardNumber.setVisible(true); errCardNumber.setManaged(true); v = false;
+        } else { errCardNumber.setVisible(false); errCardNumber.setManaged(false); }
+
+        if (!paymentService.validateCardHolder(txtCardHolder.getText())) {
+            errCardHolder.setText("Invalid cardholder name.");
+            errCardHolder.setVisible(true); errCardHolder.setManaged(true); v = false;
+        } else { errCardHolder.setVisible(false); errCardHolder.setManaged(false); }
+
+        if (!paymentService.validateExpiryDate(txtExpiry.getText())) {
+            errExpiry.setText("Invalid or expired date (MM/YY).");
+            errExpiry.setVisible(true); errExpiry.setManaged(true); v = false;
+        } else { errExpiry.setVisible(false); errExpiry.setManaged(false); }
+
+        if (!paymentService.validateCVC(txtCvc.getText())) {
+            errCvc.setText("Invalid CVC (3-4 digits).");
+            errCvc.setVisible(true); errCvc.setManaged(true); v = false;
+        } else { errCvc.setVisible(false); errCvc.setManaged(false); }
+
         return v;
     }
 
@@ -85,5 +105,11 @@ public class PaymentFormController {
         } catch (IOException e) {}
     }
 
-    private void clearErrors() { lblError.setVisible(false); errCardNumber.setVisible(false); errCardHolder.setVisible(false); errExpiry.setVisible(false); errCvc.setVisible(false); }
+    private void clearErrors() {
+        lblError.setVisible(false); lblError.setManaged(false);
+        errCardNumber.setVisible(false); errCardNumber.setManaged(false);
+        errCardHolder.setVisible(false); errCardHolder.setManaged(false);
+        errExpiry.setVisible(false);     errExpiry.setManaged(false);
+        errCvc.setVisible(false);        errCvc.setManaged(false);
+    }
 }

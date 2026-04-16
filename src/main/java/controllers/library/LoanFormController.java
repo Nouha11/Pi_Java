@@ -36,7 +36,7 @@ public class LoanFormController {
     private final LoanService loanService = new LoanService();
 
     // Hardcoded for demo — in production this comes from the session
-    private static final int DEMO_USER_ID = 1;
+    private static final int DEMO_USER_ID = 1; // fallback, overridden by SessionManager
 
     /**
      * Populates the form with the selected book and library details.
@@ -76,16 +76,21 @@ public class LoanFormController {
             showError("Return date must be after pickup date.");
             return;
         }
+        if (returnDate.getValue().isAfter(pickupDate.getValue().plusDays(14))) {
+            showError("Loan period cannot exceed 14 days.");
+            return;
+        }
 
         try {
-            // Build the loan object and submit it
             Loan loan = new Loan();
             loan.setUserId(DEMO_USER_ID);
             loan.setBookId(book.getId());
             loan.setLibraryId(library.getId());
             loan.setBookTitle(book.getTitle());
             loan.setLibraryName(library.getName());
-            // Status defaults to PENDING in the Loan constructor
+            // Map the user-selected dates to start_at and end_at
+            loan.setStartAt(java.sql.Timestamp.valueOf(pickupDate.getValue().atStartOfDay()));
+            loan.setEndAt(java.sql.Timestamp.valueOf(returnDate.getValue().atStartOfDay()));
             loanService.ajouter(loan);
 
             new Alert(Alert.AlertType.INFORMATION, "Loan request submitted! Awaiting admin approval.").showAndWait();

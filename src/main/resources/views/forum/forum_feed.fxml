@@ -8,7 +8,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<HBox prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f1f5f9;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
+<HBox prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f1f5f9;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
 
     <VBox prefWidth="280.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;" spacing="25.0">
         <padding>
@@ -65,13 +65,13 @@
                     </HBox>
                 </HBox>
 
-                <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);">
                     <padding>
-                        <Insets top="12.0" right="20.0" bottom="12.0" left="20.0" />
+                        <Insets top="8.0" right="20.0" bottom="8.0" left="20.0" />
                     </padding>
-                    <Label style="-fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="🔥 Hot" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="✨ New" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="📈 Top" />
+                    <Label fx:id="btnSortHot" onMouseClicked="#handleSortHot" style="-fx-padding: 8 15; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-color: #eff6ff; -fx-background-radius: 6;" text="🔥 Hot" />
+                    <Label fx:id="btnSortNew" onMouseClicked="#handleSortNew" style="-fx-padding: 8 15; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="✨ New" />
+                    <Label fx:id="btnSortTop" onMouseClicked="#handleSortTop" style="-fx-padding: 8 15; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="📈 Top" />
                 </HBox>
 
                 <VBox fx:id="postsContainer" spacing="15.0" />

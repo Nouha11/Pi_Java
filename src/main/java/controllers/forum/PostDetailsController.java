@@ -28,6 +28,7 @@ public class PostDetailsController {
     @FXML private Button lockButton, submitCommentBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
+    @FXML private Label topCommentBadgeLabel;
     @FXML private Label contentLabel, statusLabel;
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
@@ -44,7 +45,6 @@ public class PostDetailsController {
             setPostData(utils.ForumSession.currentPost);
         }
 
-        // 🔥 REAL-TIME VALIDATION: Reset styles when the user starts typing
         commentArea.textProperty().addListener((obs, oldVal, newVal) -> {
             commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
         });
@@ -84,6 +84,8 @@ public class PostDetailsController {
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
+            if (!imgFile.exists()) imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/forum/" + post.getImageName());
+
             if (imgFile.exists()) {
                 postImageView.setImage(new Image(imgFile.toURI().toString()));
             }
@@ -119,21 +121,15 @@ public class PostDetailsController {
         }
     }
 
-    @FXML
-    void handleLockPost(ActionEvent event) {
-        boolean newState = !currentPost.isLocked();
-        currentPost.setLocked(newState);
-        postService.toggleLock(currentPost.getId(), newState);
-        updateLockUI();
-    }
-
     private void loadComments() {
         commentsContainer.getChildren().clear();
         List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
 
         String replyCount = String.valueOf(comments.size());
+
         repliesCountLabel.setText("Replies (" + replyCount + ")");
         statsRepliesLabel.setText("💬 Replies: " + replyCount);
+        topCommentBadgeLabel.setText("💬 " + replyCount + " Comments");
 
         if (comments.isEmpty()) {
             Label emptyLabel = new Label("No comments yet. Be the first to share your thoughts!");
@@ -162,26 +158,31 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 UPDATED: Added Contrôle de Saisie & Anti-Spam Check 🔥
+    // 🔥 THE MISSING METHOD THAT CAUSED THE CRASH 🔥
+    @FXML
+    void handleLockPost(ActionEvent event) {
+        boolean newState = !currentPost.isLocked();
+        currentPost.setLocked(newState);
+        postService.toggleLock(currentPost.getId(), newState);
+        updateLockUI();
+    }
+
     @FXML
     void handleSubmitComment(ActionEvent event) {
         if (currentPost.isLocked()) return;
 
         String text = commentArea.getText();
 
-        // 1. Mandatory Field Check
         if (text == null || text.trim().length() < 2) {
             applyErrorStyle("Reply must be at least 2 characters!");
             return;
         }
 
-        // 2. Uniqueness Check (Anti-Spam)
         if (!commentService.isCommentUnique(text, currentPost.getId())) {
             applyErrorStyle("You already posted this exact reply!");
             return;
         }
 
-        // 3. Process Valid Comment
         Comment newComment = new Comment(text, currentPost.getId(), 1, null);
         commentService.ajouter(newComment);
 
@@ -197,7 +198,6 @@ public class PostDetailsController {
         commentArea.clear();
         commentArea.setPromptText("⚠️ " + errorMessage);
 
-        // Brief pause then reset prompt text
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(e -> commentArea.setPromptText("Write a reply..."));
         pause.play();

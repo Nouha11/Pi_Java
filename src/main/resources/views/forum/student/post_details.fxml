@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.PostDetailsController">
+<VBox prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: #f4f6f8;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.PostDetailsController">
     <children>
         <HBox alignment="CENTER_LEFT" prefHeight="60.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 0 30;">
             <children>
@@ -54,6 +54,7 @@
                                                             <Label fx:id="dateLabel" style="-fx-text-fill: #94a3b8; -fx-font-size: 12px;" text="Posted on Date" />
                                                         </VBox>
                                                         <HBox HBox.hgrow="ALWAYS" />
+                                                        <Label fx:id="topCommentBadgeLabel" style="-fx-background-color: #f3f4f6; -fx-text-fill: #4b5563; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 4;" text="0 Comments" />
                                                         <Label fx:id="upvoteBadgeLabel" style="-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 4;" text="0 Upvotes" />
                                                     </children>
                                                 </HBox>
@@ -78,17 +79,6 @@
                                                 </HBox>
                                             </children>
                                         </VBox>
-
-                                        <HBox style="-fx-background-color: #faf5ff; -fx-border-color: #e9d5ff; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20;" alignment="CENTER_LEFT">
-                                            <children>
-                                                <VBox spacing="5.0">
-                                                    <Label style="-fx-text-fill: #9333ea; -fx-font-weight: bold; -fx-font-size: 16px;" text="✨ AI Thread Summary" />
-                                                    <Label style="-fx-text-fill: #6b7280; -fx-font-size: 13px;" text="Too long to read? Click the button to have AI summarize this entire discussion." />
-                                                </VBox>
-                                                <HBox HBox.hgrow="ALWAYS" />
-                                                <Button style="-fx-background-color: #9333ea; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;" text="✨ Generate TL;DR" />
-                                            </children>
-                                        </HBox>
 
                                         <VBox spacing="15.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20;">
                                             <children>
