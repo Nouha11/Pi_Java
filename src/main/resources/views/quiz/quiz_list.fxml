@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="620" prefWidth="860" styleClass="module-pane"
+<VBox prefHeight="660" prefWidth="920" styleClass="module-pane"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
@@ -15,13 +15,29 @@
         <padding><Insets bottom="14" left="20" right="20" top="14"/></padding>
         <Label styleClass="toolbar-title" text="📝  Quizzes"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="txtSearch" promptText="🔍  Search quizzes…"
-                   styleClass="search-field" prefWidth="200"
+        <TextField fx:id="txtSearch" promptText="🔍  Search…"
+                   styleClass="search-field" prefWidth="180"
                    onKeyReleased="#handleFilterSort"/>
         <ComboBox fx:id="cmbSort" promptText="Sort by…"
-                  styleClass="sort-combo" prefWidth="160"
+                  styleClass="sort-combo" prefWidth="155"
                   onAction="#handleFilterSort"/>
         <Button onAction="#handleCreate" styleClass="btn-primary" text="＋  New Quiz"/>
+    </HBox>
+
+    <!-- FILTER BAR -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="filter-bar">
+        <padding><Insets bottom="10" left="20" right="20" top="10"/></padding>
+        <Label styleClass="filter-label" text="Questions:"/>
+        <TextField fx:id="txtMinQ" promptText="Min" styleClass="filter-num-field"
+                   prefWidth="56" onKeyReleased="#handleFilterSort"/>
+        <Label styleClass="filter-label" text="–"/>
+        <TextField fx:id="txtMaxQ" promptText="Max" styleClass="filter-num-field"
+                   prefWidth="56" onKeyReleased="#handleFilterSort"/>
+        <Label styleClass="filter-label" text="Description:"/>
+        <ComboBox fx:id="cmbDesc" styleClass="sort-combo" prefWidth="100"
+                  onAction="#handleFilterSort"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button onAction="#handleClearFilters" styleClass="btn-ghost-sm" text="✕  Clear"/>
     </HBox>
 
     <!-- CARD GRID -->
@@ -30,8 +46,7 @@
                 VBox.vgrow="ALWAYS">
         <VBox>
             <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
-            <FlowPane fx:id="cardsPane" hgap="16" vgap="16"
-                      styleClass="cards-pane"/>
+            <FlowPane fx:id="cardsPane" hgap="16" vgap="16" styleClass="cards-pane"/>
         </VBox>
     </ScrollPane>
 

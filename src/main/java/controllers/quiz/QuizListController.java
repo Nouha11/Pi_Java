@@ -25,12 +25,19 @@ public class QuizListController {
     @FXML private FlowPane  cardsPane;
     @FXML private Label     lblStatus;
     @FXML private TextField txtSearch;
+    @FXML private TextField txtMinQ;
+    @FXML private TextField txtMaxQ;
     @FXML private ComboBox<String> cmbSort;
+    @FXML private ComboBox<String> cmbDesc;
 
-    private static final String SORT_AZ        = "Title A → Z";
-    private static final String SORT_ZA        = "Title Z → A";
-    private static final String SORT_MOST_Q    = "Most Questions";
-    private static final String SORT_FEWEST_Q  = "Fewest Questions";
+    private static final String SORT_AZ       = "Title A \u2192 Z";
+    private static final String SORT_ZA       = "Title Z \u2192 A";
+    private static final String SORT_MOST_Q   = "Most Questions";
+    private static final String SORT_FEWEST_Q = "Fewest Questions";
+
+    private static final String DESC_ANY = "Any";
+    private static final String DESC_YES = "Has description";
+    private static final String DESC_NO  = "No description";
 
     private final QuizService quizService = new QuizService();
     private List<Quiz> allQuizzes;
@@ -40,6 +47,10 @@ public class QuizListController {
         cmbSort.setItems(FXCollections.observableArrayList(
                 SORT_AZ, SORT_ZA, SORT_MOST_Q, SORT_FEWEST_Q));
         cmbSort.setValue(SORT_AZ);
+
+        cmbDesc.setItems(FXCollections.observableArrayList(DESC_ANY, DESC_YES, DESC_NO));
+        cmbDesc.setValue(DESC_ANY);
+
         loadData();
     }
 
@@ -48,23 +59,47 @@ public class QuizListController {
         applyFilterSort();
     }
 
-    /** Single handler for both the search field and the sort combo. */
     @FXML
     private void handleFilterSort() {
         applyFilterSort();
     }
 
-    private void applyFilterSort() {
-        String query = txtSearch.getText().trim().toLowerCase();
+    @FXML
+    private void handleClearFilters() {
+        txtSearch.clear();
+        txtMinQ.clear();
+        txtMaxQ.clear();
+        cmbSort.setValue(SORT_AZ);
+        cmbDesc.setValue(DESC_ANY);
+        applyFilterSort();
+    }
 
-        // 1. Filter by search text
+    private void applyFilterSort() {
+        String query  = txtSearch.getText().trim().toLowerCase();
+        Integer minQ  = parseIntOrNull(txtMinQ.getText());
+        Integer maxQ  = parseIntOrNull(txtMaxQ.getText());
+        String  desc  = cmbDesc.getValue();
+
         List<Quiz> result = allQuizzes.stream()
-                .filter(q -> q.getTitle().toLowerCase().contains(query)
+                // text search
+                .filter(q -> query.isEmpty()
+                        || q.getTitle().toLowerCase().contains(query)
                         || (q.getDescription() != null
                             && q.getDescription().toLowerCase().contains(query)))
+                // min questions
+                .filter(q -> minQ == null || q.getQuestionCount() >= minQ)
+                // max questions
+                .filter(q -> maxQ == null || q.getQuestionCount() <= maxQ)
+                // description presence
+                .filter(q -> {
+                    boolean hasDesc = q.getDescription() != null && !q.getDescription().isBlank();
+                    if (DESC_YES.equals(desc)) return hasDesc;
+                    if (DESC_NO.equals(desc))  return !hasDesc;
+                    return true;
+                })
                 .collect(Collectors.toList());
 
-        // 2. Sort
+        // sort
         String sort = cmbSort.getValue();
         if (SORT_ZA.equals(sort)) {
             result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER).reversed());
@@ -72,7 +107,7 @@ public class QuizListController {
             result.sort(Comparator.comparingInt(Quiz::getQuestionCount).reversed());
         } else if (SORT_FEWEST_Q.equals(sort)) {
             result.sort(Comparator.comparingInt(Quiz::getQuestionCount));
-        } else { // default: A → Z
+        } else {
             result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER));
         }
 
@@ -88,34 +123,29 @@ public class QuizListController {
     }
 
     private VBox buildCard(Quiz quiz) {
-        // ── Icon bubble ──
         Label icon = new Label("?");
         icon.getStyleClass().add("quiz-card-icon");
 
-        // ── Title ──
         Label title = new Label(quiz.getTitle());
         title.getStyleClass().add("quiz-card-title");
         title.setWrapText(true);
         title.setTextAlignment(TextAlignment.CENTER);
         title.setMaxWidth(200);
 
-        // ── Description ──
-        String desc = quiz.getDescription() != null && !quiz.getDescription().isBlank()
+        String descText = quiz.getDescription() != null && !quiz.getDescription().isBlank()
                 ? quiz.getDescription() : "No description provided.";
-        Label description = new Label(desc);
+        Label description = new Label(descText);
         description.getStyleClass().add("quiz-card-desc");
         description.setWrapText(true);
         description.setTextAlignment(TextAlignment.CENTER);
         description.setMaxWidth(200);
 
-        // ── Question count badge ──
         Label badge = new Label(quiz.getQuestionCount() + " question"
                 + (quiz.getQuestionCount() == 1 ? "" : "s"));
         badge.getStyleClass().add("quiz-card-badge");
 
-        // ── Buttons ──
-        Button btnEdit   = new Button("✏  Edit");
-        Button btnDelete = new Button("🗑  Delete");
+        Button btnEdit   = new Button("\u270F  Edit");
+        Button btnDelete = new Button("\uD83D\uDDD1  Delete");
         btnEdit.getStyleClass().add("btn-card-edit");
         btnDelete.getStyleClass().add("btn-card-delete");
         btnEdit.setOnAction(e -> openForm(quiz));
@@ -124,13 +154,11 @@ public class QuizListController {
         HBox actions = new HBox(8, btnEdit, btnDelete);
         actions.setAlignment(Pos.CENTER);
 
-        // ── Card ──
         VBox card = new VBox(10, icon, title, description, badge, actions);
         card.getStyleClass().add("quiz-card");
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(20, 16, 20, 16));
         card.setPrefWidth(232);
-
         return card;
     }
 
@@ -144,12 +172,11 @@ public class QuizListController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/views/quiz/quiz_form.fxml"));
             Parent root = loader.load();
-
             QuizFormController ctrl = loader.getController();
             if (quiz != null) ctrl.loadQuiz(quiz);
 
             Stage stage = new Stage();
-            stage.setTitle(quiz == null ? "New Quiz" : "Edit Quiz — " + quiz.getTitle());
+            stage.setTitle(quiz == null ? "New Quiz" : "Edit Quiz \u2014 " + quiz.getTitle());
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.setOnHidden(e -> loadData());
@@ -176,5 +203,10 @@ public class QuizListController {
         Alert a = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
         a.setHeaderText(title);
         a.showAndWait();
+    }
+
+    private static Integer parseIntOrNull(String s) {
+        try { return s == null || s.isBlank() ? null : Integer.parseInt(s.trim()); }
+        catch (NumberFormatException e) { return null; }
     }
 }

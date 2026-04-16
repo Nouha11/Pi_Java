@@ -342,6 +342,49 @@
     -fx-font-size: 12px;
 }
 
+/* ── FILTER BAR ──────────────────────────────────────── */
+.filter-bar {
+    -fx-background-color: #f8f9ff;
+    -fx-border-color: transparent transparent #e4e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.filter-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a5568;
+}
+
+.filter-num-field {
+    -fx-background-color: white;
+    -fx-border-color: #dde2f5;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 5 8 5 8;
+    -fx-font-size: 12px;
+    -fx-alignment: center;
+}
+.filter-num-field:focused {
+    -fx-border-color: #3b4fd8;
+    -fx-background-color: white;
+}
+
+.btn-ghost-sm {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a0aec0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 11px;
+}
+.btn-ghost-sm:hover {
+    -fx-background-color: #fff5f5;
+    -fx-text-fill: #e53e3e;
+    -fx-border-color: #fed7d7;
+}
+
 /* ── QUIZ CARDS ──────────────────────────────────────── */
 .cards-pane {
     -fx-background-color: transparent;
