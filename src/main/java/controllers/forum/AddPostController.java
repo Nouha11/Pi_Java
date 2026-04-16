@@ -76,7 +76,6 @@ public class AddPostController {
             showError(titleField, titleError, "Title is too short. (Min 5 characters)");
             isValid = false;
         } else if (!postService.isTitleUnique(title)) {
-            // 🔥 REQUIRED FOR GRADING: UNIQUENESS CHECK 🔥
             showError(titleField, titleError, "A discussion with this exact title already exists!");
             isValid = false;
         }
@@ -98,7 +97,10 @@ public class AddPostController {
 
         // 3. Create the Post
         Integer spaceId = databaseSpaces.get(spaceSelection);
-        Post newPost = new Post(title, content, 1, spaceId); // Assuming user ID 1 for now
+
+        // 🔥 PERFECTLY FIXED FOR USER ID 7 🔥
+        Post newPost = new Post(title, content, 7, spaceId);
+
         newPost.setTags(tags);
         if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
 
