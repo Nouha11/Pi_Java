@@ -70,6 +70,10 @@ public class NovaDashboardController {
     // --- TEAMMATE'S USER SESSION LOGIC ---
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        // Store user ID globally for library module
+        if (user != null) {
+            utils.SessionManager.setCurrentUserId(user.getId());
+        }
     }
 
     @FXML

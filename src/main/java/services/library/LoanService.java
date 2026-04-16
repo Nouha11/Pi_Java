@@ -41,15 +41,20 @@ public class LoanService {
      * library_id is optional (null if no specific library was chosen).
      */
     public void ajouter(Loan l) throws SQLException {
-        String sql = "INSERT INTO loans (user_id, book_id, library_id, status, requested_at, start_at) " +
-                     "VALUES (?,?,?,?,NOW(),NOW())";
+        String sql = "INSERT INTO loans (user_id, book_id, library_id, status, requested_at, start_at, end_at) " +
+                     "VALUES (?,?,?,?,NOW(),?,?)";
         PreparedStatement ps = getCnx().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setInt(1, l.getUserId());
         ps.setInt(2, l.getBookId());
-        // library_id is optional — use NULL if not set
         if (l.getLibraryId() > 0) ps.setInt(3, l.getLibraryId());
         else ps.setNull(3, Types.INTEGER);
         ps.setString(4, Loan.STATUS_PENDING);
+        // Use provided start_at or default to now
+        ps.setTimestamp(5, l.getStartAt() != null ? l.getStartAt()
+                : new Timestamp(System.currentTimeMillis()));
+        // Use provided end_at (return date chosen by user) or default to 14 days from now
+        ps.setTimestamp(6, l.getEndAt() != null ? l.getEndAt()
+                : new Timestamp(System.currentTimeMillis() + (long) LOAN_DURATION_DAYS * 24 * 60 * 60 * 1000));
         ps.executeUpdate();
         ResultSet keys = ps.getGeneratedKeys();
         if (keys.next()) l.setId(keys.getInt(1));

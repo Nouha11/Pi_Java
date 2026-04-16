@@ -64,7 +64,11 @@ public class QuizService {
 
     // --- READ (Get All) ---
     public List<Quiz> getAllQuizzes() {
-        String req = "SELECT * FROM quiz";
+        // Include question count so the UI can display and sort by it
+        String req = "SELECT q.*, COUNT(qu.id) AS question_count " +
+                     "FROM quiz q " +
+                     "LEFT JOIN question qu ON qu.quiz_id = q.id " +
+                     "GROUP BY q.id";
         List<Quiz> quizzes = new ArrayList<>();
 
         try {
@@ -77,6 +81,7 @@ public class QuizService {
                         rs.getString("title"),
                         rs.getString("description")
                 );
+                quiz.setQuestionCount(rs.getInt("question_count"));
                 quizzes.add(quiz);
             }
 
