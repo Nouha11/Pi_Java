@@ -11,13 +11,16 @@
       fx:controller="controllers.quiz.QuizListController">
 
     <!-- TOOLBAR -->
-    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="toolbar">
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar">
         <padding><Insets bottom="14" left="20" right="20" top="14"/></padding>
         <Label styleClass="toolbar-title" text="📝  Quizzes"/>
         <Region HBox.hgrow="ALWAYS"/>
         <TextField fx:id="txtSearch" promptText="🔍  Search quizzes…"
-                   styleClass="search-field" prefWidth="210"
-                   onKeyReleased="#handleSearch"/>
+                   styleClass="search-field" prefWidth="200"
+                   onKeyReleased="#handleFilterSort"/>
+        <ComboBox fx:id="cmbSort" promptText="Sort by…"
+                  styleClass="sort-combo" prefWidth="160"
+                  onAction="#handleFilterSort"/>
         <Button onAction="#handleCreate" styleClass="btn-primary" text="＋  New Quiz"/>
     </HBox>
 

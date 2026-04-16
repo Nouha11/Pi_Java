@@ -1,5 +1,6 @@
 package controllers.quiz;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -15,36 +16,67 @@ import models.quiz.Quiz;
 import services.quiz.QuizService;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class QuizListController {
 
-    @FXML private FlowPane cardsPane;
+    @FXML private FlowPane  cardsPane;
     @FXML private Label     lblStatus;
     @FXML private TextField txtSearch;
+    @FXML private ComboBox<String> cmbSort;
+
+    private static final String SORT_AZ        = "Title A → Z";
+    private static final String SORT_ZA        = "Title Z → A";
+    private static final String SORT_MOST_Q    = "Most Questions";
+    private static final String SORT_FEWEST_Q  = "Fewest Questions";
 
     private final QuizService quizService = new QuizService();
     private List<Quiz> allQuizzes;
 
     @FXML
     public void initialize() {
+        cmbSort.setItems(FXCollections.observableArrayList(
+                SORT_AZ, SORT_ZA, SORT_MOST_Q, SORT_FEWEST_Q));
+        cmbSort.setValue(SORT_AZ);
         loadData();
     }
 
     private void loadData() {
         allQuizzes = quizService.getAllQuizzes();
-        renderCards(allQuizzes);
+        applyFilterSort();
     }
 
+    /** Single handler for both the search field and the sort combo. */
     @FXML
-    private void handleSearch() {
-        String q = txtSearch.getText().trim().toLowerCase();
-        List<Quiz> filtered = allQuizzes.stream()
-                .filter(quiz -> quiz.getTitle().toLowerCase().contains(q)
-                        || (quiz.getDescription() != null && quiz.getDescription().toLowerCase().contains(q)))
+    private void handleFilterSort() {
+        applyFilterSort();
+    }
+
+    private void applyFilterSort() {
+        String query = txtSearch.getText().trim().toLowerCase();
+
+        // 1. Filter by search text
+        List<Quiz> result = allQuizzes.stream()
+                .filter(q -> q.getTitle().toLowerCase().contains(query)
+                        || (q.getDescription() != null
+                            && q.getDescription().toLowerCase().contains(query)))
                 .collect(Collectors.toList());
-        renderCards(filtered);
+
+        // 2. Sort
+        String sort = cmbSort.getValue();
+        if (SORT_ZA.equals(sort)) {
+            result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER).reversed());
+        } else if (SORT_MOST_Q.equals(sort)) {
+            result.sort(Comparator.comparingInt(Quiz::getQuestionCount).reversed());
+        } else if (SORT_FEWEST_Q.equals(sort)) {
+            result.sort(Comparator.comparingInt(Quiz::getQuestionCount));
+        } else { // default: A → Z
+            result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER));
+        }
+
+        renderCards(result);
     }
 
     private void renderCards(List<Quiz> quizzes) {
@@ -76,6 +108,11 @@ public class QuizListController {
         description.setTextAlignment(TextAlignment.CENTER);
         description.setMaxWidth(200);
 
+        // ── Question count badge ──
+        Label badge = new Label(quiz.getQuestionCount() + " question"
+                + (quiz.getQuestionCount() == 1 ? "" : "s"));
+        badge.getStyleClass().add("quiz-card-badge");
+
         // ── Buttons ──
         Button btnEdit   = new Button("✏  Edit");
         Button btnDelete = new Button("🗑  Delete");
@@ -88,7 +125,7 @@ public class QuizListController {
         actions.setAlignment(Pos.CENTER);
 
         // ── Card ──
-        VBox card = new VBox(12, icon, title, description, actions);
+        VBox card = new VBox(10, icon, title, description, badge, actions);
         card.getStyleClass().add("quiz-card");
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(20, 16, 20, 16));
