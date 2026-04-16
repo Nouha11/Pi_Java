@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="600" prefWidth="640" styleClass="module-pane"
+      stylesheets="@../../css/quiz.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.quiz.QuizPlayController">
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="form-header">
+        <padding><Insets bottom="16" left="20" right="20" top="16"/></padding>
+        <Label fx:id="lblQuizTitle" styleClass="form-title" text="Quiz"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblProgress" styleClass="play-progress" text="1 / 5"/>
+    </HBox>
+
+    <!-- PROGRESS BAR -->
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="6"
+                 styleClass="play-progress-bar" progress="0.0"/>
+
+    <!-- QUESTION AREA -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                style="-fx-background-color:transparent;-fx-background:transparent;"
+                VBox.vgrow="ALWAYS">
+        <VBox spacing="20">
+            <padding><Insets bottom="24" left="32" right="32" top="28"/></padding>
+
+            <!-- XP + Difficulty badges -->
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label fx:id="lblDifficulty" styleClass="badge-easy" text="Easy"/>
+                <Label fx:id="lblXp" styleClass="play-xp-badge" text="⭐ 10 XP"/>
+            </HBox>
+
+            <!-- Question text -->
+            <Label fx:id="lblQuestion" styleClass="play-question-text"
+                   wrapText="true" maxWidth="Infinity"
+                   text="Question text goes here"/>
+
+            <!-- Question image (hidden when no image) -->
+            <ImageView fx:id="imgQuestion" fitWidth="560" fitHeight="280"
+                       preserveRatio="true" managed="false" visible="false"
+                       styleClass="play-question-image"/>
+
+            <!-- Choices -->
+            <VBox fx:id="choicesBox" spacing="10"/>
+
+            <!-- Feedback -->
+            <Label fx:id="lblFeedback" styleClass="play-feedback"
+                   managed="false" visible="false" wrapText="true"/>
+
+        </VBox>
+    </ScrollPane>
+
+    <!-- FOOTER -->
+    <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="form-footer">
+        <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
+        <Button onAction="#handleQuit" styleClass="btn-ghost" text="✕  Quit"/>
+        <Button fx:id="btnNext" onAction="#handleNext" styleClass="btn-primary"
+                text="Next  →" disable="true"/>
+    </HBox>
+
+</VBox>

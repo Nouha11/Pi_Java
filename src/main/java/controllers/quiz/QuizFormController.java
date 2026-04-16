@@ -60,6 +60,7 @@ public class QuizFormController {
             ctrl.setQuestionText(q.getText());
             ctrl.setXpValue(q.getXpValue());
             ctrl.setDifficulty(q.getDifficulty());
+            ctrl.setImageName(q.getImageName());
             ctrl.setChoices(choices.stream()
                     .map(c -> new QuestionCardController.ChoiceData(c.getContent(), c.isCorrect()))
                     .toList());
@@ -151,6 +152,7 @@ public class QuizFormController {
     private void persistQuestionsAndChoices(int quizId) {
         for (QuestionCardController ctrl : questionControllers) {
             Question q = new Question(ctrl.getQuestionText(), ctrl.getXpValue(), ctrl.getDifficulty(), quizId);
+            q.setImageName(ctrl.getImageName());
             q.setUpdatedAt(LocalDateTime.now());
             questionService.createQuestion(q);
 

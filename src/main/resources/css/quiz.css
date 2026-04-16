@@ -166,6 +166,60 @@
     -fx-font-size: 12px;
 }
 
+/* ── IMAGE SECTION (form) ────────────────────────────────── */
+.image-section {
+    -fx-background-color: #f8f9ff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #dde2f5;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1;
+    -fx-padding: 10 12 10 12;
+}
+.btn-pick-image {
+    -fx-background-color: #eef0fd;
+    -fx-text-fill: #3b4fd8;
+    -fx-border-color: #c3c9f5;
+    -fx-border-radius: 7px;
+    -fx-background-radius: 7px;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 5 14 5 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.btn-pick-image:hover {
+    -fx-background-color: #dde2f5;
+    -fx-border-color: #3b4fd8;
+}
+.btn-clear-image {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e53e3e;
+    -fx-border-color: #fed7d7;
+    -fx-border-radius: 7px;
+    -fx-background-radius: 7px;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-padding: 5 12 5 12;
+    -fx-font-size: 12px;
+}
+.btn-clear-image:hover {
+    -fx-background-color: #fff5f5;
+    -fx-border-color: #fc8181;
+}
+.image-name-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #718096;
+    -fx-font-style: italic;
+}
+.image-preview {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 8, 0, 0, 2);
+}
+
+/* ── PLAY QUESTION IMAGE ─────────────────────────────────── */
+.play-question-image {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 10, 0, 0, 3);
+}
+
 /* ── CHOICE ROW ──────────────────────────────────────────── */
 .choice-row {
     -fx-background-color: #f9fafb;
