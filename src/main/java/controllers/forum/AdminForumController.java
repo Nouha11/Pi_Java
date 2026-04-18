@@ -1,162 +1,121 @@
 package controllers.forum;
 
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import models.forum.Post;
 import services.forum.PostService;
 
+import java.util.List;
+import java.util.Optional;
+
 public class AdminForumController {
 
-    @FXML private TableView<Post> postTable;
-    @FXML private TableColumn<Post, Integer> idCol;
-    @FXML private TableColumn<Post, String> titleCol;
-    @FXML private TableColumn<Post, String> authorCol;
-    @FXML private TableColumn<Post, String> spaceCol;
-    @FXML private TableColumn<Post, Integer> upvotesCol;
-    @FXML private TableColumn<Post, String> statusCol;
-    @FXML private TableColumn<Post, Void> actionsCol;
+    @FXML
+    private VBox postsContainer;
 
     private PostService postService = new PostService();
-    private ObservableList<Post> postList;
 
     @FXML
     public void initialize() {
-        setupTableColumns();
-        loadData();
+        loadPosts();
     }
 
-    private void setupTableColumns() {
-        idCol.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
-        titleCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTitle()));
+    private void loadPosts() {
+        postsContainer.getChildren().clear();
+        List<Post> posts = postService.afficher();
 
-        authorCol.setCellValueFactory(cellData -> {
-            String author = cellData.getValue().getAuthorName();
-            return new SimpleStringProperty(author != null ? author : "Unknown");
-        });
+        if (posts.isEmpty()) {
+            Label emptyLabel = new Label("No discussions found in the forum.");
+            emptyLabel.setStyle("-fx-padding: 20; -fx-text-fill: #94a3b8; -fx-font-style: italic;");
+            postsContainer.getChildren().add(emptyLabel);
+            return;
+        }
 
-        spaceCol.setCellValueFactory(cellData -> {
-            String space = cellData.getValue().getSpaceName();
-            return new SimpleStringProperty(space != null ? space : "General");
-        });
-
-        upvotesCol.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getUpvotes()).asObject());
-
-        statusCol.setCellValueFactory(cellData -> {
-            boolean isLocked = cellData.getValue().isLocked();
-            return new SimpleStringProperty(isLocked ? "🔒 Locked" : "🟢 Open");
-        });
-
-        // 🔥 FIXED ACTION BUTTONS: Crisp Text, No Clipping
-        actionsCol.setCellFactory(param -> new TableCell<Post, Void>() {
-            private final Button lockBtn = new Button();
-            private final Button editBtn = new Button("Edit");
-            private final Button deleteBtn = new Button("Delete");
-            private final HBox pane = new HBox(5, lockBtn, editBtn, deleteBtn);
-
-            {
-                pane.setAlignment(Pos.CENTER);
-
-                // Styling: Slightly smaller font and tight padding so they fit nicely
-                String btnStyle = "-fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 4 8; -fx-background-radius: 4; -fx-font-weight: bold;";
-                editBtn.setStyle("-fx-background-color: #fef08a; -fx-text-fill: #a16207; " + btnStyle);
-                deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " + btnStyle);
-
-                lockBtn.setOnAction(e -> {
-                    Post p = getTableView().getItems().get(getIndex());
-                    boolean newState = !p.isLocked();
-                    postService.toggleLock(p.getId(), newState);
-                    p.setLocked(newState);
-                    getTableView().refresh();
-                });
-
-                editBtn.setOnAction(e -> {
-                    Post p = getTableView().getItems().get(getIndex());
-                    showAdminEditDialog(p);
-                });
-
-                deleteBtn.setOnAction(e -> {
-                    Post p = getTableView().getItems().get(getIndex());
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Permanently delete this post and all its comments?", ButtonType.YES, ButtonType.NO);
-                    confirm.showAndWait().ifPresent(response -> {
-                        if (response == ButtonType.YES) {
-                            postService.supprimer(p.getId());
-                            getTableView().getItems().remove(p);
-                        }
-                    });
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Post p = getTableView().getItems().get(getIndex());
-                    String btnStyle = "-fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 4 8; -fx-background-radius: 4; -fx-font-weight: bold;";
-
-                    if (p.isLocked()) {
-                        lockBtn.setText("Unlock");
-                        lockBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " + btnStyle);
-                    } else {
-                        lockBtn.setText("Lock");
-                        lockBtn.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; " + btnStyle);
-                    }
-                    setGraphic(pane);
-                }
-            }
-        });
+        for (Post post : posts) {
+            postsContainer.getChildren().add(createPostRow(post));
+        }
     }
 
-    private void showAdminEditDialog(Post post) {
-        Stage editStage = new Stage();
-        editStage.initModality(Modality.APPLICATION_MODAL);
-        editStage.setTitle("Admin Override: Edit Post");
+    private HBox createPostRow(Post post) {
+        HBox row = new HBox(15);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 15 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: white;");
 
-        VBox layout = new VBox(15);
-        layout.setStyle("-fx-background-color: #f8fafc; -fx-padding: 25;");
+        // Hover Effect
+        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 15 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
+        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 15 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
 
-        Label headerText = new Label("Admin Edit: ID #" + post.getId());
-        headerText.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #dc2626;");
+        // 1. Post Details (Title & Author - No ID)
+        VBox detailsBox = new VBox(4);
+        detailsBox.setPrefWidth(350);
+        Label titleLabel = new Label(post.getTitle());
+        titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1e293b;");
+        Label authorLabel = new Label("Posted by @" + (post.getAuthorName() != null ? post.getAuthorName() : "Unknown"));
+        authorLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
+        detailsBox.getChildren().addAll(titleLabel, authorLabel);
 
-        TextField titleInput = new TextField(post.getTitle());
-        titleInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-padding: 10; -fx-font-size: 14px;");
+        // 2. Space Pill
+        Label spaceLabel = new Label(post.getSpaceName() != null ? post.getSpaceName() : "General");
+        spaceLabel.setPrefWidth(120);
+        spaceLabel.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
 
-        TextArea contentInput = new TextArea(post.getContent());
-        contentInput.setWrapText(true);
-        contentInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-font-size: 14px;");
+        // 3. Upvotes
+        Label upvotesLabel = new Label(post.getUpvotes() + " pts");
+        upvotesLabel.setPrefWidth(80);
+        upvotesLabel.setStyle("-fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 13px;");
 
-        Button saveChangesBtn = new Button("Force Save Changes");
-        saveChangesBtn.setStyle("-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;");
+        // 4. Status
+        Label statusLabel = new Label(post.isLocked() ? "🔒 Locked" : "🟢 Open");
+        statusLabel.setPrefWidth(100);
+        statusLabel.setStyle(post.isLocked() ? "-fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-font-size: 13px;" : "-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 13px;");
 
-        saveChangesBtn.setOnAction(e -> {
-            if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
-                post.setTitle(titleInput.getText());
-                post.setContent(contentInput.getText());
-                postService.modifier(post);
-                postTable.refresh();
-                editStage.close();
+        // Spacer to push actions to the right
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // 5. Actions (Modern Pill Buttons instead of standard JavaFX Buttons)
+        HBox actionsBox = new HBox(10);
+        actionsBox.setAlignment(Pos.CENTER_RIGHT);
+        actionsBox.setPrefWidth(160);
+
+        Label btnLock = new Label(post.isLocked() ? "🔓 Unlock" : "🔒 Lock");
+        btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnLock.setOnMouseClicked(e -> {
+            postService.toggleLock(post.getId(), !post.isLocked());
+            loadPosts(); // Refresh list to show updated status
+        });
+
+        Label btnDelete = new Label("🗑 Delete");
+        btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnDelete.setOnMouseClicked(e -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Delete Post");
+            confirm.setHeaderText("Delete this post?");
+            confirm.setContentText("This action cannot be undone and will delete all associated comments.");
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                postService.supprimer(post.getId());
+                loadPosts(); // Refresh list
             }
         });
 
-        layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
-        Scene scene = new Scene(layout, 500, 450);
-        editStage.setScene(scene);
-        editStage.showAndWait();
-    }
+        // Add hover effects for the action buttons
+        btnLock.setOnMouseEntered(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fde68a; -fx-text-fill: #b45309; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnLock.setOnMouseExited(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
 
-    private void loadData() {
-        postList = FXCollections.observableArrayList(postService.afficher());
-        postTable.setItems(postList);
+        btnDelete.setOnMouseEntered(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #fecdd3; -fx-text-fill: #be123c; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnDelete.setOnMouseExited(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+
+        actionsBox.getChildren().addAll(btnLock, btnDelete);
+
+        row.getChildren().addAll(detailsBox, spaceLabel, upvotesLabel, statusLabel, spacer, actionsBox);
+        return row;
     }
 }
