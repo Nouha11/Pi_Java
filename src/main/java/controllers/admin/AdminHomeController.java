@@ -1,21 +1,17 @@
 package controllers.admin;
 
 import javafx.animation.*;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.effect.GaussianBlur;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 import models.gamification.Game;
 import models.gamification.Reward;
@@ -64,41 +60,20 @@ public class AdminHomeController implements Initializable {
     @FXML private Label statQuizzes, statQuizzesDetail;
     @FXML private Label statForum, statForumDetail;
 
-    // ── Content row 1 ────────────────────────────────────────
-    @FXML private HBox contentArea;
-    @FXML private VBox coursesPanel;
-    @FXML private TableView<Course> recentCoursesTable;
-    @FXML private TableColumn<Course, String>  courseColName, courseColCategory, courseColDifficulty, courseColStatus;
-    @FXML private VBox sidebar;
+    // ── Content row containers ────────────────────────────────────────
+    @FXML private HBox contentArea, row2, row3, row4;
+    @FXML private VBox coursesPanel, sidebar, loansPanel, gamesPanel, topGamesBox;
+    @FXML private VBox quizzesPanel, rewardsPanel, topRewardsBox;
+    @FXML private VBox recentGamesPanel, recentRewardsPanel;
+
     @FXML private Label roleStudents, roleTutors, roleAdmins;
 
-    // ── Content row 2 ────────────────────────────────────────
-    @FXML private HBox row2;
-    @FXML private VBox loansPanel;
-    @FXML private TableView<Loan> recentLoansTable;
-    @FXML private TableColumn<Loan, String> loanColBook, loanColUser, loanColStatus, loanColDate;
-    @FXML private VBox gamesPanel;
-    @FXML private VBox topGamesBox;
-
-    // ── Content row 3 ────────────────────────────────────────
-    @FXML private HBox row3;
-    @FXML private VBox quizzesPanel;
-    @FXML private TableView<Quiz> recentQuizzesTable;
-    @FXML private TableColumn<Quiz, String>  quizColTitle;
-    @FXML private TableColumn<Quiz, Integer> quizColQuestions;
-    @FXML private VBox rewardsPanel;
-    @FXML private VBox topRewardsBox;
-
-    // ── Content row 4 ────────────────────────────────────────
-    @FXML private HBox row4;
-    @FXML private VBox recentGamesPanel;
-    @FXML private TableView<Game> recentGamesTable;
-    @FXML private TableColumn<Game, String>  gameColName, gameColType, gameColDifficulty;
-    @FXML private TableColumn<Game, Integer> gameColXP;
-    @FXML private VBox recentRewardsPanel;
-    @FXML private TableView<Reward> recentRewardsTable;
-    @FXML private TableColumn<Reward, String>  rewardColName, rewardColType;
-    @FXML private TableColumn<Reward, Integer> rewardColValue;
+    // ── New Dynamic List Containers (Replacing TableViews) ───────────────────
+    @FXML private VBox coursesListContainer;
+    @FXML private VBox loansListContainer;
+    @FXML private VBox quizzesListContainer;
+    @FXML private VBox gamesListContainer;
+    @FXML private VBox rewardsListContainer;
 
     // ── Services ─────────────────────────────────────────────
     private final Connection      conn            = MyConnection.getInstance().getCnx();
@@ -121,21 +96,20 @@ public class AdminHomeController implements Initializable {
         updateGreeting();
         startLiveClock();
         loadStats();
-        setupCoursesTable();
+
+        // Load data dynamically into VBox containers
         loadRecentCourses();
-        setupLoansTable();
         loadRecentLoans();
         loadTopGames();
-        setupQuizzesTable();
         loadRecentQuizzes();
         loadTopRewards();
-        setupGamesRewardsTable();
         loadRecentGames();
         loadRecentRewards();
+
         playEntranceAnimation();
     }
 
-    // ── Greeting ──────────────────────────────────────────────
+    // ── Greeting & Stats ──────────────────────────────────────────────
 
     private void updateGreeting() {
         int hour = LocalTime.now().getHour();
@@ -154,14 +128,12 @@ public class AdminHomeController implements Initializable {
         clock.play();
     }
 
-    // ── Stats ─────────────────────────────────────────────────
-
     private void loadStats() {
         try {
             ResultSet ru = conn.createStatement().executeQuery(
                     "SELECT COUNT(*) total, SUM(is_active) active, " +
-                    "SUM(role='ROLE_STUDENT') students, SUM(role='ROLE_TUTOR') tutors, " +
-                    "SUM(role='ROLE_ADMIN') admins FROM user");
+                            "SUM(role='ROLE_STUDENT') students, SUM(role='ROLE_TUTOR') tutors, " +
+                            "SUM(role='ROLE_ADMIN') admins FROM user");
             if (ru.next()) {
                 statUsers.setText(String.valueOf(ru.getInt("total")));
                 statUsersDetail.setText(ru.getInt("active") + " active");
@@ -210,76 +182,204 @@ public class AdminHomeController implements Initializable {
         }
     }
 
-    // ── Courses table ─────────────────────────────────────────
+    // ── Dynamic List Row Builders ─────────────────────────────────────────
 
-    private void setupCoursesTable() {
-        courseColName.setCellValueFactory(new PropertyValueFactory<>("courseName"));
-        courseColCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-        courseColDifficulty.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
-        courseColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+    private HBox createBaseRow() {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;");
+        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
+        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
+        return row;
+    }
 
-        courseColStatus.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String s, boolean empty) {
-                super.updateItem(s, empty);
-                if (empty || s == null) { setText(null); setStyle(""); return; }
-                setText(s);
-                setStyle(switch (s.toUpperCase()) {
-                    case "PUBLISHED"   -> "-fx-text-fill: #16a34a; -fx-font-weight: bold;";
-                    case "DRAFT"       -> "-fx-text-fill: #d97706; -fx-font-weight: bold;";
-                    case "ARCHIVED"    -> "-fx-text-fill: #94a3b8; -fx-font-weight: bold;";
-                    default -> "";
-                });
-            }
-        });
+    private Label createEmptyLabel(String text) {
+        Label lbl = new Label(text);
+        lbl.setStyle("-fx-padding: 20; -fx-text-fill: #94a3b8; -fx-font-style: italic;");
+        return lbl;
     }
 
     private void loadRecentCourses() {
         try {
-            List<Course> courses = courseService.findByFilters(null, null, null, null)
-                    .stream().limit(8).toList();
-            recentCoursesTable.setItems(FXCollections.observableArrayList(courses));
+            List<Course> courses = courseService.findByFilters(null, null, null, null).stream().limit(8).toList();
+            coursesListContainer.getChildren().clear();
+            if (courses.isEmpty()) {
+                coursesListContainer.getChildren().add(createEmptyLabel("No recent courses found."));
+                return;
+            }
+            for (Course c : courses) {
+                HBox row = createBaseRow();
+
+                Label name = new Label(c.getCourseName());
+                name.setPrefWidth(250);
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                Label category = new Label(c.getCategory());
+                category.setPrefWidth(120);
+                category.setStyle("-fx-text-fill: #64748b;");
+
+                Label difficulty = new Label(c.getDifficulty());
+                difficulty.setPrefWidth(100);
+                difficulty.setStyle("-fx-text-fill: #64748b;");
+
+                Label status = new Label(c.getStatus());
+                status.setPrefWidth(100);
+                status.setAlignment(Pos.CENTER);
+
+                String statusStyle = switch (c.getStatus().toUpperCase()) {
+                    case "PUBLISHED" -> "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;";
+                    case "DRAFT"     -> "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;";
+                    case "ARCHIVED"  -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                    default          -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                };
+                status.setStyle(statusStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 12;");
+
+                row.getChildren().addAll(name, category, difficulty, status);
+                coursesListContainer.getChildren().add(row);
+            }
         } catch (Exception e) {
             System.err.println("AdminHome courses error: " + e.getMessage());
         }
     }
 
-    // ── Loans table ───────────────────────────────────────────
-
-    private void setupLoansTable() {
-        loanColBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
-        loanColUser.setCellValueFactory(new PropertyValueFactory<>("userName"));
-        loanColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        loanColDate.setCellValueFactory(d ->
-                new SimpleStringProperty(d.getValue().getRequestedAt() != null
-                        ? d.getValue().getRequestedAt().toString().substring(0, 10) : ""));
-
-        loanColStatus.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String s, boolean empty) {
-                super.updateItem(s, empty);
-                if (empty || s == null) { setText(null); setStyle(""); return; }
-                setText(s);
-                setStyle(switch (s) {
-                    case "PENDING"  -> "-fx-text-fill: #f59e0b; -fx-font-weight: bold;";
-                    case "APPROVED" -> "-fx-text-fill: #3b82f6; -fx-font-weight: bold;";
-                    case "ACTIVE"   -> "-fx-text-fill: #22c55e; -fx-font-weight: bold;";
-                    case "RETURNED" -> "-fx-text-fill: #94a3b8; -fx-font-weight: bold;";
-                    case "REJECTED" -> "-fx-text-fill: #ef4444; -fx-font-weight: bold;";
-                    default -> "";
-                });
-            }
-        });
-    }
-
     private void loadRecentLoans() {
         try {
             List<Loan> recent = loanService.afficher().stream().limit(6).toList();
-            recentLoansTable.setItems(FXCollections.observableArrayList(recent));
+            loansListContainer.getChildren().clear();
+            if (recent.isEmpty()) {
+                loansListContainer.getChildren().add(createEmptyLabel("No recent loan requests."));
+                return;
+            }
+            for (Loan l : recent) {
+                HBox row = createBaseRow();
+
+                Label book = new Label(l.getBookTitle());
+                book.setPrefWidth(220);
+                book.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                Label user = new Label(l.getUserName());
+                user.setPrefWidth(130);
+                user.setStyle("-fx-text-fill: #64748b;");
+
+                Label status = new Label(l.getStatus());
+                status.setPrefWidth(100);
+                status.setAlignment(Pos.CENTER);
+                String style = switch (l.getStatus().toUpperCase()) {
+                    case "PENDING"  -> "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;";
+                    case "APPROVED" -> "-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;";
+                    case "ACTIVE"   -> "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;";
+                    case "RETURNED" -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                    case "REJECTED" -> "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;";
+                    default         -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                };
+                status.setStyle(style + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 12;");
+
+                Label date = new Label(l.getRequestedAt() != null ? l.getRequestedAt().toString().substring(0, 10) : "");
+                date.setPrefWidth(110);
+                date.setStyle("-fx-text-fill: #94a3b8;");
+
+                row.getChildren().addAll(book, user, status, date);
+                loansListContainer.getChildren().add(row);
+            }
         } catch (Exception e) {
             System.err.println("AdminHome loans error: " + e.getMessage());
         }
     }
 
-    // ── Top Games ─────────────────────────────────────────────
+    private void loadRecentQuizzes() {
+        try {
+            List<Quiz> quizzes = quizService.getAllQuizzes().stream().limit(6).toList();
+            quizzesListContainer.getChildren().clear();
+            if (quizzes.isEmpty()) {
+                quizzesListContainer.getChildren().add(createEmptyLabel("No quizzes found."));
+                return;
+            }
+            for (Quiz q : quizzes) {
+                HBox row = createBaseRow();
+                Label title = new Label(q.getTitle());
+                title.setPrefWidth(350);
+                title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                int qCount = questionService.getQuestionsByQuizId(q.getId()).size();
+                Label questions = new Label(qCount + " questions");
+                questions.setPrefWidth(100);
+                questions.setStyle("-fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 3 8; -fx-background-radius: 4;");
+
+                row.getChildren().addAll(title, questions);
+                quizzesListContainer.getChildren().add(row);
+            }
+        } catch (Exception e) {
+            System.err.println("AdminHome quizzes error: " + e.getMessage());
+        }
+    }
+
+    private void loadRecentGames() {
+        try {
+            List<Game> games = gameService.getAllGames().stream().limit(8).toList();
+            gamesListContainer.getChildren().clear();
+            if (games.isEmpty()) {
+                gamesListContainer.getChildren().add(createEmptyLabel("No games found."));
+                return;
+            }
+            for (Game g : games) {
+                HBox row = createBaseRow();
+
+                Label name = new Label(g.getName());
+                name.setPrefWidth(180);
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                Label type = new Label(g.getType());
+                type.setPrefWidth(100);
+                type.setStyle("-fx-text-fill: #64748b;");
+
+                Label diff = new Label(g.getDifficulty());
+                diff.setPrefWidth(100);
+                diff.setStyle("-fx-text-fill: #64748b;");
+
+                Label xp = new Label("+" + g.getRewardXP() + " XP");
+                xp.setPrefWidth(90);
+                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-background-color: #eef2ff; -fx-padding: 4 8; -fx-background-radius: 6;");
+
+                row.getChildren().addAll(name, type, diff, xp);
+                gamesListContainer.getChildren().add(row);
+            }
+        } catch (Exception e) {
+            System.err.println("AdminHome games error: " + e.getMessage());
+        }
+    }
+
+    private void loadRecentRewards() {
+        try {
+            List<Reward> rewards = rewardService.getAllRewards().stream().limit(8).toList();
+            rewardsListContainer.getChildren().clear();
+            if (rewards.isEmpty()) {
+                rewardsListContainer.getChildren().add(createEmptyLabel("No rewards found."));
+                return;
+            }
+            for (Reward r : rewards) {
+                HBox row = createBaseRow();
+
+                Label name = new Label(r.getName());
+                name.setPrefWidth(200);
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+                Label type = new Label(r.getType());
+                type.setPrefWidth(140);
+                type.setStyle("-fx-text-fill: #64748b;");
+
+                Label val = new Label("+" + r.getValue());
+                val.setPrefWidth(80);
+                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-background-color: #fffbeb; -fx-padding: 4 8; -fx-background-radius: 6;");
+
+                row.getChildren().addAll(name, type, val);
+                rewardsListContainer.getChildren().add(row);
+            }
+        } catch (Exception e) {
+            System.err.println("AdminHome rewards error: " + e.getMessage());
+        }
+    }
+
+    // ── Top Games & Rewards ─────────────────────────────────────────────
 
     private void loadTopGames() {
         try {
@@ -307,7 +407,7 @@ public class AdminHomeController implements Initializable {
 
                 Label xp = new Label("+" + g.getRewardXP() + " XP");
                 xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-font-size: 12px; " +
-                            "-fx-background-color: #eef2ff; -fx-background-radius: 6; -fx-padding: 3 8;");
+                        "-fx-background-color: #eef2ff; -fx-background-radius: 6; -fx-padding: 3 8;");
 
                 row.getChildren().addAll(icon, info, xp);
                 topGamesBox.getChildren().add(row);
@@ -316,26 +416,6 @@ public class AdminHomeController implements Initializable {
             System.err.println("AdminHome games error: " + e.getMessage());
         }
     }
-
-    // ── Quizzes table ─────────────────────────────────────────
-
-    private void setupQuizzesTable() {
-        quizColTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        quizColQuestions.setCellValueFactory(d ->
-                new javafx.beans.property.SimpleObjectProperty<>(
-                        questionService.getQuestionsByQuizId(d.getValue().getId()).size()));
-    }
-
-    private void loadRecentQuizzes() {
-        try {
-            List<Quiz> quizzes = quizService.getAllQuizzes().stream().limit(6).toList();
-            recentQuizzesTable.setItems(FXCollections.observableArrayList(quizzes));
-        } catch (Exception e) {
-            System.err.println("AdminHome quizzes error: " + e.getMessage());
-        }
-    }
-
-    // ── Top Rewards ───────────────────────────────────────────
 
     private void loadTopRewards() {
         try {
@@ -350,7 +430,6 @@ public class AdminHomeController implements Initializable {
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setStyle("-fx-padding: 10 16; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
 
-                // Icon image or emoji fallback
                 ImageView iv = loadRewardIcon(r.getIcon(), 32);
                 if (iv != null) {
                     row.getChildren().add(iv);
@@ -370,7 +449,7 @@ public class AdminHomeController implements Initializable {
 
                 Label val = new Label("+" + r.getValue() + " pts");
                 val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 12px; " +
-                             "-fx-background-color: #fffbeb; -fx-background-radius: 6; -fx-padding: 3 8;");
+                        "-fx-background-color: #fffbeb; -fx-background-radius: 6; -fx-padding: 3 8;");
 
                 row.getChildren().addAll(info, val);
                 topRewardsBox.getChildren().add(row);
@@ -421,47 +500,13 @@ public class AdminHomeController implements Initializable {
         };
     }
 
-    // ── Recent Games & Rewards tables ────────────────────────
-
-    private void setupGamesRewardsTable() {
-        gameColName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        gameColType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        gameColDifficulty.setCellValueFactory(new PropertyValueFactory<>("difficulty"));
-        gameColXP.setCellValueFactory(new PropertyValueFactory<>("rewardXP"));
-
-        rewardColName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        rewardColType.setCellValueFactory(new PropertyValueFactory<>("type"));
-        rewardColValue.setCellValueFactory(new PropertyValueFactory<>("value"));
-    }
-
-    private void loadRecentGames() {
-        try {
-            List<Game> games = gameService.getAllGames().stream().limit(8).toList();
-            recentGamesTable.setItems(FXCollections.observableArrayList(games));
-        } catch (Exception e) {
-            System.err.println("AdminHome recent games error: " + e.getMessage());
-        }
-    }
-
-    private void loadRecentRewards() {
-        try {
-            List<Reward> rewards = rewardService.getAllRewards().stream().limit(8).toList();
-            recentRewardsTable.setItems(FXCollections.observableArrayList(rewards));
-        } catch (Exception e) {
-            System.err.println("AdminHome recent rewards error: " + e.getMessage());
-        }
-    }
-
     // ── Entrance animation ────────────────────────────────────
 
     private void playEntranceAnimation() {
-        List<Node> cards = List.of(
-                cardUsers, cardBooks, cardLoans, cardGames,
-                cardRewards, cardQuizzes, cardForum);
+        List<Node> cards = List.of(cardUsers, cardBooks, cardLoans, cardGames, cardRewards, cardQuizzes, cardForum);
 
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             createFloatingParticles();
-
             headerPane.setOpacity(0);
             if (heroLogo != null) { heroLogo.setOpacity(0); heroLogo.setTranslateX(-30); }
 
@@ -494,8 +539,7 @@ public class AdminHomeController implements Initializable {
             TranslateTransition gs = new TranslateTransition(Duration.millis(600), greetingBox);
             gs.setFromY(24); gs.setToY(0); gs.setInterpolator(Interpolator.EASE_OUT);
 
-            ParallelTransition heroAnim = new ParallelTransition(bgFade, logoAnim,
-                    new ParallelTransition(gf, gs));
+            ParallelTransition heroAnim = new ParallelTransition(bgFade, logoAnim, new ParallelTransition(gf, gs));
 
             FadeTransition r1 = new FadeTransition(Duration.millis(80), statsRow1);
             r1.setFromValue(0); r1.setToValue(1);
@@ -537,22 +581,13 @@ public class AdminHomeController implements Initializable {
         return new ParallelTransition(ft, tt);
     }
 
-    private ParallelTransition buildSlide(Node node, double fromX, double toX, int ms) {
-        TranslateTransition tt = new TranslateTransition(Duration.millis(ms), node);
-        tt.setFromX(fromX); tt.setToX(toX); tt.setInterpolator(Interpolator.EASE_OUT);
-        FadeTransition ft = new FadeTransition(Duration.millis(ms), node);
-        ft.setFromValue(0); ft.setToValue(1);
-        return new ParallelTransition(tt, ft);
-    }
-
     private void createFloatingParticles() {
         if (particlePane == null) return;
         java.util.Random rnd = new java.util.Random();
         particlePane.prefWidthProperty().bind(headerPane.widthProperty());
         particlePane.prefHeightProperty().bind(headerPane.heightProperty());
 
-        // Clip so particles don't bleed outside the banner
-        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+        Rectangle clip = new Rectangle();
         clip.widthProperty().bind(particlePane.widthProperty());
         clip.heightProperty().bind(particlePane.heightProperty());
         particlePane.setClip(clip);
@@ -560,25 +595,22 @@ public class AdminHomeController implements Initializable {
         String[] colors = {"#818cf8", "#c7d2fe", "#6366f1", "#a5b4fc", "#e0e7ff"};
 
         for (int i = 0; i < 32; i++) {
-            javafx.scene.Node particle;
+            Node particle;
             int type = rnd.nextInt(3);
             double size = rnd.nextDouble() * 9 + 4;
 
             if (type == 0) {
-                // Outlined square
                 Rectangle rect = new Rectangle(size, size);
                 rect.setFill(Color.TRANSPARENT);
                 rect.setStroke(Color.web(colors[rnd.nextInt(colors.length)]));
                 rect.setStrokeWidth(1.5);
                 particle = rect;
             } else if (type == 1) {
-                // "+" cross text
                 javafx.scene.text.Text cross = new javafx.scene.text.Text("+");
                 cross.setFont(javafx.scene.text.Font.font("Consolas", size * 1.6));
                 cross.setFill(Color.web(colors[rnd.nextInt(colors.length)]));
                 particle = cross;
             } else {
-                // Glowing dot
                 javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(size / 2);
                 dot.setFill(Color.web(colors[rnd.nextInt(colors.length)]));
                 dot.setEffect(new javafx.scene.effect.GaussianBlur(4));
@@ -590,19 +622,15 @@ public class AdminHomeController implements Initializable {
             particle.setTranslateY(rnd.nextDouble() * 160 + 60);
             particlePane.getChildren().add(particle);
 
-            // Float upward
-            TranslateTransition tt = new TranslateTransition(
-                    Duration.seconds(rnd.nextInt(14) + 10), particle);
+            TranslateTransition tt = new TranslateTransition(Duration.seconds(rnd.nextInt(14) + 10), particle);
             tt.setByY(-280);
             tt.setByX((rnd.nextDouble() - 0.5) * 50);
             tt.setCycleCount(TranslateTransition.INDEFINITE);
             tt.setInterpolator(Interpolator.LINEAR);
             tt.play();
 
-            // Spin (not for dots)
             if (type != 2) {
-                RotateTransition rt = new RotateTransition(
-                        Duration.seconds(rnd.nextInt(8) + 5), particle);
+                RotateTransition rt = new RotateTransition(Duration.seconds(rnd.nextInt(8) + 5), particle);
                 rt.setByAngle(rnd.nextBoolean() ? 180 : -180);
                 rt.setCycleCount(RotateTransition.INDEFINITE);
                 rt.setInterpolator(Interpolator.LINEAR);
@@ -625,7 +653,7 @@ public class AdminHomeController implements Initializable {
 
     private void navigate(String method) {
         try {
-            var scene = recentCoursesTable.getScene();
+            var scene = coursesListContainer.getScene(); // Using a node we know exists
             if (scene == null) return;
             Object ctrl = scene.getRoot().getProperties().get("adminDashboardController");
             if (ctrl instanceof AdminDashboardController adc) {
@@ -638,7 +666,6 @@ public class AdminHomeController implements Initializable {
                     case "showLoans"     -> adc.showLoans();
                     case "showGames"     -> adc.showGames();
                     case "showQuizzes"   -> adc.showQuizzes();
-                    case "showQuizStats" -> adc.showQuizStats();
                     case "showRewards"   -> adc.showRewards();
                 }
             }
