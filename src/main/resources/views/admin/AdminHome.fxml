@@ -13,52 +13,29 @@
 
     <VBox fx:id="rootVBox" spacing="0" styleClass="root-container">
 
-        <!-- ══════════════════════════════════════════════
-             HERO HEADER  (particles rendered by controller)
-        ══════════════════════════════════════════════ -->
         <StackPane fx:id="heroStack">
-            <!-- gradient background + content -->
             <VBox fx:id="headerPane" styleClass="hero-header" spacing="0">
                 <HBox alignment="CENTER_LEFT" spacing="32" styleClass="hero-inner">
-                    <!-- Logo — no ring, just the image -->
-                    <ImageView fx:id="heroLogo" fitWidth="120" fitHeight="120"
-                               preserveRatio="true" smooth="true">
+                    <ImageView fx:id="heroLogo" fitWidth="120" fitHeight="120" preserveRatio="true" smooth="true">
                         <image><Image url="@/images/nova-logo.png"/></image>
                     </ImageView>
-
-                    <!-- Greeting -->
                     <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label fx:id="lblGreeting"
-                               text="Good morning, Admin"
-                               styleClass="hero-title"/>
-                        <Label text="Here's what's happening across your platform today."
-                               styleClass="hero-subtitle"/>
+                        <Label fx:id="lblGreeting" text="Good morning, Admin" styleClass="hero-title"/>
+                        <Label text="Here's what's happening across your platform today." styleClass="hero-subtitle"/>
                     </VBox>
-
-                    <!-- Live date/time -->
                     <VBox alignment="CENTER_RIGHT" spacing="6">
                         <Label fx:id="lblDate" text="—" styleClass="date-badge"/>
                         <Label fx:id="lblTime" text="—" styleClass="time-badge"/>
                     </VBox>
                 </HBox>
             </VBox>
-
-            <!-- Particle canvas — sits on top, mouse-transparent -->
-            <Pane fx:id="particlePane" mouseTransparent="true"
-                  style="-fx-background-color: transparent;"/>
+            <Pane fx:id="particlePane" mouseTransparent="true" style="-fx-background-color: transparent;"/>
         </StackPane>
 
-        <!-- ══════════════════════════════════════════════
-             STAT CARDS — ROW 1
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="statsRow1" spacing="16" styleClass="stats-row">
-
-            <!-- Users -->
             <VBox fx:id="cardUsers" styleClass="stat-card card-blue" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="👥" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="👥" styleClass="stat-icon"/></StackPane>
                     <Label text="Total Users" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statUsers" text="—" styleClass="stat-number"/>
@@ -67,25 +44,17 @@
                     <Label fx:id="statUsersDetail" text="— active" styleClass="stat-detail-positive"/>
                 </HBox>
             </VBox>
-
-            <!-- Books -->
             <VBox fx:id="cardBooks" styleClass="stat-card card-violet" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="📚" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="📚" styleClass="stat-icon"/></StackPane>
                     <Label text="Books" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statBooks" text="—" styleClass="stat-number"/>
                 <Label fx:id="statBooksDetail" text="— digital · — physical" styleClass="stat-detail-neutral"/>
             </VBox>
-
-            <!-- Loans -->
             <VBox fx:id="cardLoans" styleClass="stat-card card-amber" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="📋" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="📋" styleClass="stat-icon"/></StackPane>
                     <Label text="Loans" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statLoans" text="—" styleClass="stat-number"/>
@@ -94,13 +63,9 @@
                     <Label fx:id="statLoansDetail" text="— pending" styleClass="stat-detail-warning"/>
                 </HBox>
             </VBox>
-
-            <!-- Games -->
             <VBox fx:id="cardGames" styleClass="stat-card card-emerald" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="🎮" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="🎮" styleClass="stat-icon"/></StackPane>
                     <Label text="Games" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statGames" text="—" styleClass="stat-number"/>
@@ -109,20 +74,12 @@
                     <Label fx:id="statGamesDetail" text="— active" styleClass="stat-detail-positive"/>
                 </HBox>
             </VBox>
-
         </HBox>
 
-        <!-- ══════════════════════════════════════════════
-             STAT CARDS — ROW 2
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="statsRow2" spacing="16" styleClass="stats-row" style="-fx-padding: 0 36 0 36;">
-
-            <!-- Rewards -->
             <VBox fx:id="cardRewards" styleClass="stat-card card-rose" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="🏆" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="🏆" styleClass="stat-icon"/></StackPane>
                     <Label text="Rewards" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statRewards" text="—" styleClass="stat-number"/>
@@ -131,25 +88,17 @@
                     <Label fx:id="statRewardsDetail" text="— active" styleClass="stat-detail-positive"/>
                 </HBox>
             </VBox>
-
-            <!-- Quizzes -->
             <VBox fx:id="cardQuizzes" styleClass="stat-card card-blue" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="📝" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="📝" styleClass="stat-icon"/></StackPane>
                     <Label text="Quizzes" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statQuizzes" text="—" styleClass="stat-number"/>
                 <Label fx:id="statQuizzesDetail" text="— questions total" styleClass="stat-detail-neutral"/>
             </VBox>
-
-            <!-- Forum -->
             <VBox fx:id="cardForum" styleClass="stat-card card-indigo" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg">
-                        <Label text="💬" styleClass="stat-icon"/>
-                    </StackPane>
+                    <StackPane styleClass="stat-icon-bg"><Label text="💬" styleClass="stat-icon"/></StackPane>
                     <Label text="Forum Posts" styleClass="stat-label"/>
                 </HBox>
                 <Label fx:id="statForum" text="—" styleClass="stat-number"/>
@@ -158,51 +107,42 @@
                     <Label fx:id="statForumDetail" text="— open discussions" styleClass="stat-detail-positive"/>
                 </HBox>
             </VBox>
-
-            <!-- spacer -->
             <Region HBox.hgrow="ALWAYS"/>
-
         </HBox>
 
-        <!-- ══════════════════════════════════════════════
-             MAIN CONTENT AREA — Row 1
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="contentArea" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
 
-            <!-- LEFT: Recent Courses table -->
             <VBox fx:id="coursesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
+                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Courses" styleClass="card-title"/>
-                        <Label text="Latest courses added to the platform" styleClass="card-subtitle"/>
+                        <Label text="Recent Courses" styleClass="card-title" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                        <Label text="Latest courses added to the platform" styleClass="card-subtitle" style="-fx-text-fill: #64748b;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllCourses"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllCourses"/>
                 </HBox>
-                <TableView fx:id="recentCoursesTable" prefHeight="240" styleClass="loans-table">
-                    <columns>
-                        <TableColumn fx:id="courseColName"       text="Course Name"  prefWidth="200"/>
-                        <TableColumn fx:id="courseColCategory"   text="Category"     prefWidth="120"/>
-                        <TableColumn fx:id="courseColDifficulty" text="Difficulty"   prefWidth="100"/>
-                        <TableColumn fx:id="courseColStatus"     text="Status"       prefWidth="100"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No courses found" styleClass="table-placeholder"/>
-                    </placeholder>
-                </TableView>
+
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
+                    <Label text="COURSE NAME" prefWidth="250" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="CATEGORY" prefWidth="120" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="STATUS" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                </HBox>
+
+                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="coursesListContainer" spacing="0"/>
+                </ScrollPane>
             </VBox>
 
-            <!-- RIGHT: Quick Actions + Roles -->
             <VBox fx:id="sidebar" spacing="16" prefWidth="290">
-
                 <VBox fx:id="quickActionsCard" styleClass="content-card" spacing="0">
                     <HBox styleClass="card-header" alignment="CENTER_LEFT">
                         <Label text="Quick Actions" styleClass="card-title" HBox.hgrow="ALWAYS"/>
                     </HBox>
                     <VBox spacing="8" style="-fx-padding: 14 16 16 16;">
-                        <Button text="Add New Book"    maxWidth="Infinity" onAction="#quickAddBook"    styleClass="btn-primary"/>
-                        <Button text="Manage Users"    maxWidth="Infinity" onAction="#quickUsers"      styleClass="btn-secondary"/>
-                        <Button text="View Game Stats" maxWidth="Infinity" onAction="#quickGameStats"  styleClass="btn-secondary"/>
-                        <Button text="Manage Forum"    maxWidth="Infinity" onAction="#quickForum"      styleClass="btn-secondary"/>
+                        <Button text="Add New Book"    maxWidth="Infinity" onAction="#quickAddBook"    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
+                        <Button text="Manage Users"    maxWidth="Infinity" onAction="#quickUsers"      style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
+                        <Button text="View Game Stats" maxWidth="Infinity" onAction="#quickGameStats"  style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
+                        <Button text="Manage Forum"    maxWidth="Infinity" onAction="#quickForum"      style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
                     </VBox>
                 </VBox>
 
@@ -228,38 +168,29 @@
                         </HBox>
                     </VBox>
                 </VBox>
-
             </VBox>
         </HBox>
 
-        <!-- ══════════════════════════════════════════════
-             CONTENT ROW 2 — Recent Loans + Top Games
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="row2" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-
-            <!-- Recent Loans -->
             <VBox fx:id="loansPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
+                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Loan Requests" styleClass="card-title"/>
-                        <Label text="Pending and active book loans" styleClass="card-subtitle"/>
+                        <Label text="Recent Loan Requests" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                        <Label text="Pending and active book loans" style="-fx-text-fill: #64748b;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllLoans"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllLoans"/>
                 </HBox>
-                <TableView fx:id="recentLoansTable" prefHeight="220" styleClass="loans-table">
-                    <columns>
-                        <TableColumn fx:id="loanColBook"   text="Book"      prefWidth="180"/>
-                        <TableColumn fx:id="loanColUser"   text="User"      prefWidth="130"/>
-                        <TableColumn fx:id="loanColStatus" text="Status"    prefWidth="100"/>
-                        <TableColumn fx:id="loanColDate"   text="Requested" prefWidth="110"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No recent loans" styleClass="table-placeholder"/>
-                    </placeholder>
-                </TableView>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
+                    <Label text="BOOK TITLE" prefWidth="220" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="USER" prefWidth="130" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="STATUS" prefWidth="120" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DATE REQUESTED" prefWidth="110" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="loansListContainer" spacing="0"/>
+                </ScrollPane>
             </VBox>
 
-            <!-- Top Games -->
             <VBox fx:id="gamesPanel" styleClass="content-card" prefWidth="340" spacing="0">
                 <HBox alignment="CENTER_LEFT" styleClass="card-header">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
@@ -270,35 +201,26 @@
                 </HBox>
                 <VBox fx:id="topGamesBox" spacing="0" style="-fx-padding: 4 0 8 0;"/>
             </VBox>
-
         </HBox>
 
-        <!-- ══════════════════════════════════════════════
-             CONTENT ROW 3 — Recent Quizzes + Top Rewards
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="row3" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-
-            <!-- Recent Quizzes -->
             <VBox fx:id="quizzesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
+                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Quizzes" styleClass="card-title"/>
-                        <Label text="Latest quizzes on the platform" styleClass="card-subtitle"/>
+                        <Label text="Recent Quizzes" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                        <Label text="Latest quizzes on the platform" style="-fx-text-fill: #64748b;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllQuizzes"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllQuizzes"/>
                 </HBox>
-                <TableView fx:id="recentQuizzesTable" prefHeight="200" styleClass="loans-table">
-                    <columns>
-                        <TableColumn fx:id="quizColTitle"     text="Quiz Title"   prefWidth="260"/>
-                        <TableColumn fx:id="quizColQuestions" text="Questions"    prefWidth="100"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No quizzes found" styleClass="table-placeholder"/>
-                    </placeholder>
-                </TableView>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
+                    <Label text="QUIZ TITLE" prefWidth="350" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="QUESTIONS" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" prefHeight="200" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="quizzesListContainer" spacing="0"/>
+                </ScrollPane>
             </VBox>
 
-            <!-- Top Rewards -->
             <VBox fx:id="rewardsPanel" styleClass="content-card" prefWidth="340" spacing="0">
                 <HBox alignment="CENTER_LEFT" styleClass="card-header">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
@@ -309,57 +231,45 @@
                 </HBox>
                 <VBox fx:id="topRewardsBox" spacing="0" style="-fx-padding: 4 0 8 0;"/>
             </VBox>
-
         </HBox>
 
-        <!-- ══════════════════════════════════════════════
-             CONTENT ROW 4 — Recent Games + Recent Rewards
-        ══════════════════════════════════════════════ -->
         <HBox fx:id="row4" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-
-            <!-- Recent Games table -->
             <VBox fx:id="recentGamesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
+                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Games" styleClass="card-title"/>
-                        <Label text="Latest games added to the platform" styleClass="card-subtitle"/>
+                        <Label text="Recent Games" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                        <Label text="Latest games added to the platform" style="-fx-text-fill: #64748b;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllGames"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
                 </HBox>
-                <TableView fx:id="recentGamesTable" prefHeight="220" styleClass="loans-table">
-                    <columns>
-                        <TableColumn fx:id="gameColName"       text="Game Name"  prefWidth="180"/>
-                        <TableColumn fx:id="gameColType"       text="Type"       prefWidth="100"/>
-                        <TableColumn fx:id="gameColDifficulty" text="Difficulty" prefWidth="100"/>
-                        <TableColumn fx:id="gameColXP"         text="XP Reward"  prefWidth="90"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No games found" styleClass="table-placeholder"/>
-                    </placeholder>
-                </TableView>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
+                    <Label text="GAME NAME" prefWidth="180" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="TYPE" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="XP REWARD" prefWidth="90" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="gamesListContainer" spacing="0"/>
+                </ScrollPane>
             </VBox>
 
-            <!-- Recent Rewards table -->
             <VBox fx:id="recentRewardsPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
+                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
                     <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Rewards" styleClass="card-title"/>
-                        <Label text="Latest rewards added to the platform" styleClass="card-subtitle"/>
+                        <Label text="Recent Rewards" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                        <Label text="Latest rewards added to the platform" style="-fx-text-fill: #64748b;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllRewards"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
                 </HBox>
-                <TableView fx:id="recentRewardsTable" prefHeight="220" styleClass="loans-table">
-                    <columns>
-                        <TableColumn fx:id="rewardColName"  text="Reward Name" prefWidth="180"/>
-                        <TableColumn fx:id="rewardColType"  text="Type"        prefWidth="130"/>
-                        <TableColumn fx:id="rewardColValue" text="Value"       prefWidth="80"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No rewards found" styleClass="table-placeholder"/>
-                    </placeholder>
-                </TableView>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
+                    <Label text="REWARD NAME" prefWidth="200" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="TYPE" prefWidth="140" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="VALUE" prefWidth="80" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                </HBox>
+                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <VBox fx:id="rewardsListContainer" spacing="0"/>
+                </ScrollPane>
             </VBox>
-
         </HBox>
 
         <Region prefHeight="32"/>
