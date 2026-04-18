@@ -68,7 +68,7 @@ public class AdminHomeController implements Initializable {
 
     @FXML private Label roleStudents, roleTutors, roleAdmins;
 
-    // ── New Dynamic List Containers (Replacing TableViews) ───────────────────
+    // ── New Dynamic List Containers ───────────────────
     @FXML private VBox coursesListContainer;
     @FXML private VBox loansListContainer;
     @FXML private VBox quizzesListContainer;
@@ -97,7 +97,6 @@ public class AdminHomeController implements Initializable {
         startLiveClock();
         loadStats();
 
-        // Load data dynamically into VBox containers
         loadRecentCourses();
         loadRecentLoans();
         loadTopGames();
@@ -187,15 +186,15 @@ public class AdminHomeController implements Initializable {
     private HBox createBaseRow() {
         HBox row = new HBox(10);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;");
-        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
-        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 12 16; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
+        row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;");
+        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
+        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
         return row;
     }
 
     private Label createEmptyLabel(String text) {
         Label lbl = new Label(text);
-        lbl.setStyle("-fx-padding: 20; -fx-text-fill: #94a3b8; -fx-font-style: italic;");
+        lbl.setStyle("-fx-padding: 24; -fx-text-fill: #94a3b8; -fx-font-style: italic; -fx-font-size: 14px;");
         return lbl;
     }
 
@@ -212,15 +211,15 @@ public class AdminHomeController implements Initializable {
 
                 Label name = new Label(c.getCourseName());
                 name.setPrefWidth(250);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
 
                 Label category = new Label(c.getCategory());
                 category.setPrefWidth(120);
-                category.setStyle("-fx-text-fill: #64748b;");
+                category.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label difficulty = new Label(c.getDifficulty());
                 difficulty.setPrefWidth(100);
-                difficulty.setStyle("-fx-text-fill: #64748b;");
+                difficulty.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label status = new Label(c.getStatus());
                 status.setPrefWidth(100);
@@ -232,7 +231,7 @@ public class AdminHomeController implements Initializable {
                     case "ARCHIVED"  -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
                     default          -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
                 };
-                status.setStyle(statusStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 12;");
+                status.setStyle(statusStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 12; -fx-background-radius: 12;");
 
                 row.getChildren().addAll(name, category, difficulty, status);
                 coursesListContainer.getChildren().add(row);
@@ -255,14 +254,14 @@ public class AdminHomeController implements Initializable {
 
                 Label book = new Label(l.getBookTitle());
                 book.setPrefWidth(220);
-                book.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+                book.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
 
                 Label user = new Label(l.getUserName());
                 user.setPrefWidth(130);
-                user.setStyle("-fx-text-fill: #64748b;");
+                user.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label status = new Label(l.getStatus());
-                status.setPrefWidth(100);
+                status.setPrefWidth(120);
                 status.setAlignment(Pos.CENTER);
                 String style = switch (l.getStatus().toUpperCase()) {
                     case "PENDING"  -> "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;";
@@ -272,11 +271,11 @@ public class AdminHomeController implements Initializable {
                     case "REJECTED" -> "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;";
                     default         -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
                 };
-                status.setStyle(style + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 12;");
+                status.setStyle(style + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 12; -fx-background-radius: 12;");
 
                 Label date = new Label(l.getRequestedAt() != null ? l.getRequestedAt().toString().substring(0, 10) : "");
                 date.setPrefWidth(110);
-                date.setStyle("-fx-text-fill: #94a3b8;");
+                date.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13px;");
 
                 row.getChildren().addAll(book, user, status, date);
                 loansListContainer.getChildren().add(row);
@@ -298,12 +297,12 @@ public class AdminHomeController implements Initializable {
                 HBox row = createBaseRow();
                 Label title = new Label(q.getTitle());
                 title.setPrefWidth(350);
-                title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+                title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
 
                 int qCount = questionService.getQuestionsByQuizId(q.getId()).size();
                 Label questions = new Label(qCount + " questions");
                 questions.setPrefWidth(100);
-                questions.setStyle("-fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 3 8; -fx-background-radius: 4;");
+                questions.setStyle("-fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px; -fx-font-weight: bold;");
 
                 row.getChildren().addAll(title, questions);
                 quizzesListContainer.getChildren().add(row);
@@ -326,19 +325,19 @@ public class AdminHomeController implements Initializable {
 
                 Label name = new Label(g.getName());
                 name.setPrefWidth(180);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
 
                 Label type = new Label(g.getType());
                 type.setPrefWidth(100);
-                type.setStyle("-fx-text-fill: #64748b;");
+                type.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label diff = new Label(g.getDifficulty());
                 diff.setPrefWidth(100);
-                diff.setStyle("-fx-text-fill: #64748b;");
+                diff.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label xp = new Label("+" + g.getRewardXP() + " XP");
                 xp.setPrefWidth(90);
-                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-background-color: #eef2ff; -fx-padding: 4 8; -fx-background-radius: 6;");
+                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-background-color: #eef2ff; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px;");
 
                 row.getChildren().addAll(name, type, diff, xp);
                 gamesListContainer.getChildren().add(row);
@@ -361,15 +360,15 @@ public class AdminHomeController implements Initializable {
 
                 Label name = new Label(r.getName());
                 name.setPrefWidth(200);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b;");
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
 
                 Label type = new Label(r.getType());
                 type.setPrefWidth(140);
-                type.setStyle("-fx-text-fill: #64748b;");
+                type.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
                 Label val = new Label("+" + r.getValue());
                 val.setPrefWidth(80);
-                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-background-color: #fffbeb; -fx-padding: 4 8; -fx-background-radius: 6;");
+                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-background-color: #fffbeb; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px;");
 
                 row.getChildren().addAll(name, type, val);
                 rewardsListContainer.getChildren().add(row);
@@ -390,24 +389,23 @@ public class AdminHomeController implements Initializable {
 
             topGamesBox.getChildren().clear();
             for (Game g : top) {
-                HBox row = new HBox(12);
+                HBox row = new HBox(15);
                 row.setAlignment(Pos.CENTER_LEFT);
-                row.setStyle("-fx-padding: 10 16; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
+                row.setStyle("-fx-padding: 12 24; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
 
                 Label icon = new Label(gameEmoji(g.getType()));
-                icon.setStyle("-fx-font-size: 20px;");
+                icon.setStyle("-fx-font-size: 24px;");
 
                 VBox info = new VBox(2);
                 Label name = new Label(g.getName());
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 13px;");
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 14px;");
                 Label meta = new Label(g.getType() + "  ·  " + g.getDifficulty());
-                meta.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px;");
+                meta.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
                 info.getChildren().addAll(name, meta);
                 HBox.setHgrow(info, Priority.ALWAYS);
 
                 Label xp = new Label("+" + g.getRewardXP() + " XP");
-                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-font-size: 12px; " +
-                        "-fx-background-color: #eef2ff; -fx-background-radius: 6; -fx-padding: 3 8;");
+                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-color: #eef2ff; -fx-background-radius: 6; -fx-padding: 4 12;");
 
                 row.getChildren().addAll(icon, info, xp);
                 topGamesBox.getChildren().add(row);
@@ -426,30 +424,29 @@ public class AdminHomeController implements Initializable {
 
             topRewardsBox.getChildren().clear();
             for (Reward r : top) {
-                HBox row = new HBox(12);
+                HBox row = new HBox(15);
                 row.setAlignment(Pos.CENTER_LEFT);
-                row.setStyle("-fx-padding: 10 16; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
+                row.setStyle("-fx-padding: 12 24; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
 
-                ImageView iv = loadRewardIcon(r.getIcon(), 32);
+                ImageView iv = loadRewardIcon(r.getIcon(), 36);
                 if (iv != null) {
                     row.getChildren().add(iv);
                 } else {
                     Label emoji = new Label(rewardEmoji(r.getType()));
-                    emoji.setStyle("-fx-font-size: 20px;");
+                    emoji.setStyle("-fx-font-size: 24px;");
                     row.getChildren().add(emoji);
                 }
 
                 VBox info = new VBox(2);
                 Label name = new Label(r.getName());
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 13px;");
+                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 14px;");
                 Label type = new Label(r.getType());
-                type.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px;");
+                type.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
                 info.getChildren().addAll(name, type);
                 HBox.setHgrow(info, Priority.ALWAYS);
 
                 Label val = new Label("+" + r.getValue() + " pts");
-                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 12px; " +
-                        "-fx-background-color: #fffbeb; -fx-background-radius: 6; -fx-padding: 3 8;");
+                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-color: #fffbeb; -fx-background-radius: 6; -fx-padding: 4 12;");
 
                 row.getChildren().addAll(info, val);
                 topRewardsBox.getChildren().add(row);

@@ -23,7 +23,7 @@
                 <Label prefWidth="80.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 13px;" text="UPVOTES" />
                 <Label prefWidth="100.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 13px;" text="STATUS" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label alignment="CENTER" prefWidth="160.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 13px;" text="ACTIONS" />
+                <Label alignment="CENTER" prefWidth="240.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 13px;" text="ACTIONS" />
             </HBox>
 
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">

@@ -11,6 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import models.forum.Post;
 import services.forum.PostService;
+import javafx.stage.Stage;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,7 @@ public class AdminForumController {
         row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 15 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
         row.setOnMouseExited(e -> row.setStyle("-fx-padding: 15 20; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
 
-        // 1. Post Details (Title & Author - No ID)
+        // 1. Post Details
         VBox detailsBox = new VBox(4);
         detailsBox.setPrefWidth(350);
         Label titleLabel = new Label(post.getTitle());
@@ -66,8 +67,8 @@ public class AdminForumController {
         spaceLabel.setPrefWidth(120);
         spaceLabel.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
 
-        // 3. Upvotes
-        Label upvotesLabel = new Label(post.getUpvotes() + " pts");
+        // 3. Upvotes (No "pts")
+        Label upvotesLabel = new Label(String.valueOf(post.getUpvotes()));
         upvotesLabel.setPrefWidth(80);
         upvotesLabel.setStyle("-fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 13px;");
 
@@ -80,20 +81,53 @@ public class AdminForumController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // 5. Actions (Modern Pill Buttons instead of standard JavaFX Buttons)
-        HBox actionsBox = new HBox(10);
+        // 5. Actions Box (Width explicitly set to 240 to prevent truncation)
+        HBox actionsBox = new HBox(8);
         actionsBox.setAlignment(Pos.CENTER_RIGHT);
-        actionsBox.setPrefWidth(160);
+        actionsBox.setPrefWidth(240);
+        actionsBox.setMinWidth(240);
 
+        // --- LOCK BUTTON ---
         Label btnLock = new Label(post.isLocked() ? "🔓 Unlock" : "🔒 Lock");
-        btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnLock.setOnMouseEntered(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fde68a; -fx-text-fill: #b45309; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnLock.setOnMouseExited(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
         btnLock.setOnMouseClicked(e -> {
             postService.toggleLock(post.getId(), !post.isLocked());
-            loadPosts(); // Refresh list to show updated status
+            loadPosts();
         });
 
+        // --- EDIT BUTTON ---
+        Label btnEdit = new Label("✏ Edit");
+        btnEdit.setStyle("-fx-cursor: hand; -fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnEdit.setOnMouseEntered(e -> btnEdit.setStyle("-fx-cursor: hand; -fx-background-color: #bae6fd; -fx-text-fill: #0369a1; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnEdit.setOnMouseExited(e -> btnEdit.setStyle("-fx-cursor: hand; -fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnEdit.setOnMouseClicked(e -> {
+            try {
+                // 🔥 MAKE SURE THIS PATH MATCHES YOUR PROJECT STRUCTURE! 🔥
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/views/forum/student/add_post.fxml"));
+                javafx.scene.Parent root = loader.load();
+
+                AddPostController controller = loader.getController();
+                controller.setPostToEdit(post);
+
+                Stage stage = new Stage();
+                stage.setTitle("Edit Post");
+                stage.setScene(new javafx.scene.Scene(root));
+                stage.showAndWait(); // Wait until the admin finishes editing
+
+                loadPosts(); // Instantly refresh the admin list to show updates!
+            } catch (Exception ex) {
+                System.err.println("Error opening Edit window: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+
+        // --- DELETE BUTTON ---
         Label btnDelete = new Label("🗑 Delete");
-        btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;");
+        btnDelete.setOnMouseEntered(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #fecdd3; -fx-text-fill: #be123c; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
+        btnDelete.setOnMouseExited(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
         btnDelete.setOnMouseClicked(e -> {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle("Delete Post");
@@ -102,18 +136,11 @@ public class AdminForumController {
             Optional<ButtonType> result = confirm.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 postService.supprimer(post.getId());
-                loadPosts(); // Refresh list
+                loadPosts();
             }
         });
 
-        // Add hover effects for the action buttons
-        btnLock.setOnMouseEntered(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fde68a; -fx-text-fill: #b45309; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
-        btnLock.setOnMouseExited(e -> btnLock.setStyle("-fx-cursor: hand; -fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
-
-        btnDelete.setOnMouseEntered(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #fecdd3; -fx-text-fill: #be123c; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
-        btnDelete.setOnMouseExited(e -> btnDelete.setStyle("-fx-cursor: hand; -fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 6 14; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
-
-        actionsBox.getChildren().addAll(btnLock, btnDelete);
+        actionsBox.getChildren().addAll(btnLock, btnEdit, btnDelete);
 
         row.getChildren().addAll(detailsBox, spaceLabel, upvotesLabel, statusLabel, spacer, actionsBox);
         return row;

@@ -5,273 +5,262 @@
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.Insets?>
 
-<ScrollPane fitToWidth="true"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controllers.admin.AdminHomeController"
-            styleClass="root-scroll"
-            stylesheets="@/css/admin-home.css">
+<ScrollPane fitToWidth="true" style="-fx-background-color: #f8fafc; -fx-background: #f8fafc; -fx-border-color: transparent;" xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.admin.AdminHomeController">
 
-    <VBox fx:id="rootVBox" spacing="0" styleClass="root-container">
+    <VBox fx:id="rootVBox" spacing="25" style="-fx-padding: 30;">
 
-        <StackPane fx:id="heroStack">
-            <VBox fx:id="headerPane" styleClass="hero-header" spacing="0">
-                <HBox alignment="CENTER_LEFT" spacing="32" styleClass="hero-inner">
-                    <ImageView fx:id="heroLogo" fitWidth="120" fitHeight="120" preserveRatio="true" smooth="true">
+        <StackPane fx:id="heroStack" style="-fx-background-color: linear-gradient(to right bottom, #1e293b, #334155); -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 15, 0, 0, 5);">
+            <VBox fx:id="headerPane" spacing="0" style="-fx-padding: 35 40;">
+                <HBox alignment="CENTER_LEFT" spacing="25">
+                    <ImageView fx:id="heroLogo" fitWidth="80" fitHeight="80" preserveRatio="true" smooth="true">
                         <image><Image url="@/images/nova-logo.png"/></image>
                     </ImageView>
-                    <VBox spacing="8" HBox.hgrow="ALWAYS">
-                        <Label fx:id="lblGreeting" text="Good morning, Admin" styleClass="hero-title"/>
-                        <Label text="Here's what's happening across your platform today." styleClass="hero-subtitle"/>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label fx:id="lblGreeting" text="Good morning, Admin" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;"/>
+                        <Label text="Here is what is happening across your platform today." style="-fx-text-fill: #94a3b8; -fx-font-size: 15px;"/>
                     </VBox>
-                    <VBox alignment="CENTER_RIGHT" spacing="6">
-                        <Label fx:id="lblDate" text="—" styleClass="date-badge"/>
-                        <Label fx:id="lblTime" text="—" styleClass="time-badge"/>
+                    <VBox alignment="CENTER_RIGHT" spacing="8">
+                        <Label fx:id="lblDate" text="—" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-padding: 8 16; -fx-background-radius: 20; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                        <Label fx:id="lblTime" text="—" style="-fx-text-fill: #94a3b8; -fx-font-size: 13px; -fx-font-weight: bold;"/>
                     </VBox>
                 </HBox>
             </VBox>
             <Pane fx:id="particlePane" mouseTransparent="true" style="-fx-background-color: transparent;"/>
         </StackPane>
 
-        <HBox fx:id="statsRow1" spacing="16" styleClass="stats-row">
-            <VBox fx:id="cardUsers" styleClass="stat-card card-blue" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="👥" styleClass="stat-icon"/></StackPane>
-                    <Label text="Total Users" styleClass="stat-label"/>
+        <HBox fx:id="statsRow1" spacing="20">
+            <VBox fx:id="cardUsers" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-padding: 10;"><Label text="👥" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Total Users" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statUsers" text="—" styleClass="stat-number"/>
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Label text="↑" styleClass="trend-arrow-up"/>
-                    <Label fx:id="statUsersDetail" text="— active" styleClass="stat-detail-positive"/>
-                </HBox>
+                <Label fx:id="statUsers" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statUsersDetail" text="— active" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 13px;"/>
             </VBox>
-            <VBox fx:id="cardBooks" styleClass="stat-card card-violet" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="📚" styleClass="stat-icon"/></StackPane>
-                    <Label text="Books" styleClass="stat-label"/>
+
+            <VBox fx:id="cardBooks" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #f5f3ff; -fx-background-radius: 8; -fx-padding: 10;"><Label text="📚" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Books" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statBooks" text="—" styleClass="stat-number"/>
-                <Label fx:id="statBooksDetail" text="— digital · — physical" styleClass="stat-detail-neutral"/>
+                <Label fx:id="statBooks" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statBooksDetail" text="— digital · — physical" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
             </VBox>
-            <VBox fx:id="cardLoans" styleClass="stat-card card-amber" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="📋" styleClass="stat-icon"/></StackPane>
-                    <Label text="Loans" styleClass="stat-label"/>
+
+            <VBox fx:id="cardLoans" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #fffbeb; -fx-background-radius: 8; -fx-padding: 10;"><Label text="📋" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Loans" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statLoans" text="—" styleClass="stat-number"/>
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Label text="⏳" styleClass="stat-icon-tiny"/>
-                    <Label fx:id="statLoansDetail" text="— pending" styleClass="stat-detail-warning"/>
-                </HBox>
+                <Label fx:id="statLoans" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statLoansDetail" text="— pending" style="-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 13px;"/>
             </VBox>
-            <VBox fx:id="cardGames" styleClass="stat-card card-emerald" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="🎮" styleClass="stat-icon"/></StackPane>
-                    <Label text="Games" styleClass="stat-label"/>
+
+            <VBox fx:id="cardGames" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #ecfdf5; -fx-background-radius: 8; -fx-padding: 10;"><Label text="🎮" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Games" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statGames" text="—" styleClass="stat-number"/>
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Label text="↑" styleClass="trend-arrow-up"/>
-                    <Label fx:id="statGamesDetail" text="— active" styleClass="stat-detail-positive"/>
-                </HBox>
+                <Label fx:id="statGames" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statGamesDetail" text="— active" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 13px;"/>
             </VBox>
         </HBox>
 
-        <HBox fx:id="statsRow2" spacing="16" styleClass="stats-row" style="-fx-padding: 0 36 0 36;">
-            <VBox fx:id="cardRewards" styleClass="stat-card card-rose" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="🏆" styleClass="stat-icon"/></StackPane>
-                    <Label text="Rewards" styleClass="stat-label"/>
+        <HBox fx:id="statsRow2" spacing="20">
+            <VBox fx:id="cardRewards" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #fff1f2; -fx-background-radius: 8; -fx-padding: 10;"><Label text="🏆" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Rewards" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statRewards" text="—" styleClass="stat-number"/>
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Label text="↑" styleClass="trend-arrow-up"/>
-                    <Label fx:id="statRewardsDetail" text="— active" styleClass="stat-detail-positive"/>
-                </HBox>
+                <Label fx:id="statRewards" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statRewardsDetail" text="— active" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 13px;"/>
             </VBox>
-            <VBox fx:id="cardQuizzes" styleClass="stat-card card-blue" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="📝" styleClass="stat-icon"/></StackPane>
-                    <Label text="Quizzes" styleClass="stat-label"/>
+
+            <VBox fx:id="cardQuizzes" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-padding: 10;"><Label text="📝" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Quizzes" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statQuizzes" text="—" styleClass="stat-number"/>
-                <Label fx:id="statQuizzesDetail" text="— questions total" styleClass="stat-detail-neutral"/>
+                <Label fx:id="statQuizzes" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statQuizzesDetail" text="— questions total" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
             </VBox>
-            <VBox fx:id="cardForum" styleClass="stat-card card-indigo" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <StackPane styleClass="stat-icon-bg"><Label text="💬" styleClass="stat-icon"/></StackPane>
-                    <Label text="Forum Posts" styleClass="stat-label"/>
+
+            <VBox fx:id="cardForum" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #eef2ff; -fx-background-radius: 8; -fx-padding: 10;"><Label text="💬" style="-fx-font-size: 18px;"/></StackPane>
+                    <Label text="Forum Posts" style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </HBox>
-                <Label fx:id="statForum" text="—" styleClass="stat-number"/>
-                <HBox alignment="CENTER_LEFT" spacing="6">
-                    <Label text="●" styleClass="live-dot"/>
-                    <Label fx:id="statForumDetail" text="— open discussions" styleClass="stat-detail-positive"/>
-                </HBox>
+                <Label fx:id="statForum" text="—" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="statForumDetail" text="— active discussions" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 13px;"/>
             </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
         </HBox>
 
-        <HBox fx:id="contentArea" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
+        <HBox fx:id="contentArea" spacing="25" alignment="TOP_LEFT">
 
-            <VBox fx:id="coursesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Courses" styleClass="card-title" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
-                        <Label text="Latest courses added to the platform" styleClass="card-subtitle" style="-fx-text-fill: #64748b;"/>
+            <VBox fx:id="coursesPanel" HBox.hgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Courses" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Latest courses added to the platform" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllCourses"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllCourses"/>
                 </HBox>
 
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
-                    <Label text="COURSE NAME" prefWidth="250" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="CATEGORY" prefWidth="120" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="STATUS" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="COURSE NAME" prefWidth="250" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="CATEGORY" prefWidth="120" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="STATUS" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
                 </HBox>
 
-                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <VBox fx:id="coursesListContainer" spacing="0"/>
                 </ScrollPane>
             </VBox>
 
-            <VBox fx:id="sidebar" spacing="16" prefWidth="290">
-                <VBox fx:id="quickActionsCard" styleClass="content-card" spacing="0">
-                    <HBox styleClass="card-header" alignment="CENTER_LEFT">
-                        <Label text="Quick Actions" styleClass="card-title" HBox.hgrow="ALWAYS"/>
+            <VBox fx:id="sidebar" spacing="25" prefWidth="320">
+                <VBox fx:id="quickActionsCard" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                    <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                        <Label text="Quick Actions" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;" HBox.hgrow="ALWAYS"/>
                     </HBox>
-                    <VBox spacing="8" style="-fx-padding: 14 16 16 16;">
-                        <Button text="Add New Book"    maxWidth="Infinity" onAction="#quickAddBook"    style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
-                        <Button text="Manage Users"    maxWidth="Infinity" onAction="#quickUsers"      style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
-                        <Button text="View Game Stats" maxWidth="Infinity" onAction="#quickGameStats"  style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
-                        <Button text="Manage Forum"    maxWidth="Infinity" onAction="#quickForum"      style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 6;"/>
+                    <VBox spacing="10" style="-fx-padding: 20 24;">
+                        <Button text="➕ Add New Book" maxWidth="Infinity" alignment="CENTER_LEFT" onAction="#quickAddBook" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 16; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                        <Button text="👥 Manage Users" maxWidth="Infinity" alignment="CENTER_LEFT" onAction="#quickUsers" style="-fx-background-color: #f8fafc; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 16; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-cursor: hand;"/>
+                        <Button text="📊 View Game Stats" maxWidth="Infinity" alignment="CENTER_LEFT" onAction="#quickGameStats" style="-fx-background-color: #f8fafc; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 16; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-cursor: hand;"/>
+                        <Button text="💬 Manage Forum" maxWidth="Infinity" alignment="CENTER_LEFT" onAction="#quickForum" style="-fx-background-color: #f8fafc; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12 16; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-cursor: hand;"/>
                     </VBox>
                 </VBox>
 
-                <VBox fx:id="rolesCard" styleClass="content-card" spacing="0">
-                    <HBox styleClass="card-header" alignment="CENTER_LEFT">
-                        <Label text="Users by Role" styleClass="card-title" HBox.hgrow="ALWAYS"/>
+                <VBox fx:id="rolesCard" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                    <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                        <Label text="Users by Role" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;" HBox.hgrow="ALWAYS"/>
                     </HBox>
-                    <VBox spacing="0" style="-fx-padding: 8 16 12 16;">
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="role-row">
-                            <StackPane styleClass="role-dot-blue"/>
-                            <Label text="Students" styleClass="role-name" HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="roleStudents" text="—" styleClass="role-count"/>
+                    <VBox spacing="15" style="-fx-padding: 20 24;">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <StackPane style="-fx-background-color: #3b82f6; -fx-background-radius: 50; -fx-min-width: 12; -fx-min-height: 12; -fx-max-width: 12; -fx-max-height: 12;"/>
+                            <Label text="Students" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" HBox.hgrow="ALWAYS"/>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="roleStudents" text="—" style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16px;"/>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="role-row">
-                            <StackPane styleClass="role-dot-violet"/>
-                            <Label text="Tutors" styleClass="role-name" HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="roleTutors" text="—" styleClass="role-count"/>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <StackPane style="-fx-background-color: #8b5cf6; -fx-background-radius: 50; -fx-min-width: 12; -fx-min-height: 12; -fx-max-width: 12; -fx-max-height: 12;"/>
+                            <Label text="Tutors" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" HBox.hgrow="ALWAYS"/>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="roleTutors" text="—" style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16px;"/>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="role-row">
-                            <StackPane styleClass="role-dot-amber"/>
-                            <Label text="Admins" styleClass="role-name" HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="roleAdmins" text="—" styleClass="role-count"/>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <StackPane style="-fx-background-color: #f59e0b; -fx-background-radius: 50; -fx-min-width: 12; -fx-min-height: 12; -fx-max-width: 12; -fx-max-height: 12;"/>
+                            <Label text="Admins" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" HBox.hgrow="ALWAYS"/>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="roleAdmins" text="—" style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16px;"/>
                         </HBox>
                     </VBox>
                 </VBox>
             </VBox>
         </HBox>
 
-        <HBox fx:id="row2" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-            <VBox fx:id="loansPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Loan Requests" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
-                        <Label text="Pending and active book loans" style="-fx-text-fill: #64748b;"/>
+        <HBox fx:id="row2" spacing="25" alignment="TOP_LEFT">
+            <VBox fx:id="loansPanel" HBox.hgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Loan Requests" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Pending and active book loans" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllLoans"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllLoans"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
-                    <Label text="BOOK TITLE" prefWidth="220" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="USER" prefWidth="130" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="STATUS" prefWidth="120" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DATE REQUESTED" prefWidth="110" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="BOOK TITLE" prefWidth="220" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="USER" prefWidth="130" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="STATUS" prefWidth="120" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DATE REQUESTED" prefWidth="110" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <VBox fx:id="loansListContainer" spacing="0"/>
                 </ScrollPane>
             </VBox>
 
-            <VBox fx:id="gamesPanel" styleClass="content-card" prefWidth="340" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Top Games" styleClass="card-title"/>
-                        <Label text="Most rewarding active games" styleClass="card-subtitle"/>
+            <VBox fx:id="gamesPanel" prefWidth="380" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Top Games" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Most rewarding active games" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllGames"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
                 </HBox>
-                <VBox fx:id="topGamesBox" spacing="0" style="-fx-padding: 4 0 8 0;"/>
+                <VBox fx:id="topGamesBox" spacing="0" style="-fx-padding: 8 0 16 0;"/>
             </VBox>
         </HBox>
 
-        <HBox fx:id="row3" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-            <VBox fx:id="quizzesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Quizzes" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
-                        <Label text="Latest quizzes on the platform" style="-fx-text-fill: #64748b;"/>
+        <HBox fx:id="row3" spacing="25" alignment="TOP_LEFT">
+            <VBox fx:id="quizzesPanel" HBox.hgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Quizzes" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Latest quizzes on the platform" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllQuizzes"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllQuizzes"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
-                    <Label text="QUIZ TITLE" prefWidth="350" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="QUESTIONS" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="QUIZ TITLE" prefWidth="350" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="QUESTIONS" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" prefHeight="200" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" prefHeight="240" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <VBox fx:id="quizzesListContainer" spacing="0"/>
                 </ScrollPane>
             </VBox>
 
-            <VBox fx:id="rewardsPanel" styleClass="content-card" prefWidth="340" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Top Rewards" styleClass="card-title"/>
-                        <Label text="Highest value active rewards" styleClass="card-subtitle"/>
+            <VBox fx:id="rewardsPanel" prefWidth="380" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Top Rewards" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Highest value active rewards" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" styleClass="card-link" onMouseClicked="#onViewAllRewards"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
                 </HBox>
-                <VBox fx:id="topRewardsBox" spacing="0" style="-fx-padding: 4 0 8 0;"/>
+                <VBox fx:id="topRewardsBox" spacing="0" style="-fx-padding: 8 0 16 0;"/>
             </VBox>
         </HBox>
 
-        <HBox fx:id="row4" spacing="20" styleClass="content-area" alignment="TOP_LEFT">
-            <VBox fx:id="recentGamesPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Games" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
-                        <Label text="Latest games added to the platform" style="-fx-text-fill: #64748b;"/>
+        <HBox fx:id="row4" spacing="25" alignment="TOP_LEFT">
+            <VBox fx:id="recentGamesPanel" HBox.hgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Games" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Latest games added to the platform" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
-                    <Label text="GAME NAME" prefWidth="180" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="TYPE" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="XP REWARD" prefWidth="90" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="GAME NAME" prefWidth="180" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="TYPE" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="XP REWARD" prefWidth="90" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <VBox fx:id="gamesListContainer" spacing="0"/>
                 </ScrollPane>
             </VBox>
 
-            <VBox fx:id="recentRewardsPanel" styleClass="content-card" HBox.hgrow="ALWAYS" spacing="0">
-                <HBox alignment="CENTER_LEFT" styleClass="card-header" style="-fx-padding: 15;">
-                    <VBox spacing="2" HBox.hgrow="ALWAYS">
-                        <Label text="Recent Rewards" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
-                        <Label text="Latest rewards added to the platform" style="-fx-text-fill: #64748b;"/>
+            <VBox fx:id="recentRewardsPanel" HBox.hgrow="ALWAYS" spacing="0" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Rewards" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                        <Label text="Latest rewards added to the platform" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                     </VBox>
-                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
+                    <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 1 0;">
-                    <Label text="REWARD NAME" prefWidth="200" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="TYPE" prefWidth="140" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="VALUE" prefWidth="80" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                    <Label text="REWARD NAME" prefWidth="200" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="TYPE" prefWidth="140" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+                    <Label text="VALUE" prefWidth="80" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" prefHeight="220" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <VBox fx:id="rewardsListContainer" spacing="0"/>
                 </ScrollPane>
             </VBox>
         </HBox>
 
-        <Region prefHeight="32"/>
+        <Region prefHeight="40"/>
     </VBox>
 </ScrollPane>
