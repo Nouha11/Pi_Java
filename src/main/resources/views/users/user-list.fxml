@@ -7,7 +7,7 @@
             fx:controller="controllers.users.UserListController"
             styleClass="app-root">
 
-    <!-- ── Top bar ── -->
+    <!-- â”€â”€ Top bar â”€â”€ -->
     <top>
         <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
@@ -32,7 +32,7 @@
         </HBox>
     </top>
 
-    <!-- ── Center content ── -->
+    <!-- â”€â”€ Center content â”€â”€ -->
     <center>
         <VBox styleClass="content-area" spacing="16">
             <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
@@ -79,7 +79,6 @@
             <!-- Table -->
             <TableView fx:id="tableUsers" VBox.vgrow="ALWAYS" styleClass="main-table">
                 <columns>
-                    <TableColumn fx:id="colId"       text="ID"       prefWidth="55"/>
                     <TableColumn fx:id="colUsername" text="Username" prefWidth="160"/>
                     <TableColumn fx:id="colEmail"    text="Email"    prefWidth="240"/>
                     <TableColumn fx:id="colRole"     text="Role"     prefWidth="110"/>
