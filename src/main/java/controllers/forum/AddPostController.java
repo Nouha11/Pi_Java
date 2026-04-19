@@ -3,6 +3,7 @@ package controllers.forum;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -17,6 +18,10 @@ import java.io.File;
 import java.util.Map;
 
 public class AddPostController {
+
+    // 🔥 NEW: Hooks to change the UI text dynamically
+    @FXML private Label mainTitleLabel;
+    @FXML private Button submitButton;
 
     @FXML private TextField titleField;
     @FXML private TextArea contentArea;
@@ -34,7 +39,6 @@ public class AddPostController {
     private String selectedFilePath = null;
     private Map<String, Integer> databaseSpaces;
 
-    // 🔥 NEW: Tracks if we are editing an existing post!
     private Post postToEdit = null;
 
     @FXML
@@ -47,9 +51,15 @@ public class AddPostController {
         spaceCombo.valueProperty().addListener((observable, oldValue, newValue) -> clearError(spaceCombo, spaceError));
     }
 
-    // 🔥 NEW: Pre-fills data when Admin clicks "Edit"
+    // 🔥 UPDATED: Changes the UI text to "Edit" when opened from Admin panel!
     public void setPostToEdit(Post post) {
         this.postToEdit = post;
+
+        // Morph the UI
+        if (mainTitleLabel != null) mainTitleLabel.setText("Edit Discussion");
+        if (submitButton != null) submitButton.setText("Save Changes");
+
+        // Fill the fields
         titleField.setText(post.getTitle());
         contentArea.setText(post.getContent());
 

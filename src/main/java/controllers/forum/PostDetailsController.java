@@ -3,6 +3,8 @@ package controllers.forum;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -158,7 +160,6 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 THE MISSING METHOD THAT CAUSED THE CRASH 🔥
     @FXML
     void handleLockPost(ActionEvent event) {
         boolean newState = !currentPost.isLocked();
@@ -242,44 +243,34 @@ public class PostDetailsController {
         }
     }
 
+    // 🔥 COMPLETELY UPDATED EDIT METHOD 🔥
     @FXML
     void handleEditPost(ActionEvent event) {
-        Stage editStage = new Stage();
-        editStage.initModality(Modality.APPLICATION_MODAL);
-        editStage.setTitle("Edit Your Post");
+        try {
+            // 1. Load the beautiful Add/Edit window
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/add_post.fxml"));
+            Parent root = loader.load();
 
-        VBox layout = new VBox(15);
-        layout.setStyle("-fx-background-color: #f8fafc; -fx-padding: 25;");
+            // 2. Pass the current post data to the controller
+            AddPostController controller = loader.getController();
+            controller.setPostToEdit(this.currentPost);
 
-        Label headerText = new Label("Edit Discussion");
-        headerText.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+            // 3. Create the popup window
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Edit Post");
+            stage.setScene(new Scene(root));
 
-        TextField titleInput = new TextField(currentPost.getTitle());
-        titleInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-padding: 10; -fx-font-size: 14px;");
+            // 4. Wait for the user to hit 'Save Changes' and close the popup
+            stage.showAndWait();
 
-        TextArea contentInput = new TextArea(currentPost.getContent());
-        contentInput.setWrapText(true);
-        contentInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-font-size: 14px;");
+            // 5. Instantly refresh this page to show the newly updated title/content!
+            setPostData(this.currentPost);
 
-        Button saveChangesBtn = new Button("Save Changes");
-        saveChangesBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;");
-
-        saveChangesBtn.setOnAction(e -> {
-            if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
-                currentPost.setTitle(titleInput.getText());
-                currentPost.setContent(contentInput.getText());
-                postService.modifier(currentPost);
-
-                topTitleLabel.setText(currentPost.getTitle());
-                contentLabel.setText(currentPost.getContent());
-                editStage.close();
-            }
-        });
-
-        layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
-        Scene scene = new Scene(layout, 500, 450);
-        editStage.setScene(scene);
-        editStage.showAndWait();
+        } catch (Exception ex) {
+            System.err.println("Error opening Edit window: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     @FXML

@@ -19,7 +19,7 @@
                 <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
             </padding>
             <children>
-                <Label text="Create a New Post" style="-fx-text-fill: #0f172a; -fx-font-weight: 900; -fx-font-size: 26px;">
+                <Label fx:id="mainTitleLabel" text="Create a New Post" style="-fx-text-fill: #0f172a; -fx-font-weight: 900; -fx-font-size: 26px;">
                     <VBox.margin>
                         <Insets bottom="10.0" />
                     </VBox.margin>
@@ -78,7 +78,7 @@
                     <Label fx:id="contentError" text="Content must be at least 10 characters." style="-fx-text-fill: #ef4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" managed="false"/>
                 </VBox>
 
-                <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45; -fx-background-radius: 8; -fx-cursor: hand;" text="Post to Forum">
+                <Button fx:id="submitButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45; -fx-background-radius: 8; -fx-cursor: hand;" text="Post to Forum">
                     <VBox.margin>
                         <Insets top="10.0" />
                     </VBox.margin>
