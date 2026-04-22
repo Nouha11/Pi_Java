@@ -21,38 +21,63 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * GameRewardController — READ + DELETE controller for the rewards list view.
+ *
+ * Responsibilities:
+ *  - Display all rewards in a TableView with icon thumbnails (READ)
+ *  - Live search + type filter (no extra DB call per keystroke)
+ *  - Open RewardFormController for Add (CREATE) or Edit (UPDATE)
+ *  - Delete a reward with confirmation dialog (DELETE)
+ *  - Toggle active/inactive status directly from the table row
+ *  - Export the current filtered list to a CSV file
+ *  - Show a detail dialog with linked games
+ */
 public class GameRewardController {
 
+    // ── UI elements injected from reward_list.fxml ────────────────────────────
     @FXML private TableView<Reward>            rewardsTable;
     @FXML private TableColumn<Reward, String>  nameCol, typeCol;
     @FXML private TableColumn<Reward, Integer> valueCol;
-    @FXML private TableColumn<Reward, Void>    iconCol, actionsCol;
+    @FXML private TableColumn<Reward, Void>    iconCol;      // shows the reward image thumbnail
+    @FXML private TableColumn<Reward, Void>    actionsCol;   // custom cell with action buttons
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> typeFilter;
     @FXML private Label            statusLabel;
 
+    // RewardService handles reward SQL; GameService is needed for linked-games queries
     private final RewardService rewardService = new RewardService();
     private final GameService   gameService   = new GameService();
+
+    // All rewards loaded once into memory; filtered view is applied on top
     private ObservableList<Reward> allRewards = FXCollections.observableArrayList();
 
+    // ── Called automatically by JavaFX after FXML fields are injected ─────────
     @FXML
     public void initialize() {
+        // Bind each column to the matching getter in the Reward model
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         valueCol.setCellValueFactory(new PropertyValueFactory<>("value"));
 
+        // Build the icon column (shows the reward image) and actions column
         setupIconColumn();
         setupActionsColumn();
 
+        // Populate the type filter ComboBox with all reward types
         typeFilter.setItems(FXCollections.observableArrayList(
                 "All","BADGE","ACHIEVEMENT","BONUS_XP","BONUS_TOKENS"));
         typeFilter.setValue("All");
+
+        // Re-apply filters whenever the user changes the type or types in the search box
         typeFilter.valueProperty().addListener((obs, o, n) -> applyFilters());
         searchField.textProperty().addListener((obs, o, n) -> applyFilters());
 
+        // Initial data load from the database
         loadRewards();
     }
 
+    // ── Builds the Icon column — renders a 36x36 image thumbnail per row ──────
     private void setupIconColumn() {
         iconCol.setCellFactory(col -> new TableCell<>() {
             private final ImageView iv = new ImageView();
@@ -61,6 +86,7 @@ public class GameRewardController {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) { setGraphic(null); return; }
+                // Load the reward's icon from the resources folder or absolute path
                 Reward r = getTableView().getItems().get(getIndex());
                 iv.setImage(loadImage(r.getIcon(), 36));
                 setGraphic(iv);
@@ -70,19 +96,21 @@ public class GameRewardController {
         });
     }
 
+    // ── Loads a reward icon image by filename or absolute path ────────────────
+    // Priority: 1) classpath resource (/images/rewards/filename)
+    //           2) absolute file path (legacy entries stored before the copy system)
     private Image loadImage(String nameOrPath, double size) {
         if (nameOrPath == null || nameOrPath.isBlank()) return null;
         try {
-            // 1. Try as classpath resource (filename stored in DB)
             var stream = getClass().getResourceAsStream("/images/rewards/" + nameOrPath);
             if (stream != null) return new Image(stream, size, size, true, true);
-            // 2. Try as absolute path (legacy entries)
             File f = new File(nameOrPath);
             if (f.exists()) return new Image(f.toURI().toString(), size, size, true, true);
         } catch (Exception ignored) {}
         return null;
     }
 
+    // ── Builds the Actions column with four inline buttons per row ────────────
     private void setupActionsColumn() {
         actionsCol.setCellFactory(col -> new TableCell<>() {
             private final Button viewBtn   = styledBtn("View",       "#eef0fd", "#3b4fd8");
@@ -93,6 +121,7 @@ public class GameRewardController {
             { box.setPadding(new Insets(3, 4, 3, 4)); }
 
             {
+                // Each button delegates to the corresponding handler method
                 viewBtn.setOnAction(e   -> showRewardDetails(getTableView().getItems().get(getIndex())));
                 editBtn.setOnAction(e   -> openRewardForm(getTableView().getItems().get(getIndex())));
                 toggleBtn.setOnAction(e -> handleToggleActive(getTableView().getItems().get(getIndex())));
@@ -102,6 +131,7 @@ public class GameRewardController {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) { setGraphic(null); return; }
+                // Update toggle button label and color based on current active state
                 Reward r = getTableView().getItems().get(getIndex());
                 toggleBtn.setText(r.isActive() ? "Deactivate" : "Activate");
                 toggleBtn.setStyle(styledBtn("", r.isActive() ? "#fffbeb" : "#f0fdf4",
@@ -112,6 +142,7 @@ public class GameRewardController {
         });
     }
 
+    // ── Helper: creates a styled button with given background and text color ──
     private Button styledBtn(String text, String bg, String fg) {
         Button b = new Button(text);
         b.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + ";" +
@@ -120,6 +151,7 @@ public class GameRewardController {
         return b;
     }
 
+    // ── READ: fetch all rewards from DB and populate the ObservableList ───────
     private void loadRewards() {
         try {
             allRewards.setAll(rewardService.getAllRewards());
@@ -127,6 +159,8 @@ public class GameRewardController {
         } catch (Exception e) { showStatus("Error loading rewards: " + e.getMessage(), true); }
     }
 
+    // ── FILTER: applies search keyword + type filter on the in-memory list ────
+    // No DB call — uses ObservableList.filtered() for instant results
     private void applyFilters() {
         String kw   = searchField.getText().trim().toLowerCase();
         String type = typeFilter.getValue();
@@ -139,8 +173,10 @@ public class GameRewardController {
         }));
     }
 
+    // ── CREATE: opens the form with no pre-filled data (Add mode) ─────────────
     @FXML private void handleAddReward() { openRewardForm(null); }
 
+    // ── EXPORT: writes the currently visible (filtered) rows to a CSV file ────
     @FXML
     private void handleExportCSV() {
         FileChooser fc = new FileChooser();
@@ -162,15 +198,18 @@ public class GameRewardController {
         } catch (Exception e) { showStatus("Export error: " + e.getMessage(), true); }
     }
 
+    // ── TOGGLE: flips isActive without opening the form, then persists ────────
     private void handleToggleActive(Reward r) {
         try {
-            r.setActive(!r.isActive());
-            rewardService.updateReward(r);
+            r.setActive(!r.isActive());          // flip the flag on the Java object
+            rewardService.updateReward(r);       // UPDATE reward SET is_active=? WHERE id=?
             loadRewards();
             showStatus(r.getName() + " is now " + (r.isActive() ? "active" : "inactive") + ".", false);
         } catch (Exception e) { showStatus("Toggle error: " + e.getMessage(), true); }
     }
 
+    // ── DELETE: shows a confirmation dialog, then calls the service ───────────
+    // The game_rewards junction rows are removed automatically by ON DELETE CASCADE
     private void handleDelete(Reward r) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,
                 "Delete '" + r.getName() + "'? This removes it from all linked games.",
@@ -184,8 +223,10 @@ public class GameRewardController {
         });
     }
 
+    // ── VIEW DETAILS: opens a read-only dialog showing reward info + linked games
     private void showRewardDetails(Reward r) {
         try {
+            // Fetch games linked to this reward via the game_rewards junction table
             List<Game> linkedGames = gameService.getGamesForReward(r.getId());
 
             Dialog<Void> dlg = new Dialog<>();
@@ -195,7 +236,7 @@ public class GameRewardController {
             root.setStyle("-fx-background-color: #f0f2f8;");
             root.setPrefWidth(520);
 
-            // ── Header with icon ──
+            // Header: shows icon image (or trophy emoji fallback) + name + type/value
             HBox header = new HBox(18);
             header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
             header.setStyle("-fx-background-color: linear-gradient(to right, #3b4fd8, #5b6ef5); -fx-padding: 22 28 18 28;");
@@ -206,6 +247,7 @@ public class GameRewardController {
                 iv.setFitWidth(56); iv.setFitHeight(56); iv.setPreserveRatio(true);
                 header.getChildren().add(iv);
             } else {
+                // Fallback emoji when no icon is set
                 Label ico = new Label("\uD83C\uDFC6");
                 ico.setStyle("-fx-font-size: 36px;");
                 header.getChildren().add(ico);
@@ -214,24 +256,24 @@ public class GameRewardController {
             VBox hText = new VBox(4);
             Label title = new Label(r.getName());
             title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-            Label sub = new Label(r.getType() + "  ·  +" + r.getValue() + " pts"
-                    + (r.getRequiredLevel() != null ? "  ·  Level " + r.getRequiredLevel() : ""));
+            Label sub = new Label(r.getType() + "  \u00b7  +" + r.getValue() + " pts"
+                    + (r.getRequiredLevel() != null ? "  \u00b7  Level " + r.getRequiredLevel() : ""));
             sub.setStyle("-fx-text-fill: rgba(199,210,254,0.85); -fx-font-size: 13px;");
             hText.getChildren().addAll(title, sub);
             header.getChildren().add(hText);
 
-            // ── Stat chips ──
+            // Stat chips row (type, value, min level, status)
             HBox stats = new HBox(10);
             stats.setStyle("-fx-background-color: white; -fx-padding: 14 28; " +
                            "-fx-border-color: #e4e8f0; -fx-border-width: 0 0 1 0;");
             stats.getChildren().addAll(
                     chip(r.getType(),                                                    "Type"),
                     chip("+" + r.getValue() + " pts",                                   "Value"),
-                    chip(r.getRequiredLevel() != null ? "Lv " + r.getRequiredLevel() : "—", "Min Level"),
+                    chip(r.getRequiredLevel() != null ? "Lv " + r.getRequiredLevel() : "\u2014", "Min Level"),
                     chip(r.isActive() ? "Active" : "Inactive",                          "Status")
             );
 
-            // ── Info ──
+            // Info section: requirement (how to earn) and description
             VBox infoBox = new VBox(12);
             infoBox.setStyle("-fx-background-color: white; -fx-padding: 16 28 16 28;");
 
@@ -259,7 +301,7 @@ public class GameRewardController {
                 infoBox.getChildren().add(none);
             }
 
-            // ── Linked games ──
+            // Linked games section — one card per game
             VBox gamesBox = new VBox(8);
             gamesBox.setStyle("-fx-background-color: #f8f9ff; -fx-padding: 16 28 22 28;");
             Label gLbl = new Label("\uD83C\uDFAE  Available in Games  (" + linkedGames.size() + ")");
@@ -280,7 +322,7 @@ public class GameRewardController {
                     Label gName = new Label(g.getName());
                     gName.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e2a5e; -fx-font-size: 13px;");
                     Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
-                    Label gMeta = new Label(g.getType() + "  ·  " + g.getDifficulty());
+                    Label gMeta = new Label(g.getType() + "  \u00b7  " + g.getDifficulty());
                     gMeta.setStyle("-fx-text-fill: #718096; -fx-font-size: 11px;");
                     row.getChildren().addAll(gName, sp, gMeta);
                     gamesBox.getChildren().add(row);
@@ -304,6 +346,7 @@ public class GameRewardController {
         } catch (Exception e) { showStatus("Error loading details: " + e.getMessage(), true); }
     }
 
+    // ── Helper: builds a small stat chip (value on top, label below) ──────────
     private VBox chip(String value, String label) {
         VBox b = new VBox(2);
         b.setStyle("-fx-background-color: #f8f9ff; -fx-border-color: #e4e8f0; -fx-border-width: 1; " +
@@ -316,6 +359,7 @@ public class GameRewardController {
         return b;
     }
 
+    // ── Unused legacy helper kept for compatibility ───────────────────────────
     private VBox statBox(String label, String value) {
         VBox b = new VBox(2);
         b.setStyle("-fx-padding: 0 20 0 0;");
@@ -327,21 +371,25 @@ public class GameRewardController {
         return b;
     }
 
+    // ── UPDATE/CREATE: opens reward_form.fxml in a new window ─────────────────
+    // rewardToEdit = null  -> Add mode (empty form)
+    // rewardToEdit = Reward -> Edit mode (pre-filled form via setRewardToEdit)
     private void openRewardForm(Reward rewardToEdit) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/views/gamification/reward_form.fxml"));
             javafx.scene.Parent root = loader.load();
             RewardFormController ctrl = loader.getController();
-            if (rewardToEdit != null) ctrl.setRewardToEdit(rewardToEdit);
+            if (rewardToEdit != null) ctrl.setRewardToEdit(rewardToEdit);  // switch to Edit mode
             javafx.stage.Stage stage = new javafx.stage.Stage();
             stage.setScene(new javafx.scene.Scene(root));
             stage.setTitle(rewardToEdit == null ? "Add Reward" : "Edit Reward");
-            stage.showAndWait();
-            loadRewards();
+            stage.showAndWait();   // blocks until the form window is closed
+            loadRewards();         // refresh the table after the form closes
         } catch (Exception e) { showStatus("Error opening form: " + e.getMessage(), true); }
     }
 
+    // ── Shows a success (green) or error (red) message in the status bar ──────
     private void showStatus(String msg, boolean isError) {
         statusLabel.setText(msg);
         statusLabel.setStyle(isError ? "-fx-text-fill: #e94560;" : "-fx-text-fill: #4caf50;");

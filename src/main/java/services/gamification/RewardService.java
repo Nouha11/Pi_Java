@@ -14,7 +14,7 @@ public class RewardService {
         String sql = "INSERT INTO reward (name, description, type, value," +
                 " requirement, icon, is_active, required_level)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(sql);
+        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, reward.getName());
         ps.setString(2, reward.getDescription());
         ps.setString(3, reward.getType());
@@ -27,6 +27,9 @@ public class RewardService {
         else
             ps.setNull(8, Types.INTEGER);
         ps.executeUpdate();
+        // Read back the auto-generated id and set it on the Reward object
+        ResultSet keys = ps.getGeneratedKeys();
+        if (keys.next()) reward.setId(keys.getInt(1));
     }
 
     // ===== READ ALL =====

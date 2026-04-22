@@ -6,87 +6,100 @@
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.gamification.GameFormController"
             stylesheets="@/css/gamification.css"
-            prefWidth="580" prefHeight="700"
+            prefWidth="580" prefHeight="720"
             style="-fx-background-color: #f0f2f8;">
 
     <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="0">
 
-        <!-- HEADER -->
         <HBox styleClass="form-header" alignment="CENTER_LEFT" style="-fx-padding: 20 24;">
-            <Label text="🎮  Game Form" styleClass="form-title"/>
+            <Label text="Game Form" styleClass="form-title"/>
         </HBox>
 
-        <!-- ERROR -->
-        <Label fx:id="errorLabel" text="" wrapText="true" styleClass="error-banner"
-               managed="false" visible="false">
-            <VBox.margin><Insets left="20" right="20" top="12"/></VBox.margin>
-        </Label>
-
-        <!-- FIELDS -->
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                     style="-fx-background-color: transparent; -fx-background: transparent;">
             <VBox spacing="16" style="-fx-padding: 20 24;">
 
-                <!-- Main info card -->
-                <VBox styleClass="section-card" spacing="14" style="-fx-padding: 20;">
+                <VBox styleClass="section-card" spacing="12" style="-fx-padding: 20;">
                     <Label text="Game Details"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
 
-                    <VBox spacing="4">
+                    <!-- Name -->
+                    <VBox spacing="3">
                         <Label text="* Game Name" styleClass="field-label"/>
                         <TextField fx:id="nameField" promptText="Min. 3 characters, must be unique"/>
+                        <Label fx:id="errName" text="" styleClass="field-error"
+                               managed="false" visible="false"/>
                     </VBox>
 
-                    <VBox spacing="4">
+                    <!-- Description -->
+                    <VBox spacing="3">
                         <Label text="* Description" styleClass="field-label"/>
                         <TextArea fx:id="descriptionArea" promptText="Describe the game..."
                                   prefRowCount="3" wrapText="true"/>
+                        <Label fx:id="errDescription" text="" styleClass="field-error"
+                               managed="false" visible="false"/>
                     </VBox>
 
+                    <!-- Type / Difficulty / Category -->
                     <HBox spacing="14">
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Type" styleClass="field-label"/>
                             <ComboBox fx:id="typeCombo" promptText="Select type" maxWidth="Infinity"/>
+                            <Label fx:id="errType" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Difficulty" styleClass="field-label"/>
                             <ComboBox fx:id="difficultyCombo" promptText="Select difficulty" maxWidth="Infinity"/>
+                            <Label fx:id="errDifficulty" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Category" styleClass="field-label"/>
                             <ComboBox fx:id="categoryCombo" promptText="Select category" maxWidth="Infinity"/>
+                            <Label fx:id="errCategory" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
                     </HBox>
 
+                    <!-- Token Cost / Reward Tokens / Reward XP -->
                     <HBox spacing="14">
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Token Cost" styleClass="field-label"/>
-                            <TextField fx:id="tokenCostField" promptText="0"/>
+                            <TextField fx:id="tokenCostField" promptText="0" text="0"/>
+                            <Label fx:id="errTokenCost" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Reward Tokens" styleClass="field-label"/>
-                            <TextField fx:id="rewardTokensField" promptText="0"/>
+                            <TextField fx:id="rewardTokensField" promptText="0" text="0"/>
+                            <Label fx:id="errRewardTokens" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Reward XP" styleClass="field-label"/>
-                            <TextField fx:id="rewardXPField" promptText="0"/>
+                            <TextField fx:id="rewardXPField" promptText="0" text="0"/>
+                            <Label fx:id="errRewardXP" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
                     </HBox>
 
-                    <VBox spacing="4">
+                    <!-- Energy Points -->
+                    <VBox spacing="3">
                         <Label text="Energy Points (MINI_GAME only)" styleClass="field-label"/>
                         <TextField fx:id="energyPointsField" promptText="Only for MINI_GAME" disable="true"/>
+                        <Label fx:id="errEnergyPoints" text="" styleClass="field-error"
+                               managed="false" visible="false"/>
                         <Label text="Enabled automatically when MINI_GAME is selected"
                                style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
                     </VBox>
 
                     <CheckBox fx:id="isActiveCheck" text="Game is active and visible to students"
-                              selected="true"
-                              style="-fx-font-size: 13px; -fx-text-fill: #2d3748;"/>
+                              selected="true" style="-fx-font-size: 13px; -fx-text-fill: #2d3748;"/>
                 </VBox>
 
-                <!-- Link Rewards card -->
+                <!-- Link Rewards -->
                 <VBox styleClass="section-card" spacing="10" style="-fx-padding: 20;">
                     <Label text="Link Rewards"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
@@ -98,11 +111,9 @@
             </VBox>
         </ScrollPane>
 
-        <!-- FOOTER -->
-        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="form-footer"
-              style="-fx-padding: 14 24;">
+        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="form-footer" style="-fx-padding: 14 24;">
             <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel" styleClass="btn-ghost"/>
-            <Button fx:id="saveBtn"   text="💾  Save Game" onAction="#handleSave" styleClass="btn-primary"/>
+            <Button fx:id="saveBtn" text="Save Game" onAction="#handleSave" styleClass="btn-primary"/>
         </HBox>
     </VBox>
 </AnchorPane>

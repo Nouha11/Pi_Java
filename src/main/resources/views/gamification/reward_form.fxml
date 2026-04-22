@@ -7,59 +7,62 @@
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.gamification.RewardFormController"
             stylesheets="@/css/gamification.css"
-            prefWidth="560" prefHeight="760"
+            prefWidth="560" prefHeight="780"
             style="-fx-background-color: #f0f2f8;">
 
     <VBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="0">
 
-        <!-- HEADER -->
         <HBox styleClass="form-header" alignment="CENTER_LEFT" style="-fx-padding: 20 24;">
-            <Label text="🏆  Reward Form" styleClass="form-title"/>
+            <Label text="Reward Form" styleClass="form-title"/>
         </HBox>
 
-        <!-- ERROR -->
-        <Label fx:id="errorLabel" text="" wrapText="true" styleClass="error-banner"
-               managed="false" visible="false">
-            <VBox.margin><Insets left="20" right="20" top="12"/></VBox.margin>
-        </Label>
-
-        <!-- FIELDS -->
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                     style="-fx-background-color: transparent; -fx-background: transparent;">
             <VBox spacing="16" style="-fx-padding: 20 24;">
 
-                <!-- Main info card -->
-                <VBox styleClass="section-card" spacing="14" style="-fx-padding: 20;">
+                <VBox styleClass="section-card" spacing="12" style="-fx-padding: 20;">
                     <Label text="Reward Details"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
 
-                    <VBox spacing="4">
+                    <!-- Name -->
+                    <VBox spacing="3">
                         <Label text="* Name" styleClass="field-label"/>
-                        <TextField fx:id="nameField"/>
+                        <TextField fx:id="nameField" promptText="Min. 3 characters, must be unique"/>
+                        <Label fx:id="errName" text="" styleClass="field-error"
+                               managed="false" visible="false"/>
                     </VBox>
 
-                    <VBox spacing="4">
+                    <!-- Description -->
+                    <VBox spacing="3">
                         <Label text="Description" styleClass="field-label"/>
                         <TextArea fx:id="descriptionArea" prefRowCount="3" wrapText="true"/>
                     </VBox>
 
+                    <!-- Type / Value / Required Level -->
                     <HBox spacing="14">
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="* Type" styleClass="field-label"/>
                             <ComboBox fx:id="typeCombo" maxWidth="Infinity"/>
+                            <Label fx:id="errType" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
-                            <Label text="* Value" styleClass="field-label"/>
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
+                            <Label text="* Value (pts)" styleClass="field-label"/>
                             <TextField fx:id="valueField" promptText="e.g. 100"/>
+                            <Label fx:id="errValue" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
                             <Label text="Required Level" styleClass="field-label"/>
                             <TextField fx:id="requiredLevelField" promptText="Leave blank if none"/>
+                            <Label fx:id="errRequiredLevel" text="" styleClass="field-error"
+                                   managed="false" visible="false"/>
                         </VBox>
                     </HBox>
 
-                    <VBox spacing="4">
+                    <!-- Requirement -->
+                    <VBox spacing="3">
                         <Label text="Requirement" styleClass="field-label"/>
                         <TextField fx:id="requirementField" promptText="e.g. Complete 10 posts"/>
                     </VBox>
@@ -68,7 +71,7 @@
                               style="-fx-font-size: 13px; -fx-text-fill: #2d3748;"/>
                 </VBox>
 
-                <!-- Icon picker card -->
+                <!-- Icon picker -->
                 <VBox styleClass="section-card" spacing="12" style="-fx-padding: 20;">
                     <Label text="Icon"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
@@ -80,7 +83,7 @@
                                        preserveRatio="true" smooth="true"/>
                         </StackPane>
                         <VBox spacing="8">
-                            <Button fx:id="pickIconBtn" text="📂  Choose Image"
+                            <Button fx:id="pickIconBtn" text="Choose Image"
                                     onAction="#handlePickIcon" styleClass="btn-secondary"/>
                             <Label fx:id="iconPathLabel" text="No image selected"
                                    wrapText="true" maxWidth="220"
@@ -89,7 +92,7 @@
                     </HBox>
                 </VBox>
 
-                <!-- Link Games card -->
+                <!-- Link Games -->
                 <VBox styleClass="section-card" spacing="10" style="-fx-padding: 20;">
                     <Label text="Link Games"
                            style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
@@ -101,11 +104,9 @@
             </VBox>
         </ScrollPane>
 
-        <!-- FOOTER -->
-        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="form-footer"
-              style="-fx-padding: 14 24;">
+        <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="form-footer" style="-fx-padding: 14 24;">
             <Button text="Cancel" onAction="#handleCancel" styleClass="btn-ghost"/>
-            <Button fx:id="saveBtn" text="💾  Save Reward" onAction="#handleSave" styleClass="btn-primary"/>
+            <Button fx:id="saveBtn" text="Save Reward" onAction="#handleSave" styleClass="btn-primary"/>
         </HBox>
     </VBox>
 </AnchorPane>

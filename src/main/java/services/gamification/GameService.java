@@ -14,7 +14,8 @@ public class GameService {
         String sql = "INSERT INTO game (name, description, type, difficulty, category," +
                 " token_cost, reward_tokens, reward_xp, energy_points, is_active, created_at)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-        PreparedStatement ps = conn.prepareStatement(sql);
+        // RETURN_GENERATED_KEYS lets us read the auto-incremented id immediately
+        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
         ps.setString(1, game.getName());
         ps.setString(2, game.getDescription());
@@ -30,6 +31,10 @@ public class GameService {
 
         ps.setBoolean(10, game.isActive());
         ps.executeUpdate();
+
+        // Read back the generated id and set it on the Game object
+        ResultSet keys = ps.getGeneratedKeys();
+        if (keys.next()) game.setId(keys.getInt(1));
     }
 
     // ===== READ ALL =====
