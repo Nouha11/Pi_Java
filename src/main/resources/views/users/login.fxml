@@ -73,6 +73,10 @@
                 <Label text="Welcome back" styleClass="form-title" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
                 <Label text="Sign in to your account to continue" styleClass="form-hint" style="-fx-text-fill: #64748b; -fx-font-size: 15px;"/>
             </VBox>
+                <HBox spacing="4" alignment="CENTER_LEFT">
+                    <Label text="No account?" style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                    <Label text="Sign Up" style="-fx-text-fill: #0d6efd; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: bold;" onMouseClicked="#onGoToSignup"/>
+                </HBox>
 
             <Region prefHeight="35"/>
 
@@ -89,7 +93,7 @@
             <VBox spacing="8">
                 <Label text="PASSWORD" styleClass="field-label" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px;"/>
                 <PasswordField fx:id="pfPassword"
-                               promptText="••••••••"
+                               promptText="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                styleClass="form-field"
                                style="-fx-padding: 12; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1; -fx-background-color: #f8fafc;"/>
             </VBox>
