@@ -16,7 +16,7 @@ public class MyConnection {
             cnx = DriverManager.getConnection(URL, USER, PWD); // [cite: 69]
             System.out.println("Database Connection Successful.");
         } catch (SQLException e) {
-            System.err.println("Database Connection Failed! ❌");
+            System.err.println("Database Connection Failed! ");
             System.err.println(e.getMessage()); // [cite: 71]
         }
     }

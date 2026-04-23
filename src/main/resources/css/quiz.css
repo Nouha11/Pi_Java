@@ -140,6 +140,39 @@
     -fx-background-color: white;
 }
 
+/* ── SORT COMBO ──────────────────────────────────────── */
+.sort-combo {
+    -fx-background-color: #f0f2f8;
+    -fx-border-color: #dde2f5;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 2 4 2 4;
+    -fx-font-size: 12px;
+    -fx-text-fill: #4a5568;
+}
+.sort-combo:focused,
+.sort-combo:showing {
+    -fx-border-color: #3b4fd8;
+    -fx-background-color: white;
+}
+.sort-combo .list-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-font-size: 12px;
+}
+
+/* ── QUESTION COUNT BADGE ────────────────────────────── */
+.quiz-card-badge {
+    -fx-background-color: #eef0fd;
+    -fx-text-fill: #3b4fd8;
+    -fx-border-color: #c3c9f5;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-border-width: 1;
+    -fx-padding: 2 10 2 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
 /* ── BUTTONS ─────────────────────────────────────────── */
 .btn-primary {
     -fx-background-color: linear-gradient(to bottom, #4a5ef7, #3b4fd8);
@@ -307,6 +340,49 @@
 .status-label {
     -fx-text-fill: #a0aec0;
     -fx-font-size: 12px;
+}
+
+/* ── FILTER BAR ──────────────────────────────────────── */
+.filter-bar {
+    -fx-background-color: #f8f9ff;
+    -fx-border-color: transparent transparent #e4e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.filter-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a5568;
+}
+
+.filter-num-field {
+    -fx-background-color: white;
+    -fx-border-color: #dde2f5;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 5 8 5 8;
+    -fx-font-size: 12px;
+    -fx-alignment: center;
+}
+.filter-num-field:focused {
+    -fx-border-color: #3b4fd8;
+    -fx-background-color: white;
+}
+
+.btn-ghost-sm {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a0aec0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 11px;
+}
+.btn-ghost-sm:hover {
+    -fx-background-color: #fff5f5;
+    -fx-text-fill: #e53e3e;
+    -fx-border-color: #fed7d7;
 }
 
 /* ── QUIZ CARDS ──────────────────────────────────────── */
@@ -508,4 +584,14 @@
     -fx-font-weight: bold;
     -fx-text-fill: #1e2a5e;
     -fx-line-spacing: 6;
+}
+
+/* ── FIELD VALIDATION STATE ──────────────────────────── */
+.field-invalid {
+    -fx-border-color: #e53e3e;
+    -fx-background-color: #fff5f5;
+}
+.field-invalid:focused {
+    -fx-border-color: #c53030;
+    -fx-effect: dropshadow(gaussian, rgba(229,62,62,0.2), 6, 0, 0, 0);
 }

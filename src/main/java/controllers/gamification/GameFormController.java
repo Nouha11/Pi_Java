@@ -13,7 +13,6 @@ import java.util.List;
 
 public class GameFormController {
 
-    // ── Form fields (must match fx:id in game_form.fxml) ──────────────────────
     @FXML private TextField     nameField;
     @FXML private TextArea      descriptionArea;
     @FXML private ComboBox<String> typeCombo;
@@ -24,10 +23,15 @@ public class GameFormController {
     @FXML private TextField     rewardXPField;
     @FXML private TextField     energyPointsField;
     @FXML private CheckBox      isActiveCheck;
-    @FXML private ListView<Reward> rewardsList;   // multi-select reward linker
-    @FXML private Label         errorLabel;
+    @FXML private ListView<Reward> rewardsList;
     @FXML private Button        saveBtn;
     @FXML private Button        cancelBtn;
+
+    // Per-field error labels (shown directly under each field)
+    @FXML private Label errName, errDescription;
+    @FXML private Label errType, errDifficulty, errCategory;
+    @FXML private Label errTokenCost, errRewardTokens, errRewardXP;
+    @FXML private Label errEnergyPoints;
 
     // ── Services ──────────────────────────────────────────────────────────────
     private final GameService   gameService   = new GameService();
@@ -68,7 +72,6 @@ public class GameFormController {
 
         // Default state
         isActiveCheck.setSelected(true);
-        errorLabel.setText("");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -103,7 +106,7 @@ public class GameFormController {
                 }
             }
         } catch (Exception e) {
-            showError("Could not load linked rewards: " + e.getMessage());
+            showFieldError(errName, "Could not load linked rewards: " + e.getMessage());
         }
     }
 
@@ -112,61 +115,67 @@ public class GameFormController {
     // ─────────────────────────────────────────────────────────────────────────
     @FXML
     private void handleSave() {
-        errorLabel.setText("");
+        clearErrors();
+        boolean ok = true;
 
-        // 1. Required text fields
+        // 1. Name
         String name = nameField.getText().trim();
-        if (name.isEmpty())        { showError("Game name is required.");                return; }
-        if (name.length() < 3)     { showError("Name must be at least 3 characters.");  return; }
+        if (name.isEmpty())        { showFieldError(errName, "Game name is required.");               ok = false; }
+        else if (name.length() < 3){ showFieldError(errName, "Name must be at least 3 characters."); ok = false; }
 
+        // 2. Description
         String description = descriptionArea.getText().trim();
-        if (description.isEmpty()) { showError("Description is required.");             return; }
+        if (description.isEmpty()) { showFieldError(errDescription, "Description is required."); ok = false; }
 
-        // 2. ComboBox selections
-        if (typeCombo.getValue()       == null) { showError("Please select a game type.");  return; }
-        if (difficultyCombo.getValue() == null) { showError("Please select difficulty.");   return; }
-        if (categoryCombo.getValue()   == null) { showError("Please select a category.");   return; }
+        // 3. ComboBoxes
+        if (typeCombo.getValue()       == null) { showFieldError(errType,       "Select a type.");       ok = false; }
+        if (difficultyCombo.getValue() == null) { showFieldError(errDifficulty, "Select a difficulty."); ok = false; }
+        if (categoryCombo.getValue()   == null) { showFieldError(errCategory,   "Select a category.");   ok = false; }
 
-        // 3. Numeric fields
-        int tokenCost, rewardTokens, rewardXP;
+        // 4. Numeric fields
+        int tokenCost = 0, rewardTokens = 0, rewardXP = 0;
         try {
-            tokenCost    = Integer.parseInt(tokenCostField.getText().trim());
-            rewardTokens = Integer.parseInt(rewardTokensField.getText().trim());
-            rewardXP     = Integer.parseInt(rewardXPField.getText().trim());
-            if (tokenCost < 0 || rewardTokens < 0 || rewardXP < 0)
-                throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            showError("Token Cost, Reward Tokens and XP must be non-negative whole numbers.");
-            return;
-        }
+            tokenCost = Integer.parseInt(tokenCostField.getText().trim());
+            if (tokenCost < 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) { showFieldError(errTokenCost, "Must be a whole number >= 0."); ok = false; }
 
-        // 4. Energy points (only required for MINI_GAME)
+        try {
+            rewardTokens = Integer.parseInt(rewardTokensField.getText().trim());
+            if (rewardTokens < 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) { showFieldError(errRewardTokens, "Must be a whole number >= 0."); ok = false; }
+
+        try {
+            rewardXP = Integer.parseInt(rewardXPField.getText().trim());
+            if (rewardXP < 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) { showFieldError(errRewardXP, "Must be a whole number >= 0."); ok = false; }
+
+        // 5. Energy points (only for MINI_GAME)
         Integer energyPoints = null;
         if ("MINI_GAME".equals(categoryCombo.getValue())) {
-            String epText = energyPointsField.getText().trim();
-            if (epText.isEmpty()) { showError("Energy Points is required for MINI_GAME."); return; }
-            try {
-                energyPoints = Integer.parseInt(epText);
-                if (energyPoints < 0) throw new NumberFormatException();
-            } catch (NumberFormatException e) {
-                showError("Energy Points must be a non-negative whole number.");
-                return;
+            String ep = energyPointsField.getText().trim();
+            if (ep.isEmpty()) { showFieldError(errEnergyPoints, "Required for MINI_GAME."); ok = false; }
+            else {
+                try {
+                    energyPoints = Integer.parseInt(ep);
+                    if (energyPoints < 0) throw new NumberFormatException();
+                } catch (NumberFormatException e) { showFieldError(errEnergyPoints, "Must be a whole number >= 0."); ok = false; }
             }
         }
 
-        // 5. Uniqueness check (graded requirement)
+        if (!ok) return;  // stop here — all errors are shown inline
+
+        // 6. Uniqueness check
         try {
             int excludeId = (editingGame != null) ? editingGame.getId() : 0;
             if (gameService.gameNameExists(name, excludeId)) {
-                showError("A game with this name already exists!");
+                showFieldError(errName, "A game with this name already exists!");
                 return;
             }
         } catch (Exception e) {
-            showError("DB error during uniqueness check: " + e.getMessage());
-            return;
+            showFieldError(errName, "DB error: " + e.getMessage()); return;
         }
 
-        // 6. Build the Game object
+        // 7. Build and persist
         Game game = (editingGame != null) ? editingGame : new Game();
         game.setName(name);
         game.setDescription(description);
@@ -179,27 +188,39 @@ public class GameFormController {
         game.setEnergyPoints(energyPoints);
         game.setActive(isActiveCheck.isSelected());
 
-        // 7. Persist
         try {
             if (editingGame == null) {
                 gameService.addGame(game);
-                // Retrieve the newly inserted game's id for reward linking
-                // (fetch by name since we just inserted it)
-                List<Game> allGames = gameService.getAllGames();
-                for (Game g : allGames) {
-                    if (g.getName().equals(name)) { game.setId(g.getId()); break; }
-                }
             } else {
                 gameService.updateGame(game);
             }
-
-            // 8. Sync reward links
-            syncRewardLinks(game.getId());
-
-            closeWindow();
-
         } catch (Exception e) {
-            showError("Save error: " + e.getMessage());
+            showFieldError(errName, "Save error: " + e.getMessage()); return;
+        }
+
+        // 8. Sync reward links
+        if (game.getId() > 0) {
+            try { syncRewardLinks(game.getId()); }
+            catch (Exception e) { System.err.println("Warning: reward links: " + e.getMessage()); }
+        }
+
+        closeWindow();
+    }
+
+    // ── Shows an error message directly under a specific field ────────────────
+    private void showFieldError(Label lbl, String msg) {
+        lbl.setText(msg);
+        lbl.setVisible(true);
+        lbl.setManaged(true);
+    }
+
+    // ── Hides all per-field error labels at the start of each save attempt ────
+    private void clearErrors() {
+        for (Label l : new Label[]{errName, errDescription, errType, errDifficulty,
+                errCategory, errTokenCost, errRewardTokens, errRewardXP, errEnergyPoints}) {
+            l.setText("");
+            l.setVisible(false);
+            l.setManaged(false);
         }
     }
 
@@ -222,7 +243,7 @@ public class GameFormController {
                     FXCollections.observableArrayList(rewardService.getAllRewards())
             );
         } catch (Exception e) {
-            showError("Could not load rewards: " + e.getMessage());
+            showFieldError(errName, "Could not load rewards: " + e.getMessage());
         }
     }
 
@@ -240,11 +261,6 @@ public class GameFormController {
         for (Reward selected : rewardsList.getSelectionModel().getSelectedItems()) {
             gameService.addRewardToGame(gameId, selected.getId());
         }
-    }
-
-    private void showError(String msg) {
-        errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
     }
 
     private void closeWindow() {

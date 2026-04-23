@@ -27,6 +27,7 @@ public class MainFX extends Application {
         Parent root = loader.load();
 
         // Login screens are usually smaller and focused
+
         Scene scene = new Scene(root, 900, 600);
 
         primaryStage.setTitle("NOVA - Login");

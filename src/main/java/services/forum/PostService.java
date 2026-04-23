@@ -91,17 +91,31 @@ public class PostService {
         return posts;
     }
 
+    // 🔥 FIXED: The UPDATE query now properly saves image_name and link! 🔥
     public void modifier(Post p) {
-        String req = "UPDATE post SET title = ?, content = ?, space_id = ?, updated_at = ? WHERE id = ?";
+        String req = "UPDATE post SET title = ?, content = ?, space_id = ?, updated_at = ?, image_name = ?, link = ? WHERE id = ?";
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
             ps.setString(1, p.getTitle().trim());
             ps.setString(2, p.getContent().trim());
+
             if (p.getSpaceId() != null) ps.setInt(3, p.getSpaceId());
             else ps.setNull(3, Types.INTEGER);
+
             ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-            ps.setInt(5, p.getId());
+
+            // Securely handle the Image Name
+            if (p.getImageName() != null) ps.setString(5, p.getImageName());
+            else ps.setNull(5, Types.VARCHAR);
+
+            // Securely handle the URL Link
+            if (p.getLink() != null) ps.setString(6, p.getLink());
+            else ps.setNull(6, Types.VARCHAR);
+
+            ps.setInt(7, p.getId());
+
             ps.executeUpdate();
+            System.out.println("✅ Post updated successfully in DB (including images)!");
         } catch (SQLException e) {
             System.err.println("Erreur: " + e.getMessage());
         }

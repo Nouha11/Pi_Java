@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
 public class UserListController implements Initializable {
 
     @FXML private TableView<User>            tableUsers;
-    @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String>  colUsername;
     @FXML private TableColumn<User, String>  colEmail;
     @FXML private TableColumn<User, String>  colRole;
@@ -63,7 +62,6 @@ public class UserListController implements Initializable {
     }
 
     private void setupColumns() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colXp.setCellValueFactory(new PropertyValueFactory<>("xp"));

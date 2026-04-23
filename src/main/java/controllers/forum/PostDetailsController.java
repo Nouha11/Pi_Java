@@ -3,6 +3,8 @@ package controllers.forum;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -28,6 +30,7 @@ public class PostDetailsController {
     @FXML private Button lockButton, submitCommentBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
+    @FXML private Label topCommentBadgeLabel;
     @FXML private Label contentLabel, statusLabel;
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
@@ -44,7 +47,6 @@ public class PostDetailsController {
             setPostData(utils.ForumSession.currentPost);
         }
 
-        // 🔥 REAL-TIME VALIDATION: Reset styles when the user starts typing
         commentArea.textProperty().addListener((obs, oldVal, newVal) -> {
             commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
         });
@@ -84,6 +86,8 @@ public class PostDetailsController {
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
+            if (!imgFile.exists()) imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/forum/" + post.getImageName());
+
             if (imgFile.exists()) {
                 postImageView.setImage(new Image(imgFile.toURI().toString()));
             }
@@ -119,21 +123,15 @@ public class PostDetailsController {
         }
     }
 
-    @FXML
-    void handleLockPost(ActionEvent event) {
-        boolean newState = !currentPost.isLocked();
-        currentPost.setLocked(newState);
-        postService.toggleLock(currentPost.getId(), newState);
-        updateLockUI();
-    }
-
     private void loadComments() {
         commentsContainer.getChildren().clear();
         List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
 
         String replyCount = String.valueOf(comments.size());
+
         repliesCountLabel.setText("Replies (" + replyCount + ")");
         statsRepliesLabel.setText("💬 Replies: " + replyCount);
+        topCommentBadgeLabel.setText("💬 " + replyCount + " Comments");
 
         if (comments.isEmpty()) {
             Label emptyLabel = new Label("No comments yet. Be the first to share your thoughts!");
@@ -162,26 +160,30 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 UPDATED: Added Contrôle de Saisie & Anti-Spam Check 🔥
+    @FXML
+    void handleLockPost(ActionEvent event) {
+        boolean newState = !currentPost.isLocked();
+        currentPost.setLocked(newState);
+        postService.toggleLock(currentPost.getId(), newState);
+        updateLockUI();
+    }
+
     @FXML
     void handleSubmitComment(ActionEvent event) {
         if (currentPost.isLocked()) return;
 
         String text = commentArea.getText();
 
-        // 1. Mandatory Field Check
         if (text == null || text.trim().length() < 2) {
             applyErrorStyle("Reply must be at least 2 characters!");
             return;
         }
 
-        // 2. Uniqueness Check (Anti-Spam)
         if (!commentService.isCommentUnique(text, currentPost.getId())) {
             applyErrorStyle("You already posted this exact reply!");
             return;
         }
 
-        // 3. Process Valid Comment
         Comment newComment = new Comment(text, currentPost.getId(), 1, null);
         commentService.ajouter(newComment);
 
@@ -197,7 +199,6 @@ public class PostDetailsController {
         commentArea.clear();
         commentArea.setPromptText("⚠️ " + errorMessage);
 
-        // Brief pause then reset prompt text
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(e -> commentArea.setPromptText("Write a reply..."));
         pause.play();
@@ -242,44 +243,34 @@ public class PostDetailsController {
         }
     }
 
+    // 🔥 COMPLETELY UPDATED EDIT METHOD 🔥
     @FXML
     void handleEditPost(ActionEvent event) {
-        Stage editStage = new Stage();
-        editStage.initModality(Modality.APPLICATION_MODAL);
-        editStage.setTitle("Edit Your Post");
+        try {
+            // 1. Load the beautiful Add/Edit window
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/add_post.fxml"));
+            Parent root = loader.load();
 
-        VBox layout = new VBox(15);
-        layout.setStyle("-fx-background-color: #f8fafc; -fx-padding: 25;");
+            // 2. Pass the current post data to the controller
+            AddPostController controller = loader.getController();
+            controller.setPostToEdit(this.currentPost);
 
-        Label headerText = new Label("Edit Discussion");
-        headerText.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+            // 3. Create the popup window
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Edit Post");
+            stage.setScene(new Scene(root));
 
-        TextField titleInput = new TextField(currentPost.getTitle());
-        titleInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-padding: 10; -fx-font-size: 14px;");
+            // 4. Wait for the user to hit 'Save Changes' and close the popup
+            stage.showAndWait();
 
-        TextArea contentInput = new TextArea(currentPost.getContent());
-        contentInput.setWrapText(true);
-        contentInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-font-size: 14px;");
+            // 5. Instantly refresh this page to show the newly updated title/content!
+            setPostData(this.currentPost);
 
-        Button saveChangesBtn = new Button("Save Changes");
-        saveChangesBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6; -fx-cursor: hand;");
-
-        saveChangesBtn.setOnAction(e -> {
-            if (!titleInput.getText().isEmpty() && !contentInput.getText().isEmpty()) {
-                currentPost.setTitle(titleInput.getText());
-                currentPost.setContent(contentInput.getText());
-                postService.modifier(currentPost);
-
-                topTitleLabel.setText(currentPost.getTitle());
-                contentLabel.setText(currentPost.getContent());
-                editStage.close();
-            }
-        });
-
-        layout.getChildren().addAll(headerText, new Label("Title:"), titleInput, new Label("Content:"), contentInput, saveChangesBtn);
-        Scene scene = new Scene(layout, 500, 450);
-        editStage.setScene(scene);
-        editStage.showAndWait();
+        } catch (Exception ex) {
+            System.err.println("Error opening Edit window: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     @FXML

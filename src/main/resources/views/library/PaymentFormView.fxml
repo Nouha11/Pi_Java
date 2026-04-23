@@ -37,8 +37,8 @@
                             <TextField fx:id="txtCardNumber" promptText="1234 5678 9012 3456"
                                        style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
                                               -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                            <Label fx:id="errCardNumber"
-                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                            <Label fx:id="errCardNumber" text="Invalid card number"
+                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
                         </VBox>
 
                         <VBox spacing="4">
@@ -47,8 +47,8 @@
                             <TextField fx:id="txtCardHolder" promptText="John Doe"
                                        style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
                                               -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                            <Label fx:id="errCardHolder"
-                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                            <Label fx:id="errCardHolder" text="Name must be at least 3 letters (no numbers)"
+                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
                         </VBox>
 
                         <HBox spacing="16">
@@ -58,8 +58,8 @@
                                 <TextField fx:id="txtExpiry" promptText="MM/YY"
                                            style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
                                                   -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                                <Label fx:id="errExpiry"
-                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                                <Label fx:id="errExpiry" text="Invalid or expired date (use MM/YY)"
+                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
                             </VBox>
                             <VBox spacing="4" prefWidth="130">
                                 <Label text="CVC *"
@@ -67,8 +67,8 @@
                                 <TextField fx:id="txtCvc" promptText="123"
                                            style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
                                                   -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                                <Label fx:id="errCvc"
-                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false"/>
+                                <Label fx:id="errCvc" text="CVC must be 3 or 4 digits"
+                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
                             </VBox>
                         </HBox>
                     </VBox>
@@ -98,7 +98,7 @@
                            style="-fx-text-fill: #842029; -fx-background-color: #f8d7da;
                                   -fx-border-color: #f5c2c7; -fx-border-radius: 6;
                                   -fx-background-radius: 6; -fx-padding: 10 14; -fx-font-size: 13;"
-                           visible="false"/>
+                           visible="false" managed="false"/>
 
                     <!-- Buttons -->
                     <HBox spacing="12">
@@ -143,7 +143,7 @@
                     </HBox>
                     <HBox>
                         <Label text="Tax (0%)" HBox.hgrow="ALWAYS" style="-fx-text-fill: #495057;"/>
-                        <Label text="$0.00" style="-fx-font-weight: bold;"/>
+                        <Label text="0.00" style="-fx-font-weight: bold;"/>
                     </HBox>
                     <Separator/>
                     <HBox>

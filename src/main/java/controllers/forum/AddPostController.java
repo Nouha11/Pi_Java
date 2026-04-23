@@ -3,6 +3,7 @@ package controllers.forum;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -17,6 +18,10 @@ import java.io.File;
 import java.util.Map;
 
 public class AddPostController {
+
+    // 🔥 NEW: Hooks to change the UI text dynamically
+    @FXML private Label mainTitleLabel;
+    @FXML private Button submitButton;
 
     @FXML private TextField titleField;
     @FXML private TextArea contentArea;
@@ -34,6 +39,8 @@ public class AddPostController {
     private String selectedFilePath = null;
     private Map<String, Integer> databaseSpaces;
 
+    private Post postToEdit = null;
+
     @FXML
     public void initialize() {
         databaseSpaces = postService.getSpacesMap();
@@ -42,6 +49,30 @@ public class AddPostController {
         titleField.textProperty().addListener((observable, oldValue, newValue) -> clearError(titleField, titleError));
         contentArea.textProperty().addListener((observable, oldValue, newValue) -> clearError(contentArea, contentError));
         spaceCombo.valueProperty().addListener((observable, oldValue, newValue) -> clearError(spaceCombo, spaceError));
+    }
+
+    // 🔥 UPDATED: Changes the UI text to "Edit" when opened from Admin panel!
+    public void setPostToEdit(Post post) {
+        this.postToEdit = post;
+
+        // Morph the UI
+        if (mainTitleLabel != null) mainTitleLabel.setText("Edit Discussion");
+        if (submitButton != null) submitButton.setText("Save Changes");
+
+        // Fill the fields
+        titleField.setText(post.getTitle());
+        contentArea.setText(post.getContent());
+
+        for (String spaceName : databaseSpaces.keySet()) {
+            if (databaseSpaces.get(spaceName).equals(post.getSpaceId())) {
+                spaceCombo.setValue(spaceName);
+                break;
+            }
+        }
+
+        if (post.getTags() != null) tagsField.setText(post.getTags());
+        if (post.getLink() != null) linkField.setText(post.getLink());
+        if (post.getImageName() != null) fileNameLabel.setText("Current: " + post.getImageName());
     }
 
     @FXML
@@ -58,7 +89,6 @@ public class AddPostController {
 
     @FXML
     void handleAddPost(ActionEvent event) {
-        // 1. Reset all errors first
         clearError(titleField, titleError);
         clearError(spaceCombo, spaceError);
         clearError(contentArea, contentError);
@@ -71,13 +101,8 @@ public class AddPostController {
 
         boolean isValid = true;
 
-        // 2. Perform Validation Checks
         if (title == null || title.trim().length() < 5) {
             showError(titleField, titleError, "Title is too short. (Min 5 characters)");
-            isValid = false;
-        } else if (!postService.isTitleUnique(title)) {
-            // 🔥 REQUIRED FOR GRADING: UNIQUENESS CHECK 🔥
-            showError(titleField, titleError, "A discussion with this exact title already exists!");
             isValid = false;
         }
 
@@ -91,17 +116,48 @@ public class AddPostController {
             isValid = false;
         }
 
-        // Stop execution if anything failed!
-        if (!isValid) {
-            return;
+        if (!isValid) return;
+
+        Integer spaceId = databaseSpaces.get(spaceSelection);
+
+        if (postToEdit == null) {
+            // --- CREATING NEW POST ---
+            if (!postService.isTitleUnique(title)) {
+                showError(titleField, titleError, "A discussion with this exact title already exists!");
+                return;
+            }
+
+            Post newPost = new Post(title, content, 7, spaceId); // Adjust ID as needed
+            newPost.setTags(tags);
+            if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
+
+            handleImageCopy(newPost);
+            postService.ajouter(newPost);
+            showAlert("Success", "Your post has been published to the forum!", Alert.AlertType.INFORMATION);
+
+        } else {
+            // --- EDITING EXISTING POST ---
+            if (!title.equalsIgnoreCase(postToEdit.getTitle()) && !postService.isTitleUnique(title)) {
+                showError(titleField, titleError, "A discussion with this exact title already exists!");
+                return;
+            }
+
+            postToEdit.setTitle(title);
+            postToEdit.setContent(content);
+            postToEdit.setSpaceId(spaceId);
+            postToEdit.setTags(tags);
+            postToEdit.setLink(link);
+
+            handleImageCopy(postToEdit);
+            postService.modifier(postToEdit);
+            showAlert("Success", "Post updated successfully!", Alert.AlertType.INFORMATION);
         }
 
-        // 3. Create the Post
-        Integer spaceId = databaseSpaces.get(spaceSelection);
-        Post newPost = new Post(title, content, 1, spaceId); // Assuming user ID 1 for now
-        newPost.setTags(tags);
-        if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
+        Stage stage = (Stage) titleField.getScene().getWindow();
+        stage.close();
+    }
 
+    private void handleImageCopy(Post post) {
         if (selectedFileName != null && selectedFilePath != null) {
             try {
                 java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedFilePath);
@@ -111,22 +167,12 @@ public class AddPostController {
                 java.nio.file.Files.createDirectories(destPath.getParent());
                 java.nio.file.Files.copy(sourcePath, destPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-                newPost.setAttachmentName(selectedFileName);
-                newPost.setImageName(selectedFileName);
-
+                post.setAttachmentName(selectedFileName);
+                post.setImageName(selectedFileName);
             } catch (java.io.IOException e) {
-                System.err.println("Failed to copy file to Symfony folder!");
                 e.printStackTrace();
             }
         }
-
-        // 4. Save to Database
-        postService.ajouter(newPost);
-
-        showAlert("Success", "Your post has been published to the forum!", Alert.AlertType.INFORMATION);
-
-        Stage stage = (Stage) titleField.getScene().getWindow();
-        stage.close();
     }
 
     private void showError(Region field, Label errorLabel, String message) {
