@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -16,6 +17,7 @@ import services.quiz.ChoiceService;
 import services.quiz.QuestionService;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuizPlayController {
@@ -24,6 +26,7 @@ public class QuizPlayController {
     @FXML private Label       lblQuizTitle;
     @FXML private Label       lblProgress;
     @FXML private ProgressBar progressBar;
+    @FXML private HBox timerRow;
     @FXML private ProgressBar timerBar;
     @FXML private Label       lblTimer;
     @FXML private Label       lblDifficulty;
@@ -45,6 +48,7 @@ public class QuizPlayController {
 
     // ── State ─────────────────────────────────────────────────
     private List<Question> questions;
+    private final List<AnswerReview> reviewResults = new ArrayList<>();
     private int  currentIndex = 0;
     private int  score        = 0;
     private int  totalXp      = 0;
@@ -59,6 +63,10 @@ public class QuizPlayController {
     public void loadQuiz(Quiz quiz) {
         lblQuizTitle.setText(quiz.getTitle());
         questions = questionService.getQuestionsByQuizId(quiz.getId());
+        reviewResults.clear();
+        currentIndex = 0;
+        score = 0;
+        totalXp = 0;
 
         if (questions.isEmpty()) {
             lblQuestion.setText("This quiz has no questions yet.");
@@ -104,6 +112,10 @@ public class QuizPlayController {
         btnNext.setText(index == questions.size() - 1 ? "Finish" : "Next  \u2192");
         // Reset next button action to default handler
         btnNext.setOnAction(e -> handleNext());
+        if (timerRow != null) {
+            timerRow.setVisible(true);
+            timerRow.setManaged(true);
+        }
 
         // Build choice radio buttons
         choicesBox.getChildren().clear();
@@ -177,14 +189,20 @@ public class QuizPlayController {
         stopTimer();
 
         // Lock all choices and highlight the correct one
+        Question current = questions.get(currentIndex);
+        Choice correctChoice = null;
         for (var node : choicesBox.getChildren()) {
             if (node instanceof RadioButton rb) {
                 rb.setDisable(true);
                 Choice c = (Choice) rb.getUserData();
-                if (c.isCorrect()) rb.getStyleClass().add("choice-correct");
+                if (c.isCorrect()) {
+                    rb.getStyleClass().add("choice-correct");
+                    correctChoice = c;
+                }
             }
         }
 
+        addReview(current, null, correctChoice, true);
         showFeedback(false, "\u23F0  Time's up! No answer selected.");
         btnNext.setDisable(false);
 
@@ -231,18 +249,20 @@ public class QuizPlayController {
             }
         }
 
+        Choice correctChoice = current.getChoices().stream()
+                .filter(Choice::isCorrect)
+                .findFirst().orElse(null);
+
         if (chosen.isCorrect()) {
             score++;
             totalXp += current.getXpValue();
             showFeedback(true, "\u2705  Correct! +" + current.getXpValue() + " XP");
         } else {
-            String correctText = current.getChoices().stream()
-                    .filter(Choice::isCorrect)
-                    .map(Choice::getContent)
-                    .findFirst().orElse("\u2014");
+            String correctText = correctChoice != null ? correctChoice.getContent() : "\u2014";
             showFeedback(false, "\u274C  Wrong. Correct answer: " + correctText);
         }
 
+        addReview(current, chosen, correctChoice, false);
         btnNext.setDisable(false);
 
         if (currentIndex == questions.size() - 1) {
@@ -281,6 +301,13 @@ public class QuizPlayController {
         lblQuestion.getStyleClass().setAll("play-results-text");
         lblProgress.setText(score + " / " + questions.size());
 
+        if (timerRow != null) {
+            timerRow.setVisible(false);
+            timerRow.setManaged(false);
+        }
+
+        renderReviewSummary();
+
         btnNext.setText("Close");
         btnNext.setDisable(false);
         btnNext.setOnAction(e -> ((Stage) btnNext.getScene().getWindow()).close());
@@ -290,6 +317,64 @@ public class QuizPlayController {
     private void handleQuit() {
         stopTimer();
         ((Stage) btnNext.getScene().getWindow()).close();
+    }
+
+    private void addReview(Question question, Choice selected, Choice correct, boolean timedOut) {
+        reviewResults.add(new AnswerReview(question, selected, correct, selected != null && selected.isCorrect(), timedOut));
+    }
+
+    private void renderReviewSummary() {
+        choicesBox.getChildren().clear();
+        if (reviewResults.isEmpty()) {
+            Label emptyLabel = new Label("No answers were recorded for this quiz.");
+            emptyLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #475569;");
+            choicesBox.getChildren().add(emptyLabel);
+            return;
+        }
+
+        for (int i = 0; i < reviewResults.size(); i++) {
+            AnswerReview review = reviewResults.get(i);
+            Label questionLabel = new Label((i + 1) + ". " + review.question.getText());
+            questionLabel.setWrapText(true);
+            questionLabel.getStyleClass().add("play-question-text");
+
+            Label statusLabel = new Label(review.correct ? "Result: Correct ✓" : "Result: Incorrect ✕");
+            statusLabel.setStyle(review.correct
+                    ? "-fx-text-fill: #047857; -fx-font-weight: bold;"
+                    : "-fx-text-fill: #b91c1c; -fx-font-weight: bold;");
+
+            String selectedText = review.timedOut ? "No answer selected" :
+                    review.selected != null ? review.selected.getContent() : "No answer selected";
+            Label selectedLabel = new Label("Your answer: " + selectedText);
+            selectedLabel.setWrapText(true);
+
+            String correctText = review.correctChoice != null ? review.correctChoice.getContent() : "—";
+            Label correctLabel = new Label("Correct answer: " + correctText);
+            correctLabel.setWrapText(true);
+
+            VBox reviewCard = new VBox(6, questionLabel, statusLabel, selectedLabel, correctLabel);
+            reviewCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-radius: 10; " +
+                    "-fx-background-radius: 10; -fx-padding: 14; -fx-effect: dropshadow(gaussian, rgba(148,163,184,0.2), 8, 0, 0, 1);");
+            reviewCard.setMaxWidth(Double.MAX_VALUE);
+
+            choicesBox.getChildren().add(reviewCard);
+        }
+    }
+
+    private static class AnswerReview {
+        private final Question question;
+        private final Choice selected;
+        private final Choice correctChoice;
+        private final boolean correct;
+        private final boolean timedOut;
+
+        private AnswerReview(Question question, Choice selected, Choice correctChoice, boolean correct, boolean timedOut) {
+            this.question = question;
+            this.selected = selected;
+            this.correctChoice = correctChoice;
+            this.correct = correct;
+            this.timedOut = timedOut;
+        }
     }
 
     // ── Image loading ─────────────────────────────────────────

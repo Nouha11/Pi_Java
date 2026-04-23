@@ -24,7 +24,7 @@
                  styleClass="play-progress-bar" progress="0.0"/>
 
     <!-- TIMER ROW -->
-    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="timer-row">
+    <HBox fx:id="timerRow" alignment="CENTER_LEFT" spacing="10" styleClass="timer-row">
         <padding><Insets bottom="8" left="20" right="20" top="8"/></padding>
         <Label text="⏱" style="-fx-font-size:14px;"/>
         <ProgressBar fx:id="timerBar" prefHeight="10" prefWidth="480"
