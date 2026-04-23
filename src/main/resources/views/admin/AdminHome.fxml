@@ -107,15 +107,8 @@
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllCourses"/>
                 </HBox>
 
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-                    <Label text="COURSE NAME" prefWidth="250" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="CATEGORY" prefWidth="120" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="STATUS" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                </HBox>
-
                 <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox fx:id="coursesListContainer" spacing="0"/>
+                    <VBox fx:id="coursesListContainer" spacing="8" style="-fx-padding: 12;"/>
                 </ScrollPane>
             </VBox>
 
@@ -169,14 +162,8 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllLoans"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-                    <Label text="BOOK TITLE" prefWidth="220" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="USER" prefWidth="130" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="STATUS" prefWidth="120" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DATE REQUESTED" prefWidth="110" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                </HBox>
                 <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox fx:id="loansListContainer" spacing="0"/>
+                    <VBox fx:id="loansListContainer" spacing="8" style="-fx-padding: 12;"/>
                 </ScrollPane>
             </VBox>
 
@@ -188,7 +175,7 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
                 </HBox>
-                <VBox fx:id="topGamesBox" spacing="0" style="-fx-padding: 8 0 16 0;"/>
+                <VBox fx:id="topGamesBox" spacing="8" style="-fx-padding: 12 12 12 12;"/>
             </VBox>
         </HBox>
 
@@ -201,12 +188,8 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllQuizzes"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-                    <Label text="QUIZ TITLE" prefWidth="350" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="QUESTIONS" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                </HBox>
                 <ScrollPane fitToWidth="true" prefHeight="240" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox fx:id="quizzesListContainer" spacing="0"/>
+                    <VBox fx:id="quizzesListContainer" spacing="8" style="-fx-padding: 12;"/>
                 </ScrollPane>
             </VBox>
 
@@ -218,7 +201,7 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
                 </HBox>
-                <VBox fx:id="topRewardsBox" spacing="0" style="-fx-padding: 8 0 16 0;"/>
+                <VBox fx:id="topRewardsBox" spacing="8" style="-fx-padding: 12 12 12 12;"/>
             </VBox>
         </HBox>
 
@@ -231,14 +214,8 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllGames"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-                    <Label text="GAME NAME" prefWidth="180" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="TYPE" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="DIFFICULTY" prefWidth="100" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="XP REWARD" prefWidth="90" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                </HBox>
                 <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox fx:id="gamesListContainer" spacing="0"/>
+                    <VBox fx:id="gamesListContainer" spacing="8" style="-fx-padding: 12;"/>
                 </ScrollPane>
             </VBox>
 
@@ -250,13 +227,8 @@
                     </VBox>
                     <Label text="View all →" style="-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;" onMouseClicked="#onViewAllRewards"/>
                 </HBox>
-                <HBox style="-fx-background-color: #f8fafc; -fx-padding: 12 24; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
-                    <Label text="REWARD NAME" prefWidth="200" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="TYPE" prefWidth="140" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                    <Label text="VALUE" prefWidth="80" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
-                </HBox>
                 <ScrollPane fitToWidth="true" prefHeight="260" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-                    <VBox fx:id="rewardsListContainer" spacing="0"/>
+                    <VBox fx:id="rewardsListContainer" spacing="8" style="-fx-padding: 12;"/>
                 </ScrollPane>
             </VBox>
         </HBox>
