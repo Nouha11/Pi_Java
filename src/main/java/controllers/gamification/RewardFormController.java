@@ -22,8 +22,19 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+/**
+ * RewardFormController — CREATE + UPDATE controller for the reward form.
+ *
+ * Responsibilities:
+ *  - Add a new reward (CREATE) when editingReward == null
+ *  - Edit an existing reward (UPDATE) when setRewardToEdit() has been called
+ *  - Validate all fields before saving
+ *  - Pick and copy an icon image into the project resources
+ *  - Link/unlink the reward to games via the game_rewards junction table
+ */
 public class RewardFormController {
 
+    // ── Form fields injected from reward_form.fxml ────────────────────────────
     @FXML private TextField        nameField;
     @FXML private TextArea         descriptionArea;
     @FXML private ComboBox<String> typeCombo;
@@ -32,35 +43,51 @@ public class RewardFormController {
     @FXML private TextField        requiredLevelField;
     @FXML private CheckBox         isActiveCheck;
     @FXML private ListView<Game>   gamesList;
-    @FXML private Label            errorLabel;
+
+    // Per-field error labels (shown directly under each field)
+    @FXML private Label errName, errType, errValue, errRequiredLevel;
     @FXML private Button           saveBtn;
     @FXML private Button           pickIconBtn;
-    @FXML private ImageView        iconPreview;
-    @FXML private Label            iconPathLabel;
+    @FXML private ImageView        iconPreview;      // live preview of the selected icon
+    @FXML private Label            iconPathLabel;    // shows the filename of the selected icon
 
+    // Services — controller never writes SQL directly
     private final RewardService rewardService = new RewardService();
     private final GameService   gameService   = new GameService();
-    private Reward editingReward = null;
-    private String selectedIconPath = null; // absolute path chosen by user
 
+    // null = Add mode, non-null = Edit mode
+    private Reward editingReward = null;
+
+    // Stores the filename (or absolute path as fallback) of the chosen icon
+    private String selectedIconPath = null;
+
+    // ── Called automatically by JavaFX after FXML fields are injected ─────────
     @FXML
     public void initialize() {
+        // Populate the type ComboBox with all valid reward types
         typeCombo.setItems(FXCollections.observableArrayList(
                 "BADGE", "ACHIEVEMENT", "BONUS_XP", "BONUS_TOKENS"));
         isActiveCheck.setSelected(true);
-        errorLabel.setText("");
+
+        // Allow selecting multiple games to link to this reward
         gamesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        // Load all games into the ListView so the user can link them
         loadGamesList();
     }
 
+    // ── Loads all games into the ListView for linking ─────────────────────────
     private void loadGamesList() {
         try {
             gamesList.setItems(FXCollections.observableArrayList(gameService.getAllGames()));
         } catch (Exception e) {
-            showError("Could not load games: " + e.getMessage());
+            showFieldError(errName, "Could not load games: " + e.getMessage());
         }
     }
 
+    // ── ICON PICKER: opens a FileChooser, copies the image into resources ─────
+    // The image is copied to src/main/resources/images/rewards/ with a timestamp
+    // prefix to avoid name collisions. Only the filename is stored in the DB.
     @FXML
     private void handlePickIcon() {
         FileChooser fc = new FileChooser();
@@ -70,61 +97,61 @@ public class RewardFormController {
         File file = fc.showOpenDialog(pickIconBtn.getScene().getWindow());
         if (file == null) return;
 
+        // Always show the filename and preview immediately from the source file
+        // This works regardless of whether the copy succeeds
+        selectedIconPath = file.getAbsolutePath();
+        iconPathLabel.setText(file.getName());
         try {
-            // Copy into project resources so the image travels with the project
+            iconPreview.setImage(new javafx.scene.image.Image(
+                    file.toURI().toString(), 90, 90, true, true));
+        } catch (Exception ignored) {}
+
+        // Try to copy into project resources for portability
+        try {
             Path iconsDir = resolveIconsDir();
             Files.createDirectories(iconsDir);
-
-            // Avoid name collisions by prefixing with timestamp
             String destName = System.currentTimeMillis() + "_" + file.getName();
             Path dest = iconsDir.resolve(destName);
             Files.copy(file.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-
-            selectedIconPath = destName; // store only the filename
-            iconPathLabel.setText(destName);
-            loadPreview(destName);
-        } catch (IOException e) {
-            // Fallback: store absolute path if copy fails
-            selectedIconPath = file.getAbsolutePath();
-            iconPathLabel.setText(file.getName());
-            loadPreview(selectedIconPath);
+            // If copy succeeded, store just the filename (portable)
+            selectedIconPath = destName;
+        } catch (Exception e) {
+            // Copy failed — keep the absolute path already set above
+            System.err.println("Icon copy failed, using absolute path: " + e.getMessage());
         }
     }
 
-    /** Returns the absolute path to src/main/resources/images/rewards */
+    // ── Resolves the absolute path to src/main/resources/images/rewards ───────
     private Path resolveIconsDir() {
-        // Try to locate via class resource first (works when running from IDE)
+        // Works when running from IDE (classpath resource exists)
         URL res = getClass().getResource("/images/rewards");
         if (res != null) return Paths.get(res.getPath());
 
-        // Fallback: walk up from the running class location to find src/main/resources
+        // Fallback: navigate from the compiled classes folder back to src/main/resources
         URL classUrl = getClass().getProtectionDomain().getCodeSource().getLocation();
         Path base = Paths.get(classUrl.getPath()).getParent();
-        // target: <project>/src/main/resources/images/rewards
         return base.resolve("../src/main/resources/images/rewards").normalize();
     }
 
+    // ── Loads and displays the icon preview at 90x90 ─────────────────────────
+    // Tries three locations in order: classpath resource, absolute path, icons dir
     private void loadPreview(String nameOrPath) {
         if (nameOrPath == null || nameOrPath.isBlank()) {
             iconPreview.setImage(null);
             return;
         }
         try {
-            // Try as resource first (filename only)
             var stream = getClass().getResourceAsStream("/images/rewards/" + nameOrPath);
             if (stream != null) {
                 iconPreview.setImage(new Image(stream, 90, 90, true, true));
                 return;
             }
-            // Try as absolute path
             File f = new File(nameOrPath);
             if (f.exists()) {
                 iconPreview.setImage(new Image(f.toURI().toString(), 90, 90, true, true));
                 return;
             }
-            // Try resolving against icons dir on disk
-            Path iconsDir = resolveIconsDir();
-            File fromDir = iconsDir.resolve(nameOrPath).toFile();
+            File fromDir = resolveIconsDir().resolve(nameOrPath).toFile();
             if (fromDir.exists()) {
                 iconPreview.setImage(new Image(fromDir.toURI().toString(), 90, 90, true, true));
             }
@@ -133,8 +160,12 @@ public class RewardFormController {
         }
     }
 
+    // ── EDIT MODE: called by GameRewardController to pre-fill the form ────────
+    // Sets editingReward so handleSave() knows to call updateReward() instead of addReward()
     public void setRewardToEdit(Reward reward) {
         this.editingReward = reward;
+
+        // Pre-fill all fields with the existing reward's data
         nameField.setText(reward.getName());
         descriptionArea.setText(reward.getDescription() != null ? reward.getDescription() : "");
         typeCombo.setValue(reward.getType());
@@ -144,12 +175,14 @@ public class RewardFormController {
         if (reward.getRequiredLevel() != null)
             requiredLevelField.setText(String.valueOf(reward.getRequiredLevel()));
 
+        // Load and preview the existing icon if one is set
         if (reward.getIcon() != null && !reward.getIcon().isBlank()) {
             selectedIconPath = reward.getIcon();
             iconPathLabel.setText(new File(reward.getIcon()).getName());
             loadPreview(selectedIconPath);
         }
 
+        // Pre-select games already linked to this reward in the ListView
         try {
             List<Game> linked = gameService.getGamesForReward(reward.getId());
             for (Game lg : linked)
@@ -157,27 +190,34 @@ public class RewardFormController {
                     if (item.getId() == lg.getId())
                         gamesList.getSelectionModel().select(item);
         } catch (Exception e) {
-            showError("Could not load linked games: " + e.getMessage());
+            showFieldError(errName, "Could not load linked games: " + e.getMessage());
         }
     }
 
+    // ── SAVE: validates all fields, then calls addReward() or updateReward() ──
     @FXML
     private void handleSave() {
-        errorLabel.setText("");
+        clearErrors();
+        boolean ok = true;
 
+        // 1. Name
         String name = nameField.getText().trim();
-        if (name.isEmpty())    { showError("Name is required.");                    return; }
-        if (name.length() < 3) { showError("Name must be at least 3 characters."); return; }
-        if (typeCombo.getValue() == null) { showError("Please select a type."); return; }
+        if (name.isEmpty())        { showFieldError(errName, "Name is required.");                    ok = false; }
+        else if (name.length() < 3){ showFieldError(errName, "Name must be at least 3 characters."); ok = false; }
 
-        int value;
+        // 2. Type
+        if (typeCombo.getValue() == null) { showFieldError(errType, "Please select a type."); ok = false; }
+
+        // 3. Value
+        int value = 0;
         try {
             value = Integer.parseInt(valueField.getText().trim());
             if (value < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            showError("Value must be a non-negative whole number."); return;
+            showFieldError(errValue, "Must be a whole number >= 0."); ok = false;
         }
 
+        // 4. Required Level (optional)
         Integer requiredLevel = null;
         String rlText = requiredLevelField.getText().trim();
         if (!rlText.isEmpty()) {
@@ -185,17 +225,21 @@ public class RewardFormController {
                 requiredLevel = Integer.parseInt(rlText);
                 if (requiredLevel < 0) throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                showError("Required Level must be a non-negative whole number."); return;
+                showFieldError(errRequiredLevel, "Must be a whole number >= 0."); ok = false;
             }
         }
 
+        if (!ok) return;
+
+        // 5. Uniqueness check
         try {
             int excludeId = (editingReward != null) ? editingReward.getId() : 0;
             if (rewardService.rewardNameExists(name, excludeId)) {
-                showError("A reward with this name already exists!"); return;
+                showFieldError(errName, "A reward with this name already exists!"); return;
             }
-        } catch (Exception e) { showError("DB error: " + e.getMessage()); return; }
+        } catch (Exception e) { showFieldError(errName, "DB error: " + e.getMessage()); return; }
 
+        // 6. Build and persist
         Reward reward = (editingReward != null) ? editingReward : new Reward();
         reward.setName(name);
         reward.setDescription(descriptionArea.getText().trim());
@@ -209,30 +253,47 @@ public class RewardFormController {
         try {
             if (editingReward == null) {
                 rewardService.addReward(reward);
-                List<Reward> all = rewardService.getAllRewards();
-                for (Reward r : all)
-                    if (r.getName().equals(name)) { reward.setId(r.getId()); break; }
+                // addReward now sets reward.getId() via RETURN_GENERATED_KEYS
             } else {
                 rewardService.updateReward(reward);
             }
             syncGameLinks(reward.getId());
             closeWindow();
-        } catch (Exception e) { showError("Save error: " + e.getMessage()); }
+        } catch (Exception e) { showFieldError(errName, "Save error: " + e.getMessage()); }
     }
 
+    // ── Shows an error message directly under a specific field ────────────────
+    private void showFieldError(Label lbl, String msg) {
+        lbl.setText(msg);
+        lbl.setVisible(true);
+        lbl.setManaged(true);
+    }
+
+    // ── Hides all per-field error labels at the start of each save attempt ────
+    private void clearErrors() {
+        for (Label l : new Label[]{errName, errType, errValue, errRequiredLevel}) {
+            l.setText("");
+            l.setVisible(false);
+            l.setManaged(false);
+        }
+    }
+
+    // ── Syncs the game_rewards junction table with the current ListView selection
+    // Strategy: delete all existing links for this reward, then re-insert selected ones.
+    // This is simpler than computing a diff and is correct regardless of what changed.
     private void syncGameLinks(int rewardId) throws Exception {
+        // Remove all existing game links for this reward
         List<Game> current = gameService.getGamesForReward(rewardId);
         for (Game g : current) gameService.removeRewardFromGame(g.getId(), rewardId);
+
+        // Re-add only the games currently selected in the ListView
         for (Game selected : gamesList.getSelectionModel().getSelectedItems())
             gameService.addRewardToGame(selected.getId(), rewardId);
     }
 
+    // ── CANCEL: close the form without saving ─────────────────────────────────
     @FXML private void handleCancel() { closeWindow(); }
 
-    private void showError(String msg) {
-        errorLabel.setText(msg);
-        errorLabel.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold;");
-    }
-
+    // ── Closes the form window ────────────────────────────────────────────────
     private void closeWindow() { ((Stage) saveBtn.getScene().getWindow()).close(); }
 }

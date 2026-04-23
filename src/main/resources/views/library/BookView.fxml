@@ -17,6 +17,7 @@
                     <Label text="Manage your physical and digital book catalog"
                            style="-fx-font-size: 13; -fx-text-fill: #6c757d;"/>
                 </VBox>
+
                 <Button text="+ Add New Book" onAction="#handleNew"
                         style="-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-font-weight: bold;
                                -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;"/>

@@ -26,7 +26,6 @@ import services.quiz.QuizService;
 import services.studysession.CourseService;
 import utils.MyConnection;
 
-import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -181,15 +180,55 @@ public class AdminHomeController implements Initializable {
         }
     }
 
-    // ── Dynamic List Row Builders ─────────────────────────────────────────
+    // ── Card Builders ─────────────────────────────────────────
 
-    private HBox createBaseRow() {
-        HBox row = new HBox(10);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;");
-        row.setOnMouseEntered(e -> row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: #f8fafc;"));
-        row.setOnMouseExited(e -> row.setStyle("-fx-padding: 14 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-background-color: white;"));
-        return row;
+    /** A mini card with a left accent bar, icon circle, title + subtitle, and right badge */
+    private HBox createCard(String accentColor, String iconText, String iconBg,
+                            String title, String subtitle, String badgeText, String badgeStyle) {
+        HBox card = new HBox(14);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accentColor + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-padding: 14 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);");
+        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accentColor + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-padding: 14 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 3);"));
+        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accentColor + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-padding: 14 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);"));
+
+        // Icon circle
+        StackPane iconCircle = new StackPane();
+        iconCircle.setMinSize(38, 38); iconCircle.setMaxSize(38, 38);
+        iconCircle.setStyle("-fx-background-color: " + iconBg + "; -fx-background-radius: 50;");
+        Label iconLbl = new Label(iconText);
+        iconLbl.setStyle("-fx-font-size: 16px;");
+        iconCircle.getChildren().add(iconLbl);
+
+        // Text
+        VBox text = new VBox(3);
+        HBox.setHgrow(text, Priority.ALWAYS);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
+        titleLbl.setWrapText(true);
+        text.getChildren().add(titleLbl);
+        if (subtitle != null && !subtitle.isBlank()) {
+            Label subLbl = new Label(subtitle);
+            subLbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px;");
+            text.getChildren().add(subLbl);
+        }
+
+        card.getChildren().addAll(iconCircle, text);
+
+        if (badgeText != null && !badgeText.isBlank()) {
+            Label badge = new Label(badgeText);
+            badge.setStyle(badgeStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 20;");
+            card.getChildren().add(badge);
+        }
+        return card;
     }
 
     private Label createEmptyLabel(String text) {
@@ -202,180 +241,113 @@ public class AdminHomeController implements Initializable {
         try {
             List<Course> courses = courseService.findByFilters(null, null, null, null).stream().limit(8).toList();
             coursesListContainer.getChildren().clear();
-            if (courses.isEmpty()) {
-                coursesListContainer.getChildren().add(createEmptyLabel("No recent courses found."));
-                return;
-            }
+            if (courses.isEmpty()) { coursesListContainer.getChildren().add(createEmptyLabel("No recent courses found.")); return; }
             for (Course c : courses) {
-                HBox row = createBaseRow();
-
-                Label name = new Label(c.getCourseName());
-                name.setPrefWidth(250);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
-
-                Label category = new Label(c.getCategory());
-                category.setPrefWidth(120);
-                category.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label difficulty = new Label(c.getDifficulty());
-                difficulty.setPrefWidth(100);
-                difficulty.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label status = new Label(c.getStatus());
-                status.setPrefWidth(100);
-                status.setAlignment(Pos.CENTER);
-
-                String statusStyle = switch (c.getStatus().toUpperCase()) {
-                    case "PUBLISHED" -> "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;";
-                    case "DRAFT"     -> "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;";
-                    case "ARCHIVED"  -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
-                    default          -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                String statusVal = c.getStatus() != null ? c.getStatus().toUpperCase() : "";
+                String[] badge = switch (statusVal) {
+                    case "COMPLETED"   -> new String[]{"Completed",   "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;"};
+                    case "IN_PROGRESS" -> new String[]{"In Progress", "-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;"};
+                    default            -> new String[]{"Not Started", "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;"};
                 };
-                status.setStyle(statusStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 12; -fx-background-radius: 12;");
-
-                row.getChildren().addAll(name, category, difficulty, status);
-                coursesListContainer.getChildren().add(row);
+                String diff = c.getDifficulty() != null ? c.getDifficulty() : "";
+                String accent = switch (diff.toUpperCase()) {
+                    case "ADVANCED"     -> "#ef4444";
+                    case "INTERMEDIATE" -> "#f59e0b";
+                    default             -> "#10b981";
+                };
+                HBox card = createCard(accent, "B", "#f0fdf4",
+                        c.getCourseName() != null ? c.getCourseName() : "—",
+                        (c.getCategory() != null ? c.getCategory() : "") + "  ·  " + diff,
+                        badge[0], badge[1]);
+                coursesListContainer.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome courses error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome courses error: " + e.getMessage()); }
     }
 
     private void loadRecentLoans() {
         try {
             List<Loan> recent = loanService.afficher().stream().limit(6).toList();
             loansListContainer.getChildren().clear();
-            if (recent.isEmpty()) {
-                loansListContainer.getChildren().add(createEmptyLabel("No recent loan requests."));
-                return;
-            }
+            if (recent.isEmpty()) { loansListContainer.getChildren().add(createEmptyLabel("No recent loan requests.")); return; }
             for (Loan l : recent) {
-                HBox row = createBaseRow();
-
-                Label book = new Label(l.getBookTitle());
-                book.setPrefWidth(220);
-                book.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
-
-                Label user = new Label(l.getUserName());
-                user.setPrefWidth(130);
-                user.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label status = new Label(l.getStatus());
-                status.setPrefWidth(120);
-                status.setAlignment(Pos.CENTER);
-                String style = switch (l.getStatus().toUpperCase()) {
-                    case "PENDING"  -> "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;";
-                    case "APPROVED" -> "-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;";
-                    case "ACTIVE"   -> "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;";
-                    case "RETURNED" -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
-                    case "REJECTED" -> "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;";
-                    default         -> "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;";
+                String st = l.getStatus() != null ? l.getStatus().toUpperCase() : "";
+                String[] badge = switch (st) {
+                    case "PENDING"  -> new String[]{"Pending",  "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;"};
+                    case "APPROVED" -> new String[]{"Approved", "-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;"};
+                    case "ACTIVE"   -> new String[]{"Active",   "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;"};
+                    case "RETURNED" -> new String[]{"Returned", "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;"};
+                    case "REJECTED" -> new String[]{"Rejected", "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;"};
+                    default         -> new String[]{st,         "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;"};
                 };
-                status.setStyle(style + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 12; -fx-background-radius: 12;");
-
-                Label date = new Label(l.getRequestedAt() != null ? l.getRequestedAt().toString().substring(0, 10) : "");
-                date.setPrefWidth(110);
-                date.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13px;");
-
-                row.getChildren().addAll(book, user, status, date);
-                loansListContainer.getChildren().add(row);
+                String accent = switch (st) {
+                    case "ACTIVE"   -> "#10b981";
+                    case "APPROVED" -> "#3b82f6";
+                    case "REJECTED" -> "#ef4444";
+                    default         -> "#f59e0b";
+                };
+                String date = l.getRequestedAt() != null ? l.getRequestedAt().toString().substring(0, 10) : "";
+                String sub = (l.getUserName() != null ? l.getUserName() : "Unknown") + (date.isBlank() ? "" : "  ·  " + date);
+                HBox card = createCard(accent, "L", "#fffbeb",
+                        l.getBookTitle() != null ? l.getBookTitle() : "Unknown Book",
+                        sub, badge[0], badge[1]);
+                loansListContainer.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome loans error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome loans error: " + e.getMessage()); }
     }
 
     private void loadRecentQuizzes() {
         try {
             List<Quiz> quizzes = quizService.getAllQuizzes().stream().limit(6).toList();
             quizzesListContainer.getChildren().clear();
-            if (quizzes.isEmpty()) {
-                quizzesListContainer.getChildren().add(createEmptyLabel("No quizzes found."));
-                return;
-            }
+            if (quizzes.isEmpty()) { quizzesListContainer.getChildren().add(createEmptyLabel("No quizzes found.")); return; }
             for (Quiz q : quizzes) {
-                HBox row = createBaseRow();
-                Label title = new Label(q.getTitle());
-                title.setPrefWidth(350);
-                title.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
-
                 int qCount = questionService.getQuestionsByQuizId(q.getId()).size();
-                Label questions = new Label(qCount + " questions");
-                questions.setPrefWidth(100);
-                questions.setStyle("-fx-text-fill: #64748b; -fx-background-color: #f1f5f9; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px; -fx-font-weight: bold;");
-
-                row.getChildren().addAll(title, questions);
-                quizzesListContainer.getChildren().add(row);
+                HBox card = createCard("#6366f1", "Q", "#eef2ff",
+                        q.getTitle() != null ? q.getTitle() : "—",
+                        null,
+                        qCount + " questions",
+                        "-fx-background-color: #eef2ff; -fx-text-fill: #6366f1;");
+                quizzesListContainer.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome quizzes error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome quizzes error: " + e.getMessage()); }
     }
 
     private void loadRecentGames() {
         try {
             List<Game> games = gameService.getAllGames().stream().limit(8).toList();
             gamesListContainer.getChildren().clear();
-            if (games.isEmpty()) {
-                gamesListContainer.getChildren().add(createEmptyLabel("No games found."));
-                return;
-            }
+            if (games.isEmpty()) { gamesListContainer.getChildren().add(createEmptyLabel("No games found.")); return; }
             for (Game g : games) {
-                HBox row = createBaseRow();
-
-                Label name = new Label(g.getName());
-                name.setPrefWidth(180);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
-
-                Label type = new Label(g.getType());
-                type.setPrefWidth(100);
-                type.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label diff = new Label(g.getDifficulty());
-                diff.setPrefWidth(100);
-                diff.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label xp = new Label("+" + g.getRewardXP() + " XP");
-                xp.setPrefWidth(90);
-                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-background-color: #eef2ff; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px;");
-
-                row.getChildren().addAll(name, type, diff, xp);
-                gamesListContainer.getChildren().add(row);
+                String diff = g.getDifficulty() != null ? g.getDifficulty().toUpperCase() : "";
+                String accent = switch (diff) {
+                    case "HARD"   -> "#ef4444";
+                    case "MEDIUM" -> "#f59e0b";
+                    default       -> "#10b981";
+                };
+                HBox card = createCard(accent, "G", "#ecfdf5",
+                        g.getName() != null ? g.getName() : "—",
+                        (g.getType() != null ? g.getType() : "") + "  ·  " + diff,
+                        "+" + g.getRewardXP() + " XP",
+                        "-fx-background-color: #eef2ff; -fx-text-fill: #6366f1;");
+                gamesListContainer.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome games error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome games error: " + e.getMessage()); }
     }
 
     private void loadRecentRewards() {
         try {
             List<Reward> rewards = rewardService.getAllRewards().stream().limit(8).toList();
             rewardsListContainer.getChildren().clear();
-            if (rewards.isEmpty()) {
-                rewardsListContainer.getChildren().add(createEmptyLabel("No rewards found."));
-                return;
-            }
+            if (rewards.isEmpty()) { rewardsListContainer.getChildren().add(createEmptyLabel("No rewards found.")); return; }
             for (Reward r : rewards) {
-                HBox row = createBaseRow();
-
-                Label name = new Label(r.getName());
-                name.setPrefWidth(200);
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
-
-                Label type = new Label(r.getType());
-                type.setPrefWidth(140);
-                type.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
-
-                Label val = new Label("+" + r.getValue());
-                val.setPrefWidth(80);
-                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-background-color: #fffbeb; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 12px;");
-
-                row.getChildren().addAll(name, type, val);
-                rewardsListContainer.getChildren().add(row);
+                HBox card = createCard("#f59e0b", "R", "#fffbeb",
+                        r.getName() != null ? r.getName() : "—",
+                        r.getType() != null ? r.getType() : "—",
+                        "+" + r.getValue() + " pts",
+                        "-fx-background-color: #fffbeb; -fx-text-fill: #d97706;");
+                rewardsListContainer.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome rewards error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome rewards error: " + e.getMessage()); }
     }
 
     // ── Top Games & Rewards ─────────────────────────────────────────────
@@ -386,33 +358,16 @@ public class AdminHomeController implements Initializable {
                     .filter(Game::isActive)
                     .sorted((a, b) -> Integer.compare(b.getRewardXP(), a.getRewardXP()))
                     .limit(5).toList();
-
             topGamesBox.getChildren().clear();
             for (Game g : top) {
-                HBox row = new HBox(15);
-                row.setAlignment(Pos.CENTER_LEFT);
-                row.setStyle("-fx-padding: 12 24; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
-
-                Label icon = new Label(gameEmoji(g.getType()));
-                icon.setStyle("-fx-font-size: 24px;");
-
-                VBox info = new VBox(2);
-                Label name = new Label(g.getName());
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 14px;");
-                Label meta = new Label(g.getType() + "  ·  " + g.getDifficulty());
-                meta.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
-                info.getChildren().addAll(name, meta);
-                HBox.setHgrow(info, Priority.ALWAYS);
-
-                Label xp = new Label("+" + g.getRewardXP() + " XP");
-                xp.setStyle("-fx-text-fill: #6366f1; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-color: #eef2ff; -fx-background-radius: 6; -fx-padding: 4 12;");
-
-                row.getChildren().addAll(icon, info, xp);
-                topGamesBox.getChildren().add(row);
+                HBox card = createCard("#6366f1", "G", "#eef2ff",
+                        g.getName() != null ? g.getName() : "—",
+                        (g.getType() != null ? g.getType() : "") + "  ·  " + g.getDifficulty(),
+                        "+" + g.getRewardXP() + " XP",
+                        "-fx-background-color: #eef2ff; -fx-text-fill: #6366f1;");
+                topGamesBox.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome games error: " + e.getMessage());
-        }
+        } catch (Exception e) { System.err.println("AdminHome top games error: " + e.getMessage()); }
     }
 
     private void loadTopRewards() {
@@ -421,80 +376,16 @@ public class AdminHomeController implements Initializable {
                     .filter(Reward::isActive)
                     .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
                     .limit(5).toList();
-
             topRewardsBox.getChildren().clear();
             for (Reward r : top) {
-                HBox row = new HBox(15);
-                row.setAlignment(Pos.CENTER_LEFT);
-                row.setStyle("-fx-padding: 12 24; -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-border-width: 0 0 1 0;");
-
-                ImageView iv = loadRewardIcon(r.getIcon(), 36);
-                if (iv != null) {
-                    row.getChildren().add(iv);
-                } else {
-                    Label emoji = new Label(rewardEmoji(r.getType()));
-                    emoji.setStyle("-fx-font-size: 24px;");
-                    row.getChildren().add(emoji);
-                }
-
-                VBox info = new VBox(2);
-                Label name = new Label(r.getName());
-                name.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 14px;");
-                Label type = new Label(r.getType());
-                type.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
-                info.getChildren().addAll(name, type);
-                HBox.setHgrow(info, Priority.ALWAYS);
-
-                Label val = new Label("+" + r.getValue() + " pts");
-                val.setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-color: #fffbeb; -fx-background-radius: 6; -fx-padding: 4 12;");
-
-                row.getChildren().addAll(info, val);
-                topRewardsBox.getChildren().add(row);
+                HBox card = createCard("#f59e0b", "R", "#fffbeb",
+                        r.getName() != null ? r.getName() : "—",
+                        r.getType() != null ? r.getType() : "—",
+                        "+" + r.getValue() + " pts",
+                        "-fx-background-color: #fffbeb; -fx-text-fill: #d97706;");
+                topRewardsBox.getChildren().add(card);
             }
-        } catch (Exception e) {
-            System.err.println("AdminHome rewards error: " + e.getMessage());
-        }
-    }
-
-    // ── Helpers ───────────────────────────────────────────────
-
-    private ImageView loadRewardIcon(String path, double size) {
-        if (path == null || path.isBlank()) return null;
-        try {
-            var stream = getClass().getResourceAsStream("/images/rewards/" + path);
-            if (stream != null) {
-                ImageView iv = new ImageView(new Image(stream, size, size, true, true));
-                iv.setFitWidth(size); iv.setFitHeight(size);
-                return iv;
-            }
-            File f = new File(path);
-            if (f.exists()) {
-                ImageView iv = new ImageView(new Image(f.toURI().toString(), size, size, true, true));
-                iv.setFitWidth(size); iv.setFitHeight(size);
-                return iv;
-            }
-        } catch (Exception ignored) {}
-        return null;
-    }
-
-    private String gameEmoji(String type) {
-        return switch (type) {
-            case "PUZZLE" -> "\uD83E\uDDE9";
-            case "MEMORY" -> "\uD83E\uDDE0";
-            case "TRIVIA" -> "\u2753";
-            case "ARCADE" -> "\uD83D\uDD79";
-            default       -> "\uD83C\uDFAE";
-        };
-    }
-
-    private String rewardEmoji(String type) {
-        return switch (type) {
-            case "BADGE"        -> "\uD83C\uDFC5";
-            case "ACHIEVEMENT"  -> "\uD83C\uDFC6";
-            case "BONUS_XP"     -> "\u2B50";
-            case "BONUS_TOKENS" -> "\uD83E\uDE99";
-            default             -> "\uD83C\uDF81";
-        };
+        } catch (Exception e) { System.err.println("AdminHome top rewards error: " + e.getMessage()); }
     }
 
     // ── Entrance animation ────────────────────────────────────

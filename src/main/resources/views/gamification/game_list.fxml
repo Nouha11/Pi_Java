@@ -3,47 +3,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controllers.gamification.GameController"
-            stylesheets="@/css/gamification.css"
-            style="-fx-background-color: #f0f2f8;">
-    <top>
-        <VBox styleClass="toolbar">
-            <HBox alignment="CENTER_LEFT" style="-fx-padding: 16 20 8 20;">
-                <Label text="🎮  Game Management" styleClass="toolbar-title"/>
-            </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 20 14 20;">
-                <TextField fx:id="searchField" promptText="🔍  Search name, type, difficulty..."
-                           prefWidth="280" styleClass="search-field"/>
-                <ComboBox fx:id="typeFilter" prefWidth="160"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button text="📥  Export CSV" onAction="#handleExportCSV" styleClass="btn-ghost"/>
-                <Button text="＋  Add Game"   onAction="#handleAddGame"   styleClass="btn-primary"/>
-            </HBox>
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.gamification.GameController"
+      stylesheets="@/css/gamification.css"
+      style="-fx-background-color: #f0f2f8;">
+
+    <!-- TOOLBAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" left="20" right="20" bottom="14"/></padding>
+        <Label text="Games" styleClass="toolbar-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search name, type, difficulty..."
+                   styleClass="search-field" prefWidth="240" onKeyReleased="#handleSearch"/>
+        <ComboBox fx:id="typeFilter" prefWidth="150"/>
+        <Button text="Export CSV" onAction="#handleExportCSV" styleClass="btn-ghost"/>
+        <Button text="+ Add Game"  onAction="#handleAddGame"  styleClass="btn-primary"/>
+    </HBox>
+
+    <!-- CARD GRID -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox>
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <FlowPane fx:id="cardsPane" hgap="18" vgap="18" styleClass="cards-pane"/>
         </VBox>
-    </top>
-    <center>
-        <TableView fx:id="gamesTable" styleClass="table-view">
-            <BorderPane.margin><Insets top="16" right="20" bottom="0" left="20"/></BorderPane.margin>
-            <columns>
-                <TableColumn fx:id="nameCol"       text="Game Name"  prefWidth="200"/>
-                <TableColumn fx:id="typeCol"       text="Type"       prefWidth="110" style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="difficultyCol" text="Difficulty" prefWidth="110" style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="categoryCol"   text="Category"   prefWidth="120" style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="tokenCostCol"  text="Tokens"     prefWidth="90"  style="-fx-alignment: CENTER;"/>
-                <TableColumn fx:id="actionsCol"    text="Actions"    prefWidth="320" style="-fx-alignment: CENTER;"/>
-            </columns>
-            <placeholder>
-                <VBox alignment="CENTER" spacing="8" style="-fx-padding: 40;">
-                    <Label text="🎮" style="-fx-font-size: 40;"/>
-                    <Label text="No games found." style="-fx-font-size: 15px; -fx-text-fill: #a0aec0;"/>
-                </VBox>
-            </placeholder>
-        </TableView>
-    </center>
-    <bottom>
-        <HBox styleClass="status-bar" style="-fx-padding: 10 20;">
-            <Label fx:id="statusLabel" text="" styleClass="status-label"/>
-        </HBox>
-    </bottom>
-</BorderPane>
+    </ScrollPane>
+
+    <!-- STATUS BAR -->
+    <HBox styleClass="status-bar">
+        <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
+        <Label fx:id="statusLabel" styleClass="status-label" text=""/>
+    </HBox>
+</VBox>

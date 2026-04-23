@@ -213,6 +213,24 @@ public class LoginController implements Initializable {
             e.printStackTrace();
         }
     }
+    @FXML
+    private void onGoToSignup() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/signup.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) btnLogin.getScene().getWindow();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 620);
+            scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
+            stage.setTitle("NOVA - Create Account");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            showError("Cannot open signup: " + e.getMessage());
+        }
+    }
+
 
     private void showError(String msg) {
         lblError.setText(msg);

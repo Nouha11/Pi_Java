@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="controllers.users.SignupController" prefWidth="900" prefHeight="620">
+    <stylesheets><String fx:value="/css/login.css"/></stylesheets>
+    <HBox maxWidth="Infinity" maxHeight="Infinity">
+        <VBox styleClass="brand-panel" alignment="CENTER" spacing="18" prefWidth="380">
+            <padding><Insets top="60" right="40" bottom="60" left="40"/></padding>
+            <Label text="NOVA" style="-fx-font-size:48px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+            <Label text="Create your account" styleClass="brand-subtitle" wrapText="true" textAlignment="CENTER"/>
+            <Region prefHeight="20"/>
+            <Label text="Join thousands of students and tutors on the NOVA platform." styleClass="brand-feature" wrapText="true" textAlignment="CENTER"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Label text="2026 NOVA Platform" styleClass="brand-footer"/>
+        </VBox>
+        <VBox styleClass="form-panel" alignment="CENTER" spacing="0" HBox.hgrow="ALWAYS">
+            <padding><Insets top="0" right="50" bottom="0" left="50"/></padding>
+            <HBox styleClass="form-topbar" alignment="CENTER_RIGHT">
+                <padding><Insets top="14" bottom="14"/></padding>
+                <Label text="Already have an account? " styleClass="form-topbar-label"/>
+                <Label text="Sign In" styleClass="form-topbar-label" style="-fx-text-fill:#4f8ef7;-fx-cursor:hand;-fx-font-weight:bold;" onMouseClicked="#onGoToLogin"/>
+            </HBox>
+            <Region prefHeight="10"/>
+            <VBox spacing="4">
+                <Label text="Create Account" styleClass="form-title"/>
+                <Label text="Fill in the details below to get started" styleClass="form-hint"/>
+            </VBox>
+            <Region prefHeight="20"/>
+            <GridPane hgap="14" vgap="0">
+                <columnConstraints><ColumnConstraints hgrow="ALWAYS" percentWidth="50"/><ColumnConstraints hgrow="ALWAYS" percentWidth="50"/></columnConstraints>
+                <VBox spacing="5" GridPane.columnIndex="0"><Label text="EMAIL" styleClass="field-label"/><TextField fx:id="tfEmail" promptText="user@example.com" styleClass="form-field"/></VBox>
+                <VBox spacing="5" GridPane.columnIndex="1"><Label text="USERNAME" styleClass="field-label"/><TextField fx:id="tfUsername" promptText="letters, numbers, _" styleClass="form-field"/></VBox>
+            </GridPane>
+            <Region prefHeight="14"/>
+            <GridPane hgap="14" vgap="0">
+                <columnConstraints><ColumnConstraints hgrow="ALWAYS" percentWidth="50"/><ColumnConstraints hgrow="ALWAYS" percentWidth="50"/></columnConstraints>
+                <VBox spacing="5" GridPane.columnIndex="0"><Label text="PASSWORD" styleClass="field-label"/><PasswordField fx:id="pfPassword" promptText="Min 8 chars" styleClass="form-field"/></VBox>
+                <VBox spacing="5" GridPane.columnIndex="1"><Label text="CONFIRM PASSWORD" styleClass="field-label"/><PasswordField fx:id="pfConfirm" promptText="Repeat password" styleClass="form-field"/></VBox>
+            </GridPane>
+            <Region prefHeight="14"/>
+            <VBox spacing="5">
+                <Label text="ROLE" styleClass="field-label"/>
+                <ComboBox fx:id="cbRole" maxWidth="Infinity" styleClass="form-field" style="-fx-padding:6 10;"/>
+            </VBox>
+            <Region prefHeight="10"/>
+            <Label fx:id="lblError" text="" wrapText="true" styleClass="form-error" maxWidth="Infinity"/>
+            <Region prefHeight="14"/>
+            <Button fx:id="btnSignup" text="CREATE ACCOUNT" onAction="#onSignup" styleClass="form-btn" maxWidth="Infinity"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <HBox alignment="CENTER"><padding><Insets bottom="20"/></padding><Label text="NOVA User Management  v1.0" styleClass="form-version"/></HBox>
+        </VBox>
+    </HBox>
+</StackPane>
