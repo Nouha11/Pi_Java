@@ -13,48 +13,47 @@
         <String fx:value="/css/login.css"/>
     </stylesheets>
 
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-         LEFT Ã¢â‚¬â€ Branding panel (dark)
-         Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
-    <VBox styleClass="brand-panel" alignment="CENTER" spacing="18" prefWidth="420">
-        <padding><Insets top="60" right="50" bottom="60" left="50"/></padding>
+    <!-- LEFT - Branding panel (dark) wrapped in StackPane for animation -->
+    <StackPane fx:id="leftPanel" prefWidth="420">
+        <Pane fx:id="animatedSceneContainer" mouseTransparent="true"/>
+        <VBox styleClass="brand-panel" alignment="CENTER" spacing="18" prefWidth="420">
+            <padding><Insets top="60" right="50" bottom="60" left="50"/></padding>
 
-        <Label text="[*]" style="-fx-font-size:64px; -fx-text-fill:rgba(255,255,255,0.6);"/>
+            <Label text="[*]" style="-fx-font-size:64px; -fx-text-fill:rgba(255,255,255,0.6);"/>
 
-        <Label text="NOVA" styleClass="brand-title"/>
-        <Label text="Intelligent Study Coaching Platform"
-               styleClass="brand-subtitle" wrapText="true" textAlignment="CENTER"/>
+            <Label text="NOVA" styleClass="brand-title"/>
+            <Label text="Intelligent Study Coaching Platform"
+                   styleClass="brand-subtitle" wrapText="true" textAlignment="CENTER"/>
 
-        <Region prefHeight="30"/>
+            <Region prefHeight="30"/>
 
-        <!-- Feature bullets -->
-        <VBox spacing="12" alignment="CENTER_LEFT">
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="+" styleClass="bullet"/>
-                <Label text="Full user lifecycle management" styleClass="brand-feature"/>
-            </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="+" styleClass="bullet"/>
-                <Label text="Role-based access control" styleClass="brand-feature"/>
-            </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="+" styleClass="bullet"/>
-                <Label text="Real-time statistics &amp; analytics" styleClass="brand-feature"/>
-            </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="+" styleClass="bullet"/>
-                <Label text="Search, filter &amp; export" styleClass="brand-feature"/>
-            </HBox>
+            <!-- Feature bullets -->
+            <VBox spacing="12" alignment="CENTER_LEFT">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="+" styleClass="bullet"/>
+                    <Label text="Full user lifecycle management" styleClass="brand-feature"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="+" styleClass="bullet"/>
+                    <Label text="Role-based access control" styleClass="brand-feature"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="+" styleClass="bullet"/>
+                    <Label text="Real-time statistics &amp; analytics" styleClass="brand-feature"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="+" styleClass="bullet"/>
+                    <Label text="Search, filter &amp; export" styleClass="brand-feature"/>
+                </HBox>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+            <Label text="&#169; 2026 NOVA Platform" styleClass="brand-footer"/>
         </VBox>
+    </StackPane>
 
-        <Region VBox.vgrow="ALWAYS"/>
-        <Label text="Ã‚Â© 2026 NOVA Platform" styleClass="brand-footer"/>
-    </VBox>
-
-    <!-- Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
-         RIGHT Ã¢â‚¬â€ Form panel (white)
-         Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â -->
-    <VBox styleClass="form-panel" alignment="CENTER" spacing="0" HBox.hgrow="ALWAYS">
+    <!-- RIGHT - Form panel (white) -->
+    <VBox fx:id="rightPanel" styleClass="form-panel" alignment="CENTER" spacing="0" HBox.hgrow="ALWAYS">
         <padding><Insets top="0" right="60" bottom="0" left="60"/></padding>
 
         <!-- Top bar -->
@@ -87,7 +86,7 @@
         <VBox spacing="7">
             <Label text="PASSWORD" styleClass="field-label"/>
             <PasswordField fx:id="pfPassword"
-                           promptText="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
+                           promptText="••••••••"
                            styleClass="form-field"/>
         </VBox>
 
@@ -97,7 +96,7 @@
         <Label fx:id="lblError" text="" wrapText="true"
                styleClass="form-error" maxWidth="340"/>
 
-        <!-- Spinner Ã¢â‚¬â€ hidden by default, shown only during login -->
+        <!-- Spinner - hidden by default -->
         <ProgressIndicator fx:id="spinner" prefWidth="28" prefHeight="28"
                            styleClass="form-spinner" visible="false" managed="false"/>
 
@@ -115,6 +114,12 @@
         <HBox alignment="CENTER">
             <padding><Insets bottom="24"/></padding>
             <Label text="NOVA User Management  v1.0" styleClass="form-version"/>
+        </HBox>
+
+        <!-- Signup link -->
+        <HBox alignment="CENTER">
+            <padding><Insets bottom="16"/></padding>
+            <Hyperlink text="Don't have an account? Sign up" onAction="#onGoToSignup" styleClass="form-link"/>
         </HBox>
     </VBox>
 
