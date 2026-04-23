@@ -13,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -30,10 +31,10 @@ import java.util.Optional;
 public class PostDetailsController {
 
     @FXML private Button backButton, upvoteButton, editButton, deleteButton;
-    @FXML private Button lockButton, submitCommentBtn;
+    @FXML private Button lockButton, submitCommentBtn, uploadCommentImgBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
-    @FXML private Label topCommentBadgeLabel;
+    @FXML private Label topCommentBadgeLabel, commentImgNameLabel;
     @FXML private Label contentLabel, statusLabel;
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
@@ -43,6 +44,10 @@ public class PostDetailsController {
     private Post currentPost;
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
+
+    // Image Upload Tracking for Comments
+    private String selectedCommentFileName = null;
+    private String selectedCommentFilePath = null;
 
     // Mocking the logged-in user ID based on your handleSubmitComment logic
     private final int CURRENT_USER_ID = 1;
@@ -114,6 +119,7 @@ public class PostDetailsController {
             commentArea.setPromptText("🔒 This discussion has been locked by the author or an admin.");
             submitCommentBtn.setDisable(true);
             submitCommentBtn.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6;");
+            if(uploadCommentImgBtn != null) uploadCommentImgBtn.setDisable(true);
         } else {
             topTitleLabel.setText(currentPost.getTitle());
             topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
@@ -126,6 +132,7 @@ public class PostDetailsController {
             commentArea.setPromptText("Write a reply...");
             submitCommentBtn.setDisable(false);
             submitCommentBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;");
+            if(uploadCommentImgBtn != null) uploadCommentImgBtn.setDisable(false);
         }
     }
 
@@ -161,7 +168,25 @@ public class PostDetailsController {
             content.setWrapText(true);
             content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
 
-            // 🔥 Check if the current user is the author, then add Edit/Delete buttons
+            // 🔥 Check for and display the attached image
+            VBox imageBox = new VBox();
+            if (c.getImageName() != null && !c.getImageName().isEmpty()) {
+                File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
+                if (imgFile.exists()) {
+                    try {
+                        ImageView commentImgView = new ImageView(new Image(imgFile.toURI().toString(), true));
+                        commentImgView.setFitWidth(350);
+                        commentImgView.setPreserveRatio(true);
+
+                        imageBox.setStyle("-fx-padding: 10 0 5 0;");
+                        imageBox.getChildren().add(commentImgView);
+                    } catch (Exception e) {
+                        System.err.println("Could not load comment image.");
+                    }
+                }
+            }
+
+            // Check if the current user is the author, then add Edit/Delete buttons
             if (c.getAuthorId() == CURRENT_USER_ID) {
                 HBox actionsBox = new HBox(10);
                 actionsBox.setAlignment(Pos.CENTER_RIGHT);
@@ -175,29 +200,92 @@ public class PostDetailsController {
                 deleteBtn.setOnAction(e -> handleDeleteComment(c));
 
                 actionsBox.getChildren().addAll(editBtn, deleteBtn);
-                commentCard.getChildren().addAll(headerBox, content, actionsBox);
+                commentCard.getChildren().addAll(headerBox, content, imageBox, actionsBox);
             } else {
-                commentCard.getChildren().addAll(headerBox, content);
+                commentCard.getChildren().addAll(headerBox, content, imageBox);
             }
 
             commentsContainer.getChildren().add(commentCard);
         }
     }
 
-    // 🔥 CUSTOM BEAUTIFUL EDIT MODAL 🔥
+    @FXML
+    void handleUploadCommentImage(ActionEvent event) {
+        if (currentPost.isLocked()) return;
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Image for Reply");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            selectedCommentFileName = selectedFile.getName();
+            selectedCommentFilePath = selectedFile.getAbsolutePath();
+            commentImgNameLabel.setText("Selected: " + selectedCommentFileName);
+        }
+    }
+
+    @FXML
+    void handleSubmitComment(ActionEvent event) {
+        if (currentPost.isLocked()) return;
+
+        String text = commentArea.getText();
+
+        if (text == null || text.trim().length() < 2) {
+            applyErrorStyle("Reply must be at least 2 characters!");
+            return;
+        }
+
+        if (!commentService.isCommentUnique(text, currentPost.getId())) {
+            applyErrorStyle("You already posted this exact reply!");
+            return;
+        }
+
+        Comment newComment = new Comment(text, currentPost.getId(), CURRENT_USER_ID, null);
+
+        // Handle the image upload copy process
+        if (selectedCommentFileName != null && selectedCommentFilePath != null) {
+            try {
+                java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedCommentFilePath);
+                // Saving to a separate comments folder in XAMPP
+                String xamppPath = "C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + selectedCommentFileName;
+                java.nio.file.Path destPath = java.nio.file.Paths.get(xamppPath);
+
+                java.nio.file.Files.createDirectories(destPath.getParent());
+                java.nio.file.Files.copy(sourcePath, destPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                newComment.setImageName(selectedCommentFileName);
+            } catch (java.io.IOException e) {
+                System.err.println("Error copying comment image: " + e.getMessage());
+            }
+        }
+
+        commentService.ajouter(newComment);
+
+        // Reset UI after posting
+        commentArea.clear();
+        commentArea.setPromptText("Write a reply...");
+        commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
+        selectedCommentFileName = null;
+        selectedCommentFilePath = null;
+        if(commentImgNameLabel != null) commentImgNameLabel.setText("");
+
+        loadComments();
+    }
+
     private void handleEditComment(Comment c) {
         if (currentPost.isLocked()) {
             applyErrorStyle("Cannot edit replies in a locked discussion.");
             return;
         }
 
-        // Create a new popup window
         Stage dialogStage = new Stage();
         dialogStage.initModality(Modality.APPLICATION_MODAL);
-        dialogStage.initStyle(StageStyle.UTILITY); // Removes the minimize/maximize buttons
+        dialogStage.initStyle(StageStyle.UTILITY);
         dialogStage.setTitle("Edit Reply");
 
-        // Main Container matching your FXML style
         VBox root = new VBox(15);
         root.setStyle("-fx-background-color: white; -fx-padding: 25; -fx-border-radius: 8; -fx-background-radius: 8;");
 
@@ -209,7 +297,6 @@ public class PostDetailsController {
         textArea.setPrefRowCount(4);
         textArea.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-font-size: 14px; -fx-padding: 5;");
 
-        // Button Container
         HBox buttonBox = new HBox(12);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -237,7 +324,6 @@ public class PostDetailsController {
         dialogStage.showAndWait();
     }
 
-    // 🔥 CUSTOM BEAUTIFUL DELETE MODAL 🔥
     private void handleDeleteComment(Comment c) {
         if (currentPost.isLocked()) {
             applyErrorStyle("Cannot delete replies in a locked discussion.");
@@ -289,32 +375,6 @@ public class PostDetailsController {
         currentPost.setLocked(newState);
         postService.toggleLock(currentPost.getId(), newState);
         updateLockUI();
-    }
-
-    @FXML
-    void handleSubmitComment(ActionEvent event) {
-        if (currentPost.isLocked()) return;
-
-        String text = commentArea.getText();
-
-        if (text == null || text.trim().length() < 2) {
-            applyErrorStyle("Reply must be at least 2 characters!");
-            return;
-        }
-
-        if (!commentService.isCommentUnique(text, currentPost.getId())) {
-            applyErrorStyle("You already posted this exact reply!");
-            return;
-        }
-
-        Comment newComment = new Comment(text, currentPost.getId(), CURRENT_USER_ID, null);
-        commentService.ajouter(newComment);
-
-        commentArea.clear();
-        commentArea.setPromptText("Write a reply...");
-        commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
-
-        loadComments();
     }
 
     private void applyErrorStyle(String errorMessage) {

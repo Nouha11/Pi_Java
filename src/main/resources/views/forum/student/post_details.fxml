@@ -94,7 +94,9 @@
 
                                                 <VBox spacing="10">
                                                     <TextArea fx:id="commentArea" prefHeight="90.0" promptText="Write a thoughtful reply..." style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-font-size: 14px; -fx-padding: 4;" wrapText="true" />
-                                                    <HBox alignment="CENTER_RIGHT">
+                                                    <HBox alignment="CENTER_RIGHT" spacing="12">
+                                                        <Label fx:id="commentImgNameLabel" style="-fx-text-fill: #64748b; -fx-font-size: 12px; -fx-font-style: italic;" />
+                                                        <Button fx:id="uploadCommentImgBtn" onAction="#handleUploadCommentImage" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;" text="📎 Attach Image" />
                                                         <Button fx:id="submitCommentBtn" onAction="#handleSubmitComment" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 24; -fx-background-radius: 8; -fx-cursor: hand;" text="Post Reply" />
                                                     </HBox>
                                                 </VBox>

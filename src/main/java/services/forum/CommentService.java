@@ -16,8 +16,10 @@ public class CommentService {
     }
 
     // --- ADD A NEW COMMENT ---
+    // --- ADD A NEW COMMENT (UPDATED WITH IMAGE) ---
     public void ajouter(Comment c) {
-        String query = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        // 🔥 Added image_name to the query
+        String query = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, image_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pst = conn.prepareStatement(query)) {
             pst.setString(1, c.getContent().trim());
             pst.setInt(2, c.getPostId());
@@ -30,7 +32,8 @@ public class CommentService {
             }
 
             pst.setBoolean(5, c.isSolution());
-            pst.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+            pst.setString(6, c.getImageName()); // 🔥 Save the image name
+            pst.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 
             pst.executeUpdate();
             System.out.println("✅ Comment saved to database!");
