@@ -103,7 +103,6 @@ public class CommentService {
         }
     }
 
-    // 🔥 REQUIRED FOR GRADING: ANTI-SPAM UNIQUENESS CHECK 🔥
     public boolean isCommentUnique(String content, int postId) {
         // Checks if this EXACT comment already exists on this EXACT post
         String query = "SELECT COUNT(*) FROM comment WHERE LOWER(content) = LOWER(?) AND post_id = ?";
