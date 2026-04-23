@@ -503,6 +503,55 @@
     -fx-background-insets: 0;
 }
 
+/* ── TIMER ───────────────────────────────────────────── */
+.timer-row {
+    -fx-background-color: #f8f9ff;
+    -fx-border-color: transparent transparent #e4e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.timer-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a5568;
+    -fx-min-width: 28px;
+    -fx-alignment: center;
+}
+
+.timer-label-urgent {
+    -fx-text-fill: #e53e3e;
+}
+
+/* Timer bar base */
+.timer-bar {
+    -fx-pref-height: 10px;
+    -fx-background-radius: 5px;
+}
+.timer-bar .track {
+    -fx-background-color: #e4e8f0;
+    -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+}
+.timer-bar .bar {
+    -fx-background-radius: 5px;
+    -fx-background-insets: 0;
+}
+
+/* Green — plenty of time */
+.timer-bar-ok .bar {
+    -fx-background-color: linear-gradient(to right, #38c97a, #27ae60);
+}
+
+/* Orange — getting low */
+.timer-bar-warn .bar {
+    -fx-background-color: linear-gradient(to right, #f6ad55, #ed8936);
+}
+
+/* Red — almost out */
+.timer-bar-danger .bar {
+    -fx-background-color: linear-gradient(to right, #fc8181, #e53e3e);
+}
+
 .play-xp-badge {
     -fx-background-color: #fff8e1;
     -fx-text-fill: #d97706;

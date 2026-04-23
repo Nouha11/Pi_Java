@@ -2,9 +2,10 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="560" prefWidth="620" styleClass="module-pane"
+<VBox prefHeight="620" prefWidth="640" styleClass="module-pane"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
@@ -18,14 +19,25 @@
         <Label fx:id="lblProgress" styleClass="play-progress" text="1 / 5"/>
     </HBox>
 
-    <!-- PROGRESS BAR -->
+    <!-- QUESTION PROGRESS BAR -->
     <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="6"
                  styleClass="play-progress-bar" progress="0.0"/>
 
+    <!-- TIMER ROW -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="timer-row">
+        <padding><Insets bottom="8" left="20" right="20" top="8"/></padding>
+        <Label text="⏱" style="-fx-font-size:14px;"/>
+        <ProgressBar fx:id="timerBar" prefHeight="10" prefWidth="480"
+                     styleClass="timer-bar" progress="1.0" HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblTimer" styleClass="timer-label" text="30"/>
+    </HBox>
+
     <!-- QUESTION AREA -->
-    <VBox VBox.vgrow="ALWAYS">
-        <padding><Insets bottom="24" left="32" right="32" top="28"/></padding>
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                style="-fx-background-color:transparent;-fx-background:transparent;"
+                VBox.vgrow="ALWAYS">
         <VBox spacing="20">
+            <padding><Insets bottom="24" left="32" right="32" top="20"/></padding>
 
             <!-- XP + Difficulty badges -->
             <HBox spacing="8" alignment="CENTER_LEFT">
@@ -38,6 +50,11 @@
                    wrapText="true" maxWidth="Infinity"
                    text="Question text goes here"/>
 
+            <!-- Question image (hidden when no image) -->
+            <ImageView fx:id="imgQuestion" fitWidth="560" fitHeight="260"
+                       preserveRatio="true" managed="false" visible="false"
+                       styleClass="play-question-image"/>
+
             <!-- Choices -->
             <VBox fx:id="choicesBox" spacing="10"/>
 
@@ -46,7 +63,7 @@
                    managed="false" visible="false" wrapText="true"/>
 
         </VBox>
-    </VBox>
+    </ScrollPane>
 
     <!-- FOOTER -->
     <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="form-footer">
