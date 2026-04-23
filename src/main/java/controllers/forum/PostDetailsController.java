@@ -4,6 +4,8 @@ import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -13,6 +15,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import models.forum.Comment;
 import models.forum.Post;
@@ -40,6 +43,9 @@ public class PostDetailsController {
     private Post currentPost;
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
+
+    // Mocking the logged-in user ID based on your handleSubmitComment logic
+    private final int CURRENT_USER_ID = 1;
 
     @FXML
     public void initialize() {
@@ -155,9 +161,126 @@ public class PostDetailsController {
             content.setWrapText(true);
             content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
 
-            commentCard.getChildren().addAll(headerBox, content);
+            // 🔥 Check if the current user is the author, then add Edit/Delete buttons
+            if (c.getAuthorId() == CURRENT_USER_ID) {
+                HBox actionsBox = new HBox(10);
+                actionsBox.setAlignment(Pos.CENTER_RIGHT);
+
+                Button editBtn = new Button("Edit");
+                editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                editBtn.setOnAction(e -> handleEditComment(c));
+
+                Button deleteBtn = new Button("Delete");
+                deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                deleteBtn.setOnAction(e -> handleDeleteComment(c));
+
+                actionsBox.getChildren().addAll(editBtn, deleteBtn);
+                commentCard.getChildren().addAll(headerBox, content, actionsBox);
+            } else {
+                commentCard.getChildren().addAll(headerBox, content);
+            }
+
             commentsContainer.getChildren().add(commentCard);
         }
+    }
+
+    // 🔥 CUSTOM BEAUTIFUL EDIT MODAL 🔥
+    private void handleEditComment(Comment c) {
+        if (currentPost.isLocked()) {
+            applyErrorStyle("Cannot edit replies in a locked discussion.");
+            return;
+        }
+
+        // Create a new popup window
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialogStage.initStyle(StageStyle.UTILITY); // Removes the minimize/maximize buttons
+        dialogStage.setTitle("Edit Reply");
+
+        // Main Container matching your FXML style
+        VBox root = new VBox(15);
+        root.setStyle("-fx-background-color: white; -fx-padding: 25; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        Label title = new Label("✏ Edit Your Reply");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: #0f172a;");
+
+        TextArea textArea = new TextArea(c.getContent());
+        textArea.setWrapText(true);
+        textArea.setPrefRowCount(4);
+        textArea.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-font-size: 14px; -fx-padding: 5;");
+
+        // Button Container
+        HBox buttonBox = new HBox(12);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
+        cancelBtn.setOnAction(e -> dialogStage.close());
+
+        Button saveBtn = new Button("Save Changes");
+        saveBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
+        saveBtn.setOnAction(e -> {
+            String newContent = textArea.getText().trim();
+            if (!newContent.isEmpty() && !newContent.equals(c.getContent())) {
+                c.setContent(newContent);
+                commentService.modifier(c);
+                loadComments();
+            }
+            dialogStage.close();
+        });
+
+        buttonBox.getChildren().addAll(cancelBtn, saveBtn);
+        root.getChildren().addAll(title, textArea, buttonBox);
+
+        Scene scene = new Scene(root, 500, 250);
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
+    }
+
+    // 🔥 CUSTOM BEAUTIFUL DELETE MODAL 🔥
+    private void handleDeleteComment(Comment c) {
+        if (currentPost.isLocked()) {
+            applyErrorStyle("Cannot delete replies in a locked discussion.");
+            return;
+        }
+
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialogStage.initStyle(StageStyle.UTILITY);
+        dialogStage.setTitle("Delete Reply");
+
+        VBox root = new VBox(15);
+        root.setStyle("-fx-background-color: white; -fx-padding: 25; -fx-border-radius: 8; -fx-background-radius: 8;");
+
+        Label title = new Label("🗑 Delete Reply?");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: #e11d48;");
+
+        Label message = new Label("Are you sure you want to delete this reply? This action cannot be undone and will be permanently removed from the forum.");
+        message.setWrapText(true);
+        message.setStyle("-fx-text-fill: #475569; -fx-font-size: 14px; -fx-line-spacing: 4px;");
+
+        HBox buttonBox = new HBox(12);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        VBox.setMargin(buttonBox, new Insets(10, 0, 0, 0));
+
+        Button cancelBtn = new Button("Keep Reply");
+        cancelBtn.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
+        cancelBtn.setOnAction(e -> dialogStage.close());
+
+        Button deleteBtn = new Button("Yes, Delete");
+        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
+        deleteBtn.setOnAction(e -> {
+            commentService.supprimer(c.getId());
+            loadComments();
+            dialogStage.close();
+        });
+
+        buttonBox.getChildren().addAll(cancelBtn, deleteBtn);
+        root.getChildren().addAll(title, message, buttonBox);
+
+        Scene scene = new Scene(root, 450, 200);
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
     }
 
     @FXML
@@ -184,7 +307,7 @@ public class PostDetailsController {
             return;
         }
 
-        Comment newComment = new Comment(text, currentPost.getId(), 1, null);
+        Comment newComment = new Comment(text, currentPost.getId(), CURRENT_USER_ID, null);
         commentService.ajouter(newComment);
 
         commentArea.clear();
@@ -243,28 +366,22 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 COMPLETELY UPDATED EDIT METHOD 🔥
     @FXML
     void handleEditPost(ActionEvent event) {
         try {
-            // 1. Load the beautiful Add/Edit window
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/add_post.fxml"));
             Parent root = loader.load();
 
-            // 2. Pass the current post data to the controller
             AddPostController controller = loader.getController();
             controller.setPostToEdit(this.currentPost);
 
-            // 3. Create the popup window
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Edit Post");
             stage.setScene(new Scene(root));
 
-            // 4. Wait for the user to hit 'Save Changes' and close the popup
             stage.showAndWait();
 
-            // 5. Instantly refresh this page to show the newly updated title/content!
             setPostData(this.currentPost);
 
         } catch (Exception ex) {

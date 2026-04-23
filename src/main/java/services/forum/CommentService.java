@@ -118,4 +118,19 @@ public class CommentService {
         }
         return false; // Fail safe blocks it
     }
+    // --- UPDATE A COMMENT ---
+    public void modifier(Comment c) {
+        String query = "UPDATE comment SET content = ?, updated_at = ? WHERE id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, c.getContent().trim());
+            pst.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            pst.setInt(3, c.getId());
+
+            pst.executeUpdate();
+            System.out.println("✅ Comment updated successfully!");
+        } catch (SQLException e) {
+            System.err.println("❌ Error updating comment: " + e.getMessage());
+        }
+    }
+
 }
