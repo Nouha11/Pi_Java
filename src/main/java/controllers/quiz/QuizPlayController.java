@@ -2,6 +2,8 @@ package controllers.quiz;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -57,6 +59,8 @@ public class QuizPlayController {
 
     private ToggleGroup toggleGroup;
     private Timeline    countdownTimer;
+    private ChangeListener<Boolean> focusListener;
+    private ChangeListener<Boolean> minimizeListener;
 
     // ── Entry point ───────────────────────────────────────────
 
@@ -73,8 +77,29 @@ public class QuizPlayController {
             btnNext.setDisable(true);
             lblProgress.setText("0 / 0");
             stopTimer();
+            removeFocusListener();
             return;
         }
+
+        // Add focus listener to detect cheating (deferred until scene is ready)
+        Platform.runLater(() -> {
+            if (lblQuizTitle.getScene() != null) {
+                Stage stage = (Stage) lblQuizTitle.getScene().getWindow();
+                focusListener = (obs, wasFocused, isFocused) -> {
+                    if (!isFocused) {
+                        handleCheatingDetected();
+                    }
+                };
+                stage.focusedProperty().addListener(focusListener);
+
+                minimizeListener = (obs, wasMinimized, isMinimized) -> {
+                    if (isMinimized) {
+                        handleCheatingDetected();
+                    }
+                };
+                stage.iconifiedProperty().addListener(minimizeListener);
+            }
+        });
 
         showQuestion(0);
     }
@@ -279,6 +304,7 @@ public class QuizPlayController {
 
     private void showResults() {
         stopTimer();
+        removeFocusListener();
         progressBar.setProgress(1.0);
         timerBar.setProgress(0);
         lblTimer.setText("0");
@@ -315,8 +341,56 @@ public class QuizPlayController {
 
     @FXML
     private void handleQuit() {
+        removeFocusListener();
         stopTimer();
         ((Stage) btnNext.getScene().getWindow()).close();
+    }
+
+    private void handleCheatingDetected() {
+        stopTimer();
+        removeFocusListener();
+
+        // Clear the UI and show cheating message
+        choicesBox.getChildren().clear();
+        lblFeedback.setVisible(false);
+        lblFeedback.setManaged(false);
+        lblDifficulty.setVisible(false);
+        lblXp.setVisible(false);
+        if (imgQuestion != null) {
+            imgQuestion.setVisible(false);
+            imgQuestion.setManaged(false);
+        }
+        if (timerRow != null) {
+            timerRow.setVisible(false);
+            timerRow.setManaged(false);
+        }
+
+        lblQuestion.setText(
+                "\uD83D\uDEAB  Quiz Terminated\n\n" +
+                "Suspected cheating detected.\n" +
+                "The quiz window lost focus.\n\n" +
+                "Your answers have been discarded."
+        );
+        lblQuestion.getStyleClass().setAll("play-results-text");
+        lblProgress.setText("0 / 0");
+
+        btnNext.setText("Close");
+        btnNext.setDisable(false);
+        btnNext.setOnAction(e -> ((Stage) btnNext.getScene().getWindow()).close());
+    }
+
+    private void removeFocusListener() {
+        if (lblQuizTitle.getScene() != null) {
+            Stage stage = (Stage) lblQuizTitle.getScene().getWindow();
+            if (focusListener != null) {
+                stage.focusedProperty().removeListener(focusListener);
+                focusListener = null;
+            }
+            if (minimizeListener != null) {
+                stage.iconifiedProperty().removeListener(minimizeListener);
+                minimizeListener = null;
+            }
+        }
     }
 
     private void addReview(Question question, Choice selected, Choice correct, boolean timedOut) {
