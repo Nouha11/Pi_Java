@@ -51,6 +51,11 @@ public class UserFormController implements Initializable {
 
         if (isNewUser) {
             lblTitle.setText("Add New User");
+            // Hide ban fields when creating a new user
+            chkBanned.setVisible(false);
+            chkBanned.setManaged(false);
+            tfBanReason.setVisible(false);
+            tfBanReason.setManaged(false);
             lblSubtitle.setText("Fill in the details below");
             lblPasswordHint.setText("Password required");
             chkActive.setSelected(true);
@@ -105,7 +110,7 @@ public class UserFormController implements Initializable {
                 User newUser = new User();
                 newUser.setEmail(email);
                 newUser.setUsername(username);
-                // BCrypt hash — compatible with Symfony password_hash (cost 13)
+                // BCrypt hash â€” compatible with Symfony password_hash (cost 13)
                 newUser.setPassword(BCrypt.hashpw(password, BCrypt.gensalt(13)));
                 newUser.setRole(User.Role.valueOf(role));
                 newUser.setActive(chkActive.isSelected());
