@@ -1,6 +1,7 @@
 package controllers.forum;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,7 +23,9 @@ import models.forum.Comment;
 import models.forum.Post;
 import services.forum.CommentService;
 import services.forum.PostService;
+import services.api.GeminiService; //  Imported AI Service
 
+import javafx.scene.layout.Region;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -32,6 +35,7 @@ public class PostDetailsController {
 
     @FXML private Button backButton, upvoteButton, editButton, deleteButton;
     @FXML private Button lockButton, submitCommentBtn, uploadCommentImgBtn;
+    @FXML private Button summarizeBtn; // 🔥 New Summarize Button
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
     @FXML private Label topCommentBadgeLabel, commentImgNameLabel;
@@ -44,16 +48,15 @@ public class PostDetailsController {
     private Post currentPost;
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
+    private GeminiService geminiService = new GeminiService(); // 🔥 AI Service Instance
 
     private String selectedCommentFileName = null;
     private String selectedCommentFilePath = null;
 
-    // 🔥 NEW: Dynamic User ID tracking
     private int currentUserId;
 
     @FXML
     public void initialize() {
-        // 🔥 NEW: Grab the session dynamically as soon as the screen loads
         currentUserId = utils.UserSession.getInstance().getUserId();
 
         if (utils.ForumSession.currentPost != null) {
@@ -95,6 +98,19 @@ public class PostDetailsController {
             upvoteButton.setText("👍 Upvote");
         }
 
+        // 🔥 Only show the summarize button if the post is longer than 100 characters
+        if (post.getContent() != null && post.getContent().length() > 100) {
+            if (summarizeBtn != null) {
+                summarizeBtn.setVisible(true);
+                summarizeBtn.setManaged(true);
+            }
+        } else {
+            if (summarizeBtn != null) {
+                summarizeBtn.setVisible(false);
+                summarizeBtn.setManaged(false);
+            }
+        }
+
         updateLockUI();
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
@@ -106,6 +122,78 @@ public class PostDetailsController {
             }
         }
         loadComments();
+    }
+
+    // Summarize Logic (Multi-threaded)
+    @FXML
+    void handleSummarizePost(ActionEvent event) {
+        String fullContent = currentPost.getContent();
+
+        summarizeBtn.setDisable(true);
+        String originalText = summarizeBtn.getText();
+        summarizeBtn.setText("✨ AI is reading...");
+
+        new Thread(() -> {
+            String aiSummary = geminiService.summarizePost(fullContent);
+
+            Platform.runLater(() -> {
+                summarizeBtn.setDisable(false);
+                summarizeBtn.setText(originalText);
+
+                if (aiSummary != null && !aiSummary.contains("Error")) {
+                    // 🔥 NEW: Custom Modern AI Popup
+                    Stage summaryStage = new Stage();
+                    summaryStage.initModality(Modality.APPLICATION_MODAL);
+                    summaryStage.initStyle(StageStyle.TRANSPARENT); // Removes ugly OS borders
+
+                    VBox root = new VBox(20);
+                    root.setAlignment(Pos.CENTER);
+                    // Beautiful styling: White card, rounded corners, soft shadow
+                    root.setStyle("-fx-background-color: white; -fx-padding: 35; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 8);");
+
+                    // Header
+                    Label title = new Label("✨ AI Summary");
+                    title.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: #9333ea;");
+
+                    Label subtitle = new Label("TL;DR (Too Long; Didn't Read)");
+                    subtitle.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13px; -fx-font-weight: bold;");
+
+                    VBox headerBox = new VBox(2);
+                    headerBox.setAlignment(Pos.CENTER);
+                    headerBox.getChildren().addAll(title, subtitle);
+
+                    // Content
+                    Label content = new Label(aiSummary);
+                    content.setWrapText(true);
+                    content.setMaxWidth(450);
+                    content.setStyle("-fx-font-size: 15px; -fx-text-fill: #334155; -fx-line-spacing: 6px; -fx-alignment: center;");
+
+                    // Beautiful Close Button
+                    Button closeBtn = new Button("Awesome, thanks!");
+                    closeBtn.setStyle("-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;");
+                    closeBtn.setOnAction(e -> summaryStage.close());
+
+                    // Add everything to the popup
+                    root.getChildren().addAll(headerBox, content, closeBtn);
+
+                    // Make the scene background transparent so the drop shadow renders correctly
+                    Scene scene = new Scene(root);
+                    scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                    summaryStage.setScene(scene);
+
+                    // Center the popup on the screen
+                    summaryStage.centerOnScreen();
+                    summaryStage.showAndWait();
+
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("AI Error");
+                    alert.setHeaderText(null);
+                    alert.setContentText("The AI service is currently unavailable. Please try again later.");
+                    alert.showAndWait();
+                }
+            });
+        }).start();
     }
 
     private void updateLockUI() {
@@ -187,7 +275,6 @@ public class PostDetailsController {
                 }
             }
 
-            // 🔥 CHANGED: Now verifying ownership against the dynamic currentUserId
             if (c.getAuthorId() == currentUserId) {
                 HBox actionsBox = new HBox(10);
                 actionsBox.setAlignment(Pos.CENTER_RIGHT);
@@ -244,7 +331,6 @@ public class PostDetailsController {
             return;
         }
 
-        // 🔥 CHANGED: Use the dynamic currentUserId to instantiate the comment
         Comment newComment = new Comment(text, currentPost.getId(), currentUserId, null);
 
         if (selectedCommentFileName != null && selectedCommentFilePath != null) {

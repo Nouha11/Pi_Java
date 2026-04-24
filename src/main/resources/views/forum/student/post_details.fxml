@@ -75,6 +75,7 @@
 
                                                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                                                     <Button fx:id="upvoteButton" onAction="#handleUpvote" style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16; -fx-background-radius: 8;" text="👍 Upvote" />
+                                                    <Button fx:id="summarizeBtn" onAction="#handleSummarizePost" style="-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16; -fx-background-radius: 8;" text="✨ TL;DR Summary" />
                                                     <Button style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;" text="🔖 Save" />
                                                     <Button style="-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;" text="↩ Reply" />
 
