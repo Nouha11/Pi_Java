@@ -45,15 +45,17 @@ public class PostDetailsController {
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
 
-    // Image Upload Tracking for Comments
     private String selectedCommentFileName = null;
     private String selectedCommentFilePath = null;
 
-    // Mocking the logged-in user ID based on your handleSubmitComment logic
-    private final int CURRENT_USER_ID = 1;
+    // 🔥 NEW: Dynamic User ID tracking
+    private int currentUserId;
 
     @FXML
     public void initialize() {
+        // 🔥 NEW: Grab the session dynamically as soon as the screen loads
+        currentUserId = utils.UserSession.getInstance().getUserId();
+
         if (utils.ForumSession.currentPost != null) {
             setPostData(utils.ForumSession.currentPost);
         }
@@ -168,7 +170,6 @@ public class PostDetailsController {
             content.setWrapText(true);
             content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
 
-            // 🔥 Check for and display the attached image
             VBox imageBox = new VBox();
             if (c.getImageName() != null && !c.getImageName().isEmpty()) {
                 File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
@@ -186,8 +187,8 @@ public class PostDetailsController {
                 }
             }
 
-            // Check if the current user is the author, then add Edit/Delete buttons
-            if (c.getAuthorId() == CURRENT_USER_ID) {
+            // 🔥 CHANGED: Now verifying ownership against the dynamic currentUserId
+            if (c.getAuthorId() == currentUserId) {
                 HBox actionsBox = new HBox(10);
                 actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -243,13 +244,12 @@ public class PostDetailsController {
             return;
         }
 
-        Comment newComment = new Comment(text, currentPost.getId(), CURRENT_USER_ID, null);
+        // 🔥 CHANGED: Use the dynamic currentUserId to instantiate the comment
+        Comment newComment = new Comment(text, currentPost.getId(), currentUserId, null);
 
-        // Handle the image upload copy process
         if (selectedCommentFileName != null && selectedCommentFilePath != null) {
             try {
                 java.nio.file.Path sourcePath = java.nio.file.Paths.get(selectedCommentFilePath);
-                // Saving to a separate comments folder in XAMPP
                 String xamppPath = "C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + selectedCommentFileName;
                 java.nio.file.Path destPath = java.nio.file.Paths.get(xamppPath);
 
@@ -264,7 +264,6 @@ public class PostDetailsController {
 
         commentService.ajouter(newComment);
 
-        // Reset UI after posting
         commentArea.clear();
         commentArea.setPromptText("Write a reply...");
         commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");

@@ -1,5 +1,6 @@
 package controllers.forum;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -13,15 +14,16 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.forum.Post;
 import services.forum.PostService;
+import services.api.GeminiService;
 
 import java.io.File;
 import java.util.Map;
 
 public class AddPostController {
 
-    // 🔥 NEW: Hooks to change the UI text dynamically
     @FXML private Label mainTitleLabel;
     @FXML private Button submitButton;
+    @FXML private Button enhanceButton;
 
     @FXML private TextField titleField;
     @FXML private TextArea contentArea;
@@ -35,6 +37,8 @@ public class AddPostController {
     @FXML private Label contentError;
 
     private PostService postService = new PostService();
+    private GeminiService geminiService = new GeminiService();
+
     private String selectedFileName = null;
     private String selectedFilePath = null;
     private Map<String, Integer> databaseSpaces;
@@ -51,15 +55,12 @@ public class AddPostController {
         spaceCombo.valueProperty().addListener((observable, oldValue, newValue) -> clearError(spaceCombo, spaceError));
     }
 
-    // 🔥 UPDATED: Changes the UI text to "Edit" when opened from Admin panel!
     public void setPostToEdit(Post post) {
         this.postToEdit = post;
 
-        // Morph the UI
         if (mainTitleLabel != null) mainTitleLabel.setText("Edit Discussion");
         if (submitButton != null) submitButton.setText("Save Changes");
 
-        // Fill the fields
         titleField.setText(post.getTitle());
         contentArea.setText(post.getContent());
 
@@ -73,6 +74,40 @@ public class AddPostController {
         if (post.getTags() != null) tagsField.setText(post.getTags());
         if (post.getLink() != null) linkField.setText(post.getLink());
         if (post.getImageName() != null) fileNameLabel.setText("Current: " + post.getImageName());
+    }
+
+    @FXML
+    void handleMagicEnhance(ActionEvent event) {
+        String draft = contentArea.getText();
+
+        if (draft == null || draft.trim().length() < 10) {
+            showAlert("Too Short", "Please write a bit more context before using the AI enhancer.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        contentArea.setDisable(true);
+        String originalText = contentArea.getText();
+        contentArea.clear();
+        contentArea.setPromptText("✨ AI is analyzing and enhancing your post... Please wait.");
+
+        if (enhanceButton != null) enhanceButton.setDisable(true);
+
+        new Thread(() -> {
+            String enhancedText = geminiService.enhancePost(originalText);
+
+            Platform.runLater(() -> {
+                contentArea.setDisable(false);
+                contentArea.setPromptText("");
+                if (enhanceButton != null) enhanceButton.setDisable(false);
+
+                if (enhancedText != null && !enhancedText.contains("Error")) {
+                    contentArea.setText(enhancedText);
+                } else {
+                    contentArea.setText(originalText);
+                    showAlert("AI Error", "The AI service is currently unavailable. Please try again later.", Alert.AlertType.ERROR);
+                }
+            });
+        }).start();
     }
 
     @FXML
@@ -121,13 +156,15 @@ public class AddPostController {
         Integer spaceId = databaseSpaces.get(spaceSelection);
 
         if (postToEdit == null) {
-            // --- CREATING NEW POST ---
             if (!postService.isTitleUnique(title)) {
                 showError(titleField, titleError, "A discussion with this exact title already exists!");
                 return;
             }
 
-            Post newPost = new Post(title, content, 7, spaceId); // Adjust ID as needed
+            // 🔥 NEW: Get the dynamic user ID from the session
+            int currentUserId = utils.UserSession.getInstance().getUserId();
+            Post newPost = new Post(title, content, currentUserId, spaceId);
+
             newPost.setTags(tags);
             if (link != null && !link.trim().isEmpty()) newPost.setLink(link);
 
@@ -136,7 +173,6 @@ public class AddPostController {
             showAlert("Success", "Your post has been published to the forum!", Alert.AlertType.INFORMATION);
 
         } else {
-            // --- EDITING EXISTING POST ---
             if (!title.equalsIgnoreCase(postToEdit.getTitle()) && !postService.isTitleUnique(title)) {
                 showError(titleField, titleError, "A discussion with this exact title already exists!");
                 return;

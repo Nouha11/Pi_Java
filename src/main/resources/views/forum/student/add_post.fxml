@@ -61,12 +61,15 @@
                     </children>
                 </HBox>
 
-                <HBox alignment="BOTTOM_LEFT" spacing="10.0">
+                <HBox alignment="BOTTOM_LEFT" spacing="12.0">
                     <children>
                         <Label text="Content:" style="-fx-text-fill: #475569; -fx-font-weight: bold;" />
                         <Region HBox.hgrow="ALWAYS" />
+
+                        <Button fx:id="enhanceButton" mnemonicParsing="false" onAction="#handleMagicEnhance" style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 16; -fx-background-radius: 6; -fx-cursor: hand;" text="✨ Magic Enhance" />
+
                         <Label fx:id="fileNameLabel" text="No file selected" style="-fx-text-fill: #94a3b8; -fx-font-style: italic;" />
-                        <Button mnemonicParsing="false" onAction="#handleUploadFile" style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-cursor: hand;" text="📎 Attach File" />
+                        <Button mnemonicParsing="false" onAction="#handleUploadFile" style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-padding: 6 16; -fx-background-radius: 6; -fx-cursor: hand;" text="📎 Attach File" />
                     </children>
                     <VBox.margin>
                         <Insets top="10.0" />
@@ -74,11 +77,11 @@
                 </HBox>
 
                 <VBox VBox.vgrow="ALWAYS" spacing="5">
-                    <TextArea fx:id="contentArea" promptText="What do you want to share?" wrapText="true" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6;" VBox.vgrow="ALWAYS" />
+                    <TextArea fx:id="contentArea" promptText="What do you want to share? Write a quick draft and hit Magic Enhance!" wrapText="true" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-font-size: 14px; -fx-padding: 5;" VBox.vgrow="ALWAYS" />
                     <Label fx:id="contentError" text="Content must be at least 10 characters." style="-fx-text-fill: #ef4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" managed="false"/>
                 </VBox>
 
-                <Button fx:id="submitButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-pref-height: 45; -fx-background-radius: 8; -fx-cursor: hand;" text="Post to Forum">
+                <Button fx:id="submitButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddPost" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-pref-height: 45; -fx-background-radius: 8; -fx-cursor: hand;" text="Post to Forum">
                     <VBox.margin>
                         <Insets top="10.0" />
                     </VBox.margin>

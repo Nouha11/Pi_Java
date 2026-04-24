@@ -52,32 +52,25 @@ public class LoginController implements Initializable {
         pfPassword.setOnAction(e -> onLogin());
 
         playEntranceAnimation();
-        createBackgroundParticles(); // Triggers the new floating background
+        createBackgroundParticles();
     }
 
-    /**
-     * Creates floating, rotating squares to match the web/desktop banner aesthetic.
-     */
     private void createBackgroundParticles() {
         Random random = new Random();
         int particleCount = 20;
 
         for (int i = 0; i < particleCount; i++) {
-            // Create small squares
             int size = random.nextInt(15) + 5;
             Rectangle rect = new Rectangle(size, size);
 
-            // Set a soft, semi-transparent white/blue color
             rect.setFill(Color.web("#ffffff", random.nextDouble() * 0.15 + 0.05));
 
-            // Random starting positions within the left panel
             rect.setX(random.nextInt(420));
             rect.setY(random.nextInt(580));
             rect.setRotate(random.nextInt(360));
 
             animatedSceneContainer.getChildren().add(rect);
 
-            // Drift upwards/diagonally
             TranslateTransition tt = new TranslateTransition(Duration.seconds(random.nextInt(15) + 15), rect);
             tt.setByY(-150 - random.nextInt(200));
             tt.setByX((random.nextDouble() - 0.5) * 100);
@@ -85,14 +78,12 @@ public class LoginController implements Initializable {
             tt.setAutoReverse(true);
             tt.play();
 
-            // Slowly rotate
             RotateTransition rt = new RotateTransition(Duration.seconds(random.nextInt(10) + 10), rect);
             rt.setByAngle(360);
             rt.setCycleCount(RotateTransition.INDEFINITE);
             rt.setAutoReverse(false);
             rt.play();
 
-            // Fade in and out softly
             FadeTransition ft = new FadeTransition(Duration.seconds(random.nextInt(8) + 5), rect);
             ft.setFromValue(0.1);
             ft.setToValue(0.6);
@@ -141,6 +132,10 @@ public class LoginController implements Initializable {
             if (user == null) { showError("Invalid username or password."); pfPassword.clear(); pfPassword.requestFocus(); return; }
             if (user.isBanned()) { showError("Account banned. Reason: " + (user.getBanReason() != null ? user.getBanReason() : "N/A")); return; }
             if (!user.isActive()) { showError("Account inactive. Contact an administrator."); return; }
+
+            // 🔥 NEW: Save the user globally in the session
+            utils.UserSession.getInstance().setLoggedInUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
+
             routeUserBasedOnRole(user);
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());
@@ -213,11 +208,12 @@ public class LoginController implements Initializable {
             e.printStackTrace();
         }
     }
+
     @FXML
     private void onGoToSignup() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/views/users/signup.fxml"));
+                    getClass().getResource("/views/users/signup.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.stage.Stage stage = (javafx.stage.Stage) btnLogin.getScene().getWindow();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 620);
@@ -230,7 +226,6 @@ public class LoginController implements Initializable {
             showError("Cannot open signup: " + e.getMessage());
         }
     }
-
 
     private void showError(String msg) {
         lblError.setText(msg);
