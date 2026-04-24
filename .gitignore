@@ -37,3 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+
+# Ignore real API keys and secrets
+src/main/resources/config.properties
