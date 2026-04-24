@@ -1,96 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<BorderPane style="-fx-background-color: #f8f9fa;"
-            stylesheets="@../../css/study.css"
-            xmlns:fx="http://javafx.com/fxml/1"
-            xmlns="http://javafx.com/javafx/17.0.12"
+<ScrollPane fitToWidth="true"
+            style="-fx-background-color: #f8fafc; -fx-background: #f8fafc; -fx-border-color: transparent;"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.studysession.PlanningController">
 
-    <!-- PAGE HEADER -->
-    <top>
-        <VBox style="-fx-background-color: white; -fx-border-color: #dee2e6;
-                     -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
-            <HBox alignment="CENTER_LEFT" spacing="12">
-                <VBox HBox.hgrow="ALWAYS">
-                    <Label fx:id="pageTitleLabel" text="📅 Planning Sessions"
-                           style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
-                    <Label text="Manage and track your study planning sessions"
-                           style="-fx-font-size: 13; -fx-text-fill: #6c757d;"/>
+    <VBox spacing="25" style="-fx-padding: 30;">
+
+        <!-- PAGE HEADER -->
+        <VBox spacing="4">
+            <Label fx:id="pageTitleLabel" text="Planning Sessions"
+                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            <Label text="Manage and track all study planning sessions"
+                   style="-fx-text-fill: #64748b; -fx-font-size: 14px;"/>
+        </VBox>
+
+        <!-- FILTER BAR -->
+        <HBox spacing="12" alignment="CENTER_LEFT"
+              style="-fx-background-color: white; -fx-background-radius: 12;
+                     -fx-padding: 16 20;
+                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+            <TextField fx:id="searchField" promptText="🔍  Search by title…" prefWidth="220"
+                       style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0;
+                              -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;"/>
+            <ComboBox fx:id="filterStatus" prefWidth="140" promptText="All Statuses"
+                      style="-fx-background-radius: 8;"/>
+            <ComboBox fx:id="filterCourse" prefWidth="180" promptText="All Courses"
+                      style="-fx-background-radius: 8;"/>
+            <Label text="From:" style="-fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+            <DatePicker fx:id="dateFrom" prefWidth="130"/>
+            <Label text="To:" style="-fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+            <DatePicker fx:id="dateTo" prefWidth="130"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🔄 Refresh" onAction="#handleRefresh"
+                    style="-fx-background-color: #f8fafc; -fx-text-fill: #334155;
+                           -fx-font-weight: bold; -fx-padding: 8 16;
+                           -fx-background-radius: 8; -fx-border-color: #e2e8f0;
+                           -fx-border-radius: 8; -fx-cursor: hand;"/>
+            <Button text="➕ New Planning" onAction="#handleNew"
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-font-size: 14px;
+                           -fx-padding: 8 18; -fx-background-radius: 8; -fx-cursor: hand;"/>
+        </HBox>
+
+        <!-- MAIN PANEL -->
+        <VBox spacing="0"
+              style="-fx-background-color: white; -fx-background-radius: 12;
+                     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">
+
+            <!-- Panel header -->
+            <HBox alignment="CENTER_LEFT"
+                  style="-fx-padding: 20 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="All Planning Sessions"
+                           style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0f172a;"/>
+                    <Label fx:id="statsLabel" text="Loading…"
+                           style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                 </VBox>
-                <Button text="➕ New Planning" onAction="#handleNew"
-                        style="-fx-background-color: #3949ab; -fx-text-fill: white;
-                               -fx-font-weight: bold; -fx-padding: 8 16;
-                               -fx-background-radius: 6; -fx-cursor: hand;"/>
+                <HBox spacing="8"/>
+            </HBox>
+
+            <!-- Cards list -->
+            <ScrollPane fitToWidth="true" prefHeight="520"
+                        style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <VBox fx:id="cardsContainer" spacing="8" style="-fx-padding: 12;"/>
+            </ScrollPane>
+
+            <!-- Footer status -->
+            <HBox alignment="CENTER_LEFT"
+                  style="-fx-padding: 12 24; -fx-border-color: #f1f5f9; -fx-border-width: 1 0 0 0;">
+                <Label fx:id="statusLabel" text="Ready"
+                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
             </HBox>
         </VBox>
-    </top>
 
-    <!-- CENTER: card wrapper -->
-    <center>
-        <VBox style="-fx-padding: 24;" spacing="16">
-
-            <!-- CARD -->
-            <VBox VBox.vgrow="ALWAYS"
-                  style="-fx-background-color: white; -fx-background-radius: 8;
-                         -fx-border-radius: 8; -fx-border-color: #dee2e6;
-                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
-
-                <!-- CARD HEADER -->
-                <HBox alignment="CENTER_LEFT" spacing="10"
-                      style="-fx-padding: 14 20; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;">
-                    <Label text="All Plannings"
-                           style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #212529;"
-                           HBox.hgrow="ALWAYS"/>
-                    <Label text="🔍" style="-fx-font-size: 14;"/>
-                    <TextField fx:id="searchField"
-                               promptText="Search by title…"
-                               prefWidth="200"/>
-                    <ComboBox fx:id="filterStatus" prefWidth="130" promptText="Status"/>
-                    <ComboBox fx:id="filterCourse" prefWidth="180" promptText="Course"/>
-                    <Label text="From:" style="-fx-text-fill: #546e7a; -fx-font-weight: bold;"/>
-                    <DatePicker fx:id="dateFrom" prefWidth="130"/>
-                    <Label text="To:" style="-fx-text-fill: #546e7a; -fx-font-weight: bold;"/>
-                    <DatePicker fx:id="dateTo" prefWidth="130"/>
-                    <Button text="🔄 Refresh" onAction="#handleRefresh" styleClass="btn-ghost"/>
-                </HBox>
-
-                <!-- TABLE -->
-                <TableView fx:id="planningTable" VBox.vgrow="ALWAYS" styleClass="data-table"
-                           style="-fx-background-color: transparent; -fx-border-color: transparent;">
-                    <columns>
-                        <TableColumn fx:id="colCourse"   text="Course"         prefWidth="180" minWidth="100"/>
-                        <TableColumn fx:id="colTitle"    text="Title"          prefWidth="200" minWidth="100"/>
-                        <TableColumn fx:id="colDate"     text="Date"           prefWidth="110" minWidth="80"/>
-                        <TableColumn fx:id="colTime"     text="Time"           prefWidth="80"  minWidth="60"/>
-                        <TableColumn fx:id="colDuration" text="Duration (min)" prefWidth="115" minWidth="80"/>
-                        <TableColumn fx:id="colStatus"   text="Status"         prefWidth="120" minWidth="80"/>
-                        <TableColumn fx:id="colReminder" text="Reminder"       prefWidth="80"  minWidth="60"/>
-                    </columns>
-                    <placeholder>
-                        <Label text="No planning sessions found."
-                               style="-fx-text-fill: #90a4ae; -fx-font-size: 13;"/>
-                    </placeholder>
-                </TableView>
-
-                <!-- CARD FOOTER -->
-                <HBox alignment="CENTER_LEFT" spacing="8"
-                      style="-fx-padding: 12 20; -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;
-                             -fx-background-color: #f8f9fa; -fx-background-radius: 0 0 8 8;">
-                    <Button text="✏ Edit"           styleClass="btn-secondary" onAction="#handleEdit"/>
-                    <Button text="🗑 Delete"         styleClass="btn-danger"    onAction="#handleDelete"/>
-                    <Button text="✅ Mark Complete"  styleClass="btn-success"   onAction="#handleMarkComplete"/>
-                    <Button text="🚫 Cancel"         styleClass="btn-warning"   onAction="#handleMarkCancelled"/>
-                    <Button text="▶ Start Session"   styleClass="btn-info"      onAction="#handleStartSession"/>
-                    <Label fx:id="statsLabel" styleClass="stats-label" HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="statusLabel" text="Ready"
-                           style="-fx-text-fill: #546e7a; -fx-font-size: 11;"/>
-                </HBox>
-
-            </VBox>
-        </VBox>
-    </center>
-
-</BorderPane>
+        <Region prefHeight="20"/>
+    </VBox>
+</ScrollPane>

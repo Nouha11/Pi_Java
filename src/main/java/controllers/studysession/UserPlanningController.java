@@ -1,15 +1,14 @@
 package controllers.studysession;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.studysession.Course;
@@ -24,76 +23,29 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.ResourceBundle;
 
-/**
- * User-facing planning controller.
- * Allowed: create, mark complete/incomplete, start session.
- * Not allowed: edit, delete, cancel.
- */
+/** User-facing planning — AdminHome card style. */
 public class UserPlanningController implements Initializable {
 
-    @FXML private TableView<Planning> planningTable;
-    @FXML private TableColumn<Planning, String>  colCourse;
-    @FXML private TableColumn<Planning, String>  colTitle;
-    @FXML private TableColumn<Planning, String>  colDate;
-    @FXML private TableColumn<Planning, String>  colTime;
-    @FXML private TableColumn<Planning, Integer> colDuration;
-    @FXML private TableColumn<Planning, String>  colStatus;
-    @FXML private TableColumn<Planning, String>  colReminder;
-
+    @FXML private VBox cardsContainer;
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterStatus;
     @FXML private ComboBox<Course> filterCourse;
-    @FXML private DatePicker dateFrom;
-    @FXML private DatePicker dateTo;
-    @FXML private Label statusLabel;
-    @FXML private Label statsLabel;
+    @FXML private DatePicker dateFrom, dateTo;
+    @FXML private Label statusLabel, statsLabel;
 
     private final PlanningService planningService = new PlanningService();
-    private final CourseService   courseService   = new CourseService();
-    private final ObservableList<Planning> data   = FXCollections.observableArrayList();
+    private final CourseService courseService = new CourseService();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        setupColumns();
         setupFilters();
         autoMarkMissed();
         loadData();
     }
 
-    private void setupColumns() {
-        colCourse.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCourseNameCache()));
-        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colDate.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getScheduledDate() != null ? d.getValue().getScheduledDate().toString() : ""));
-        colTime.setCellValueFactory(d -> new SimpleStringProperty(
-                d.getValue().getScheduledTime() != null ? d.getValue().getScheduledTime().toString() : ""));
-        colDuration.setCellValueFactory(new PropertyValueFactory<>("plannedDuration"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        colReminder.setCellValueFactory(d ->
-                new SimpleStringProperty(d.getValue().isReminder() ? "🔔 Yes" : "—"));
-
-        colStatus.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); setStyle(""); return; }
-                setText(item);
-                setStyle(switch (item) {
-                    case "SCHEDULED" -> "-fx-text-fill: #4f46e5; -fx-font-weight: bold;";
-                    case "COMPLETED" -> "-fx-text-fill: #16a34a; -fx-font-weight: bold;";
-                    case "MISSED"    -> "-fx-text-fill: #ef4444; -fx-font-weight: bold;";
-                    case "CANCELLED" -> "-fx-text-fill: #94a3b8; -fx-font-weight: bold;";
-                    default -> "";
-                });
-            }
-        });
-
-        planningTable.setItems(data);
-    }
-
     private void setupFilters() {
         filterStatus.getItems().addAll("", "SCHEDULED", "COMPLETED", "MISSED", "CANCELLED");
         filterStatus.setValue("");
-
         try {
             List<Course> courses = courseService.findAll();
             filterCourse.getItems().add(null);
@@ -110,15 +62,12 @@ public class UserPlanningController implements Initializable {
                     setText(empty || c == null ? "— All Courses —" : c.getCourseName());
                 }
             });
-        } catch (SQLException e) {
-            System.err.println("UserPlanningController: failed to load courses — " + e.getMessage());
-        }
-
-        searchField.textProperty().addListener((obs, o, n) -> applyFilters());
-        filterStatus.valueProperty().addListener((obs, o, n) -> applyFilters());
-        filterCourse.valueProperty().addListener((obs, o, n) -> applyFilters());
-        dateFrom.valueProperty().addListener((obs, o, n) -> applyFilters());
-        dateTo.valueProperty().addListener((obs, o, n) -> applyFilters());
+            filterCourse.valueProperty().addListener((obs, o, n) -> loadData());
+        } catch (SQLException e) { System.err.println("Failed to load courses: " + e.getMessage()); }
+        if (searchField != null) searchField.textProperty().addListener((obs, o, n) -> loadData());
+        filterStatus.valueProperty().addListener((obs, o, n) -> loadData());
+        if (dateFrom != null) dateFrom.valueProperty().addListener((obs, o, n) -> loadData());
+        if (dateTo   != null) dateTo.valueProperty().addListener((obs, o, n) -> loadData());
     }
 
     private void autoMarkMissed() {
@@ -126,89 +75,144 @@ public class UserPlanningController implements Initializable {
         catch (SQLException e) { System.err.println("Auto-mark missed: " + e.getMessage()); }
     }
 
-    private void loadData() { applyFilters(); }
-
-    @FXML
-    private void applyFilters() {
+    private void loadData() {
         try {
             String status = filterStatus.getValue();
-            String search = searchField.getText();
-            LocalDate from = dateFrom.getValue();
-            LocalDate to   = dateTo.getValue();
-            Course course  = filterCourse.getValue();
+            String search = searchField != null ? searchField.getText() : null;
+            LocalDate from = dateFrom != null ? dateFrom.getValue() : null;
+            LocalDate to   = dateTo   != null ? dateTo.getValue()   : null;
+            Course course  = filterCourse != null ? filterCourse.getValue() : null;
 
             List<Planning> plannings = planningService.findByFilters(
                     (status == null || status.isEmpty()) ? null : status,
                     from, to,
                     course != null ? course.getId() : null,
-                    (search == null || search.isEmpty()) ? null : search
-            );
+                    (search == null || search.isEmpty()) ? null : search);
 
-            data.setAll(plannings);
-            statsLabel.setText("Showing " + plannings.size() + " planning(s)");
-        } catch (SQLException e) {
-            setStatus("⚠ " + e.getMessage(), true);
+            renderCards(plannings);
+            if (statsLabel != null) statsLabel.setText(plannings.size() + " planning session(s) found");
+        } catch (SQLException e) { setStatus("⚠ " + e.getMessage(), true); }
+    }
+
+    private void renderCards(List<Planning> plannings) {
+        cardsContainer.getChildren().clear();
+        if (plannings.isEmpty()) { cardsContainer.getChildren().add(createEmptyLabel("No planning sessions yet. Click ➕ to schedule one.")); return; }
+        for (Planning p : plannings) cardsContainer.getChildren().add(buildCard(p));
+    }
+
+    private VBox buildCard(Planning p) {
+        String statusVal = p.getStatus() != null ? p.getStatus().toUpperCase() : "";
+        String[] badge = switch (statusVal) {
+            case "COMPLETED" -> new String[]{"Completed", "-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;"};
+            case "SCHEDULED" -> new String[]{"Scheduled", "-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;"};
+            case "MISSED"    -> new String[]{"Missed",    "-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;"};
+            case "CANCELLED" -> new String[]{"Cancelled", "-fx-background-color: #f1f5f9; -fx-text-fill: #64748b;"};
+            default          -> new String[]{statusVal,   "-fx-background-color: #fef3c7; -fx-text-fill: #d97706;"};
+        };
+        String accent = switch (statusVal) {
+            case "COMPLETED" -> "#10b981"; case "SCHEDULED" -> "#3b82f6";
+            case "MISSED"    -> "#ef4444"; case "CANCELLED" -> "#94a3b8"; default -> "#f59e0b";
+        };
+        String dateStr = p.getScheduledDate() != null ? p.getScheduledDate().toString() : "—";
+        String timeStr = p.getScheduledTime() != null ? p.getScheduledTime().toString() : "—";
+        String subtitle = (p.getCourseNameCache() != null ? p.getCourseNameCache() : "")
+                + "  ·  " + dateStr + "  " + timeStr
+                + "  ·  ⏱ " + p.getPlannedDuration() + " min"
+                + (p.isReminder() ? "  ·  🔔" : "");
+
+        HBox infoRow = createInfoRow(accent, "📅", "#eff6ff",
+                p.getTitle() != null ? p.getTitle() : "—", subtitle, badge[0], badge[1]);
+
+        Region divider = new Region();
+        divider.setPrefHeight(1);
+        divider.setStyle("-fx-background-color: #f1f5f9;");
+
+        Button editBtn   = cardBtn("✏ Edit",   "#f8fafc", "#334155", "#e2e8f0");
+        Button deleteBtn = cardBtn("🗑 Delete", "#fee2e2", "#dc2626", null);
+
+        editBtn.setOnAction(e -> openPlanningForm(p, p.getCourseId(), p.getCourseNameCache()));
+        deleteBtn.setOnAction(e -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Delete planning \"" + p.getTitle() + "\"?", ButtonType.YES, ButtonType.NO);
+            confirm.showAndWait().filter(r -> r == ButtonType.YES).ifPresent(r -> {
+                try { planningService.delete(p.getId()); setStatus("Deleted.", false); loadData(); }
+                catch (SQLException ex) { showError(ex.getMessage()); }
+            });
+        });
+
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox actionsRow = new HBox(8, spacer, editBtn, deleteBtn);
+        actionsRow.setAlignment(Pos.CENTER_RIGHT);
+        actionsRow.setStyle("-fx-padding: 8 16 10 16;");
+
+        VBox card = new VBox(0, infoRow, divider, actionsRow);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accent + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);");
+        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accent + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 8, 0, 0, 3);"));
+        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
+                "-fx-border-color: " + accent + " transparent transparent transparent; " +
+                "-fx-border-width: 0 0 0 4; -fx-border-radius: 10 0 0 10; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 6, 0, 0, 2);"));
+        return card;
+    }
+
+    private HBox createInfoRow(String accentColor, String iconText, String iconBg,
+                               String title, String subtitle, String badgeText, String badgeStyle) {
+        HBox row = new HBox(14);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 14 16 10 16;");
+
+        StackPane iconCircle = new StackPane();
+        iconCircle.setMinSize(38, 38); iconCircle.setMaxSize(38, 38);
+        iconCircle.setStyle("-fx-background-color: " + iconBg + "; -fx-background-radius: 50;");
+        Label iconLbl = new Label(iconText); iconLbl.setStyle("-fx-font-size: 16px;");
+        iconCircle.getChildren().add(iconLbl);
+
+        VBox text = new VBox(3); HBox.setHgrow(text, Priority.ALWAYS);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
+        titleLbl.setWrapText(true);
+        text.getChildren().add(titleLbl);
+        if (subtitle != null && !subtitle.isBlank()) {
+            Label subLbl = new Label(subtitle); subLbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px;");
+            text.getChildren().add(subLbl);
         }
-    }
-
-    @FXML
-    private void handleNew() {
-        Course course = filterCourse.getValue();
-        openPlanningForm(null, course != null ? course.getId() : 0,
-                course != null ? course.getCourseName() : "");
-    }
-
-    @FXML
-    private void handleMarkComplete() {
-        Planning sel = planningTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { showInfo("Please select a planning session."); return; }
-        if (Planning.STATUS_COMPLETED.equals(sel.getStatus())) {
-            showInfo("This session is already completed."); return;
+        row.getChildren().addAll(iconCircle, text);
+        if (badgeText != null && !badgeText.isBlank()) {
+            Label badge = new Label(badgeText);
+            badge.setStyle(badgeStyle + " -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 10; -fx-background-radius: 20;");
+            row.getChildren().add(badge);
         }
-        try {
-            planningService.updateStatus(sel.getId(), Planning.STATUS_COMPLETED);
-            setStatus("Marked as COMPLETED.", false);
-            loadData();
-        } catch (SQLException e) { showError(e.getMessage()); }
+        return row;
     }
 
-    @FXML
-    private void handleMarkIncomplete() {
-        Planning sel = planningTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { showInfo("Please select a planning session."); return; }
-        try {
-            planningService.updateStatus(sel.getId(), Planning.STATUS_SCHEDULED);
-            setStatus("Marked as SCHEDULED.", false);
-            loadData();
-        } catch (SQLException e) { showError(e.getMessage()); }
+    private Button cardBtn(String text, String bg, String fg, String border) {
+        Button btn = new Button(text);
+        String style = "-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; " +
+                "-fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 5 12; " +
+                "-fx-background-radius: 6; -fx-cursor: hand;";
+        if (border != null) style += " -fx-border-color: " + border + "; -fx-border-radius: 6;";
+        btn.setStyle(style);
+        return btn;
     }
 
-    @FXML
-    private void handleStartSession() {
-        Planning sel = planningTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { showInfo("Please select a planning session."); return; }
-        if (!Planning.STATUS_SCHEDULED.equals(sel.getStatus())) {
-            showInfo("Only SCHEDULED sessions can be started."); return;
-        }
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/StudySessionForm.fxml"));
-            Parent root = loader.load();
-            StudySessionFormController ctrl = loader.getController();
-            ctrl.initForPlanning(sel, this::loadData);
-            Stage stage = new Stage();
-            stage.setTitle("Complete Session — " + sel.getTitle());
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-        } catch (IOException e) { showError("Cannot open session form: " + e.getMessage()); }
+    private Label createEmptyLabel(String text) {
+        Label lbl = new Label(text);
+        lbl.setStyle("-fx-padding: 24; -fx-text-fill: #94a3b8; -fx-font-style: italic; -fx-font-size: 14px;");
+        return lbl;
     }
 
-    @FXML
-    private void handleRefresh() {
-        autoMarkMissed();
-        loadData();
-        setStatus("Refreshed.", false);
+    @FXML private void handleNew() {
+        Course course = filterCourse != null ? filterCourse.getValue() : null;
+        openPlanningForm(null, course != null ? course.getId() : 0, course != null ? course.getCourseName() : "");
     }
+
+    @FXML private void handleRefresh() { autoMarkMissed(); loadData(); setStatus("Refreshed.", false); }
 
     private void openPlanningForm(Planning p, int courseId, String courseName) {
         try {
@@ -225,16 +229,10 @@ public class UserPlanningController implements Initializable {
     }
 
     private void setStatus(String msg, boolean isError) {
+        if (statusLabel == null) return;
         statusLabel.setText(msg);
-        statusLabel.setStyle(isError ? "-fx-text-fill: #ef4444;" : "-fx-text-fill: #16a34a;");
+        statusLabel.setStyle(isError ? "-fx-text-fill:#ef4444;" : "-fx-text-fill:#16a34a;");
     }
-
-    private void showError(String msg) {
-        setStatus("⚠ " + msg, true);
-        new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait();
-    }
-
-    private void showInfo(String msg) {
-        new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();
-    }
+    private void showError(String msg) { setStatus("⚠ " + msg, true); new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK).showAndWait(); }
+    private void showInfo(String msg)  { new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait(); }
 }
