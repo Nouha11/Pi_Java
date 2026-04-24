@@ -1,72 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-
-<VBox spacing="0" styleClass="detail-pane" prefWidth="900" prefHeight="600"
+<VBox spacing="0" prefWidth="900" prefHeight="600"
+      style="-fx-background-color: #f8fafc;"
       stylesheets="@../../css/study.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="controllers.studysession.CourseDetailController">
 
-
-    <!-- HEADER CARD -->
-    <HBox styleClass="detail-header" alignment="CENTER_LEFT" spacing="20">
-        <padding><Insets top="18" right="24" bottom="18" left="24"/></padding>
-        <VBox spacing="6" HBox.hgrow="ALWAYS">
-            <Label fx:id="lblCourseName" text="—" styleClass="detail-title"/>
-            <HBox spacing="14" alignment="CENTER_LEFT">
-                <Label fx:id="lblCategory"   text="—" styleClass="detail-badge-gray"/>
-                <Label text="•" style="-fx-text-fill:#b0bec5;"/>
-                <Label fx:id="lblDifficulty" text="—" styleClass="detail-badge-blue"/>
-                <Label text="•" style="-fx-text-fill:#b0bec5;"/>
-                <Label fx:id="lblStatus"     text="—" styleClass="detail-badge-green"/>
-            </HBox>
-        </VBox>
-        <VBox alignment="CENTER_RIGHT" spacing="5">
-            <Label fx:id="lblPublished" text="—" styleClass="detail-badge-orange"/>
-            <Label fx:id="lblDuration"  text="—" styleClass="detail-meta"/>
-            <Label fx:id="lblProgress"  text="—" styleClass="detail-meta"/>
-        </VBox>
-    </HBox>
-
-    <!-- DESCRIPTION -->
-    <VBox styleClass="detail-section">
-        <padding><Insets top="10" right="24" bottom="10" left="24"/></padding>
-        <Label text="Description" styleClass="section-label"/>
-        <TextArea fx:id="txtDescription" editable="false" wrapText="true"
-                  prefRowCount="3" styleClass="detail-textarea"
-                  style="-fx-font-size:12px; -fx-text-fill:#546e7a;"/>
+    <!-- HEADER -->
+    <VBox style="-fx-background-color: white; -fx-border-color: #f1f5f9;
+                 -fx-border-width: 0 0 1 0; -fx-padding: 20 24;">
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <VBox HBox.hgrow="ALWAYS" spacing="6">
+                <Label fx:id="lblCourseName" text="—"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label fx:id="lblCategory"
+                           style="-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;
+                                  -fx-font-weight: bold; -fx-padding: 3 10;
+                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                    <Label fx:id="lblDifficulty"
+                           style="-fx-background-color: #ede9fe; -fx-text-fill: #7c3aed;
+                                  -fx-font-weight: bold; -fx-padding: 3 10;
+                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                    <Label fx:id="lblStatus"
+                           style="-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;
+                                  -fx-font-weight: bold; -fx-padding: 3 10;
+                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                    <Label fx:id="lblPublished"
+                           style="-fx-text-fill: #64748b; -fx-font-size: 12px;" text="—"/>
+                </HBox>
+            </VBox>
+            <VBox alignment="CENTER_RIGHT" spacing="4">
+                <Label fx:id="lblDuration"  style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="—"/>
+                <Label fx:id="lblProgress"  style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="—"/>
+            </VBox>
+        </HBox>
     </VBox>
 
-    <Separator style="-fx-background-color:#e0e4ef;"/>
+    <!-- DESCRIPTION -->
+    <VBox style="-fx-background-color: white; -fx-border-color: #f1f5f9;
+                 -fx-border-width: 0 0 1 0; -fx-padding: 14 24;">
+        <Label text="About this course"
+               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"/>
+        <TextArea fx:id="txtDescription" editable="false" wrapText="true" prefRowCount="3"
+                  style="-fx-background-color: transparent; -fx-border-color: transparent;
+                         -fx-font-size: 13px; -fx-text-fill: #334155;"/>
+    </VBox>
 
-    <!-- PLANNINGS SUB-SECTION -->
-    <VBox VBox.vgrow="ALWAYS" styleClass="detail-section">
-        <padding><Insets top="10" right="24" bottom="12" left="24"/></padding>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <padding><Insets bottom="8"/></padding>
-            <Label text="📅 Planning Sessions" styleClass="section-label"/>
-            <Label fx:id="lblPlanCount" text="0" styleClass="badge-count"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="➕ Add Planning Session" styleClass="btn-primary"
-                    onAction="#handleAddPlanning"/>
+    <!-- PLANNINGS PANEL -->
+    <VBox VBox.vgrow="ALWAYS" spacing="0"
+          style="-fx-background-color: white; -fx-background-radius: 0;">
+
+        <!-- Panel header -->
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-padding: 16 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
+            <VBox spacing="3" HBox.hgrow="ALWAYS">
+                <Label text="Planning Sessions"
+                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #0f172a;"/>
+                <Label fx:id="lblPlanCount" text="0 sessions"
+                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+            </VBox>
+            <Button text="➕ Add Planning Session" onAction="#handleAddPlanning"
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-padding: 8 16;
+                           -fx-background-radius: 8; -fx-cursor: hand;"/>
         </HBox>
 
-        <TableView fx:id="planningTable" VBox.vgrow="ALWAYS" styleClass="data-table">
-            <columns>
-                <TableColumn fx:id="colTitle"      text="Title"         prefWidth="220"/>
-                <TableColumn fx:id="colDate"       text="Date"          prefWidth="120"/>
-                <TableColumn fx:id="colTime"       text="Time"          prefWidth="80"/>
-                <TableColumn fx:id="colDuration"   text="Duration (min)" prefWidth="110"/>
-                <TableColumn fx:id="colPlanStatus" text="Status"        prefWidth="120"/>
-            </columns>
-            <placeholder>
-                <Label text="No planning sessions yet. Click ➕ to add one."
-                       style="-fx-text-fill:#90a4ae;"/>
-            </placeholder>
-        </TableView>
+        <!-- Cards -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+            <VBox fx:id="cardsContainer" spacing="8" style="-fx-padding: 12;"/>
+        </ScrollPane>
     </VBox>
 
 </VBox>
