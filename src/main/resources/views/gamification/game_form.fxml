@@ -108,6 +108,72 @@
                     <ListView fx:id="rewardsList" prefHeight="130"/>
                 </VBox>
 
+                <!-- Game Content Section (shown based on type) -->
+                <VBox fx:id="contentSection" styleClass="section-card" spacing="14"
+                      style="-fx-padding: 20;" visible="false" managed="false">
+                    <Label text="Game Content"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
+                    <Label text="Customize the content players will see in this game"
+                           style="-fx-text-fill: #718096; -fx-font-size: 12px;"/>
+
+                    <!-- PUZZLE content -->
+                    <VBox fx:id="puzzleContent" spacing="10" visible="false" managed="false">
+                        <Label text="Word Scramble Content"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #b7791f;"/>
+                        <VBox spacing="3">
+                            <Label text="Word to Scramble" styleClass="field-label"/>
+                            <TextField fx:id="puzzleWordField" promptText="e.g., SYMFONY (will be scrambled for players)"/>
+                        </VBox>
+                        <VBox spacing="3">
+                            <Label text="Hint" styleClass="field-label"/>
+                            <TextField fx:id="puzzleHintField" promptText="e.g., A PHP framework"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- MEMORY content -->
+                    <VBox fx:id="memoryContent" spacing="10" visible="false" managed="false">
+                        <Label text="Memory Match Content"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #805ad5;"/>
+                        <VBox spacing="3">
+                            <Label text="Words / Symbols (one per line, exactly 6)" styleClass="field-label"/>
+                            <TextArea fx:id="memoryWordsArea" prefRowCount="7" wrapText="true"
+                                      promptText="Apple&#10;Banana&#10;Cherry&#10;Date&#10;Elderberry&#10;Fig"/>
+                            <Label text="Each word appears twice as a card pair"
+                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- TRIVIA content -->
+                    <VBox fx:id="triviaContent" spacing="10" visible="false" managed="false">
+                        <Label text="Trivia Questions Content"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2b6cb0;"/>
+                        <VBox spacing="3">
+                            <Label text="Topic" styleClass="field-label"/>
+                            <TextField fx:id="triviaTopicField" promptText="e.g., World History"/>
+                        </VBox>
+                        <VBox spacing="3">
+                            <Label text="Questions (one block per question, separated by ---)" styleClass="field-label"/>
+                            <TextArea fx:id="triviaQuestionsArea" prefRowCount="12" wrapText="true"
+                                      promptText="Q: What year did WWII end?&#10;A: 1943&#10;B: 1944&#10;C: 1945&#10;D: 1946&#10;ANS: C&#10;---&#10;Q: Capital of France?&#10;A: London&#10;B: Berlin&#10;C: Madrid&#10;D: Paris&#10;ANS: D"/>
+                            <Label text="Format: Q: question  A/B/C/D: options  ANS: correct letter  --- to separate"
+                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                        </VBox>
+                    </VBox>
+
+                    <!-- ARCADE content -->
+                    <VBox fx:id="arcadeContent" spacing="10" visible="false" managed="false">
+                        <Label text="Reaction Clicker Content"
+                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #276749;"/>
+                        <VBox spacing="3">
+                            <Label text="Sentences for typing challenge (one per line, 3-5)" styleClass="field-label"/>
+                            <TextArea fx:id="arcadeSentencesArea" prefRowCount="6" wrapText="true"
+                                      promptText="The quick brown fox jumps over the lazy dog.&#10;Practice makes perfect.&#10;Typing speed improves with time."/>
+                            <Label text="Players must type these sentences accurately under time pressure"
+                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
             </VBox>
         </ScrollPane>
 

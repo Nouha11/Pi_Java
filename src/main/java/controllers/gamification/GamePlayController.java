@@ -14,6 +14,9 @@ import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import javafx.util.Duration;
 import models.gamification.Game;
+import services.gamification.GameRewardService;
+import services.gamification.GameContentService;
+import utils.UserSession;
 import java.util.*;
 
 public class GamePlayController {
@@ -159,17 +162,53 @@ public class GamePlayController {
         running = false;
         if (gameTimer != null) gameTimer.stop();
         if (targetSpawner != null) targetSpawner.stop();
+        if (passed) grantRewards();
         showResultOverlay(passed);
+    }
+
+    private void grantRewards() {
+        int userId = UserSession.getInstance().getUserId();
+        if (userId <= 0) return;
+        try {
+            GameRewardService svc = new GameRewardService();
+            if (isMiniGame) {
+                int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 0;
+                svc.awardMiniGameEnergy(userId, ep);
+            } else {
+                svc.awardGameRewards(userId, game.getRewardXP(), game.getRewardTokens());
+            }
+        } catch (Exception e) {
+            System.err.println("Could not grant rewards: " + e.getMessage());
+        }
     }
 
     // ── MEMORY MATCH ─────────────────────────────────────────────────────────
     private void buildMemoryGame() {
+        // Try to load custom words from game_content
+        String[] customWords = null;
+        try {
+            String json = new GameContentService().loadContent(game.getId());
+            if (json != null) {
+                String arr = GameContentService.extractArray(json, "words");
+                if (arr != null) customWords = GameContentService.parseStringArray(arr);
+            }
+        } catch (Exception ignored) {}
+
+        // FA icon symbols as fallback
         String[] symbols = {"\uF005","\uF06B","\uF091","\uF5DC","\uF12E","\uF059","\uF11B","\uF51E","\uF06E","\uF44B","\uF043","\uF72E"};
         String[] colors  = {"#f6d365","#43e97b","#a18cd1","#4facfe","#fda085","#fc5c7d","#38f9d7","#fbc2eb","#00f2fe","#667eea","#f093fb","#30cfd0"};
         int pairs = "HARD".equals(game.getDifficulty()) ? 8 : "MEDIUM".equals(game.getDifficulty()) ? 6 : 4;
+
+        // Use custom words if provided (up to pairs count)
+        boolean useCustom = customWords != null && customWords.length >= 2;
+        if (useCustom) pairs = Math.min(pairs, customWords.length);
         List<String> symList = new ArrayList<>();
         List<String> colList = new ArrayList<>();
-        for (int i = 0; i < pairs; i++) { symList.add(symbols[i]); symList.add(symbols[i]); colList.add(colors[i]); colList.add(colors[i]); }
+        for (int i = 0; i < pairs; i++) {
+            String sym = useCustom ? customWords[i] : symbols[i];
+            symList.add(sym); symList.add(sym);
+            colList.add(colors[i % colors.length]); colList.add(colors[i % colors.length]);
+        }
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < symList.size(); i++) order.add(i);
         Collections.shuffle(order);
@@ -191,7 +230,7 @@ public class GamePlayController {
             final String col = shuffledColors.get(i);
             Button card = new Button("?"); card.setPrefSize(80, 68);
             card.setStyle("-fx-background-color:linear-gradient(to bottom right,#3b4fd8,#5b6ef5);-fx-text-fill:white;-fx-font-size:22px;-fx-font-weight:bold;-fx-background-radius:12;-fx-cursor:hand;-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.3),8,0,0,3);");
-            card.setOnAction(e -> flipMemoryCard(idx, sym, col));
+            card.setOnAction(e -> flipMemoryCard(idx, sym, col, useCustom));
             memoryCards.add(card); grid.add(card, i % cols, i / cols);
         }
         VBox box = new VBox(16, hdr, grid); box.setAlignment(Pos.CENTER); box.setPadding(new Insets(24));
@@ -199,7 +238,7 @@ public class GamePlayController {
         gameContentArea.getChildren().add(box);
     }
 
-    private void flipMemoryCard(int idx, String sym, String col) {
+    private void flipMemoryCard(int idx, String sym, String col, boolean isText) {
         if (!running || !canFlip) return;
         Button card = memoryCards.get(idx);
         if (flippedIndices.contains(idx) || card.getStyle().contains("#27ae60")) return;
@@ -207,7 +246,8 @@ public class GamePlayController {
         flip1.setFromX(1); flip1.setToX(0);
         flip1.setOnFinished(e -> {
             card.setText(sym);
-            card.setStyle("-fx-background-color:" + col + ";-fx-text-fill:white;-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:24px;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.2),8,0,0,3);");
+            String fontStyle = isText ? "" : "-fx-font-family:'Font Awesome 6 Free Solid';";
+            card.setStyle("-fx-background-color:" + col + ";-fx-text-fill:white;" + fontStyle + "-fx-font-size:" + (isText ? "14" : "24") + "px;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.2),8,0,0,3);");
             ScaleTransition flip2 = new ScaleTransition(Duration.millis(150), card);
             flip2.setFromX(0); flip2.setToX(1); flip2.play();
         });
@@ -251,14 +291,31 @@ public class GamePlayController {
 
     // ── WORD SCRAMBLE ─────────────────────────────────────────────────────────
     private void buildWordScramble() {
-        wordList = new ArrayList<>(Arrays.asList("STUDY","LEARN","BRAIN","FOCUS","THINK","SMART","GRADE","TEACH","WRITE","SOLVE","MEMORY","SKILL","SCIENCE","HISTORY","PHYSICS"));
-        Collections.shuffle(wordList);
-        int count = "HARD".equals(game.getDifficulty()) ? 8 : "MEDIUM".equals(game.getDifficulty()) ? 5 : 3;
-        wordList = new ArrayList<>(wordList.subList(0, Math.min(count, wordList.size())));
-        wordIndex = 0; wordScore = 0; showNextWord();
+        // Try to load custom word from game_content
+        String customWord = null;
+        String customHint = null;
+        try {
+            String json = new GameContentService().loadContent(game.getId());
+            if (json != null) {
+                customWord = GameContentService.extractString(json, "word");
+                customHint = GameContentService.extractString(json, "hint");
+            }
+        } catch (Exception ignored) {}
+
+        if (customWord != null && !customWord.isBlank()) {
+            // Single custom word mode
+            wordList = new java.util.ArrayList<>(List.of(customWord.toUpperCase()));
+        } else {
+            wordList = new ArrayList<>(Arrays.asList("STUDY","LEARN","BRAIN","FOCUS","THINK","SMART","GRADE","TEACH","WRITE","SOLVE","MEMORY","SKILL","SCIENCE","HISTORY","PHYSICS"));
+            Collections.shuffle(wordList);
+            int count = "HARD".equals(game.getDifficulty()) ? 8 : "MEDIUM".equals(game.getDifficulty()) ? 5 : 3;
+            wordList = new ArrayList<>(wordList.subList(0, Math.min(count, wordList.size())));
+        }
+        final String hint = customHint;
+        wordIndex = 0; wordScore = 0; showNextWord(hint);
     }
 
-    private void showNextWord() {
+    private void showNextWord(String globalHint) {
         gameContentArea.getChildren().clear();
         if (wordIndex >= wordList.size()) { endGame(wordScore >= wordList.size() * 0.6); return; }
         String word = wordList.get(wordIndex);
@@ -272,6 +329,11 @@ public class GamePlayController {
         }
         Label progressLbl = new Label("Word " + (wordIndex + 1) + " of " + wordList.size());
         progressLbl.setStyle("-fx-text-fill:#718096;-fx-font-size:12px;");
+
+        // Hint label (shown if custom hint exists)
+        Label hintLbl = new Label(globalHint != null && !globalHint.isBlank() ? "Hint: " + globalHint : "");
+        hintLbl.setStyle("-fx-text-fill:#d97706;-fx-font-size:13px;-fx-font-style:italic;");
+        hintLbl.setVisible(globalHint != null && !globalHint.isBlank());
 
         HBox tiles = new HBox(8); tiles.setAlignment(Pos.CENTER);
         for (char c : scrambled.toCharArray()) {
@@ -300,7 +362,7 @@ public class GamePlayController {
                 wordScore++; score += 100; lblScore.setText("Score: " + score);
                 feedback.setText("Correct!"); feedback.setStyle("-fx-text-fill:#27ae60;-fx-font-size:15px;-fx-font-weight:bold;");
                 PauseTransition pt = new PauseTransition(Duration.millis(700));
-                pt.setOnFinished(ev -> { wordIndex++; showNextWord(); }); pt.play();
+                pt.setOnFinished(ev -> { wordIndex++; showNextWord(globalHint); }); pt.play();
             } else {
                 feedback.setText("Not quite — try again!"); feedback.setStyle("-fx-text-fill:#e53e3e;-fx-font-size:14px;");
                 input.clear();
@@ -311,12 +373,12 @@ public class GamePlayController {
         skip.setOnAction(e -> {
             feedback.setText("Answer: " + word); feedback.setStyle("-fx-text-fill:#d97706;-fx-font-size:14px;");
             PauseTransition pt = new PauseTransition(Duration.millis(1000));
-            pt.setOnFinished(ev -> { wordIndex++; showNextWord(); }); pt.play();
+            pt.setOnFinished(ev -> { wordIndex++; showNextWord(globalHint); }); pt.play();
         });
         input.setOnAction(e -> submit.fire());
         HBox btns = new HBox(12, submit, skip); btns.setAlignment(Pos.CENTER);
 
-        VBox card = new VBox(18, dots, progressLbl, tiles, input, btns, feedback);
+        VBox card = new VBox(18, dots, progressLbl, hintLbl, tiles, input, btns, feedback);
         card.setAlignment(Pos.CENTER); card.setPadding(new Insets(32)); card.setMaxWidth(520);
         card.setStyle("-fx-background-color:white;-fx-background-radius:18;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.09),14,0,0,5);");
         VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(24));
@@ -332,8 +394,53 @@ public class GamePlayController {
 
     // ── TRIVIA ────────────────────────────────────────────────────────────────
     private void buildTrivia() {
-        triviaQuestions = getTriviaQuestions(game.getDifficulty()); triviaIndex = 0; triviaScore = 0;
+        // Try to load custom questions from game_content
+        List<String[]> customQuestions = null;
+        try {
+            String json = new GameContentService().loadContent(game.getId());
+            if (json != null) customQuestions = parseCustomTrivia(json);
+        } catch (Exception ignored) {}
+
+        triviaQuestions = (customQuestions != null && !customQuestions.isEmpty())
+            ? customQuestions
+            : getTriviaQuestions(game.getDifficulty());
+        triviaIndex = 0; triviaScore = 0;
         showNextQuestion();
+    }
+
+    /** Parse trivia from the stored JSON format used by GameContentService.buildTriviaJson */
+    private List<String[]> parseCustomTrivia(String json) {
+        List<String[]> result = new ArrayList<>();
+        // Find the questions array
+        String arr = GameContentService.extractArray(json, "questions");
+        if (arr == null) return result;
+        // Each question object: {"question":"...","choices":["a","b","c","d"],"correct":N}
+        int pos = 0;
+        while (pos < arr.length()) {
+            int objStart = arr.indexOf("{", pos);
+            if (objStart == -1) break;
+            int objEnd = arr.indexOf("}", objStart);
+            if (objEnd == -1) break;
+            String obj = arr.substring(objStart, objEnd + 1);
+            String q = GameContentService.extractString(obj, "question");
+            String choicesArr = GameContentService.extractArray(obj, "choices");
+            String correctStr = null;
+            int ci = obj.indexOf("\"correct\":");
+            if (ci != -1) {
+                int numStart = ci + 10;
+                int numEnd = numStart;
+                while (numEnd < obj.length() && Character.isDigit(obj.charAt(numEnd))) numEnd++;
+                correctStr = obj.substring(numStart, numEnd);
+            }
+            if (q != null && choicesArr != null && correctStr != null) {
+                String[] choices = GameContentService.parseStringArray(choicesArr);
+                if (choices.length >= 4) {
+                    result.add(new String[]{q, choices[0], choices[1], choices[2], choices[3], correctStr});
+                }
+            }
+            pos = objEnd + 1;
+        }
+        return result;
     }
 
     private void showNextQuestion() {
