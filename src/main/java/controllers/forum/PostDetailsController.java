@@ -46,7 +46,6 @@ public class PostDetailsController {
     @FXML private TextArea commentArea;
     @FXML private VBox commentsContainer;
 
-    // 🔥 Make sure you add fx:id="saveButton" and onAction="#handleSavePost" to the button in FXML!
     @FXML private Button saveButton;
 
     private Post currentPost;
@@ -78,7 +77,21 @@ public class PostDetailsController {
         breadcrumbSpaceLabel.setText(spaceName + "  •");
         badgeSpaceLabel.setText(spaceName);
         topTitleLabel.setText(post.getTitle());
-        authorLabel.setText(post.getAuthorName() != null ? post.getAuthorName() : "Unknown Student");
+
+        // ==========================================
+        // 🔥 MAKE AUTHOR NAME CLICKABLE 🔥
+        // ==========================================
+        final String authorNameStr = post.getAuthorName() != null ? post.getAuthorName() : "Unknown Student";
+        authorLabel.setText(authorNameStr);
+
+        authorLabel.setStyle("-fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand;");
+        authorLabel.setOnMouseEntered(e -> authorLabel.setUnderline(true));
+        authorLabel.setOnMouseExited(e -> authorLabel.setUnderline(false));
+        authorLabel.setOnMousePressed(e -> {
+            e.consume(); // Prevent click from bubbling up
+            openForumActivity(post.getAuthorId(), authorNameStr);
+        });
+        // ==========================================
 
         if (post.getCreatedAt() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MMMM dd, yyyy");
@@ -113,7 +126,6 @@ public class PostDetailsController {
             }
         }
 
-        // Initialize Save Button State dynamically based on DB cache
         if (saveButton != null) {
             Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
             if (mySavedPosts.contains(post.getId())) {
@@ -139,14 +151,13 @@ public class PostDetailsController {
         loadComments();
     }
 
-    // 🔥 PERMANENT DB SAVE LOGIC INSIDE THE DETAILS VIEW 🔥
     @FXML
     void handleSavePost(ActionEvent event) {
         Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
 
         if (mySavedPosts.contains(currentPost.getId())) {
             mySavedPosts.remove(currentPost.getId());
-            postService.unsavePost(currentUserId, currentPost.getId()); // Update DB
+            postService.unsavePost(currentUserId, currentPost.getId());
 
             if (saveButton != null) {
                 saveButton.setText("🔖 Save");
@@ -154,7 +165,7 @@ public class PostDetailsController {
             }
         } else {
             mySavedPosts.add(currentPost.getId());
-            postService.savePost(currentUserId, currentPost.getId()); // Update DB
+            postService.savePost(currentUserId, currentPost.getId());
 
             if (saveButton != null) {
                 saveButton.setText("🔖 Saved");
@@ -594,5 +605,25 @@ public class PostDetailsController {
     @FXML
     void handleBack(ActionEvent event) {
         controllers.NovaDashboardController.loadPage("/views/forum/forum_feed.fxml");
+    }
+
+    // 🔥 NEW: Method to launch the Forum Activity modal from Details Page
+    private void openForumActivity(int userId, String username) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/forum_activity.fxml"));
+            Parent root = loader.load();
+
+            ForumActivityController controller = loader.getController();
+            controller.loadUserData(userId, username);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle(username + " - Forum Activity");
+            popupStage.setScene(new Scene(root, 450, 550));
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.show();
+        } catch (Exception e) {
+            System.err.println("🚨 Error loading Forum Activity: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
