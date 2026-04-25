@@ -48,9 +48,12 @@
                         <Button fx:id="btnFullscreen" mnemonicParsing="false" onAction="#toggleFullscreen" style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 18px; -fx-cursor: hand;" text="⛶" />
 
                         <Label text="EN" style="-fx-font-weight: bold; -fx-text-fill: #64748b; -fx-cursor: hand;" />
-                        <StackPane fx:id="avatarPane" onMouseClicked="#onAvatarClick" style="-fx-cursor: hand;">
-                            <Circle radius="20" fill="#0f172a" />
-                            <Label text="ST" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" />
+                        <StackPane fx:id="avatarPane" onMouseClicked="#onAvatarClick" style="-fx-cursor: hand;" prefWidth="40" prefHeight="40">
+                            <ImageView fx:id="imgNavAvatar" fitWidth="40" fitHeight="40" preserveRatio="false" smooth="true" visible="false" managed="false">
+                                <clip><Circle centerX="20" centerY="20" radius="20"/></clip>
+                            </ImageView>
+                            <Circle fx:id="circleNavAvatar" radius="20" fill="#0f172a"/>
+                            <Label fx:id="lblNavInitials" text="ST" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                         </StackPane>
                     </HBox>
 

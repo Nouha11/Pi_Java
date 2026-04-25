@@ -1,5 +1,10 @@
 package controllers;
 
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.shape.Circle;
+import services.users.GravatarService;
+import java.util.concurrent.CompletableFuture;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -39,6 +44,10 @@ public class NovaDashboardController {
     // --- User Session ---
     private User currentUser;
     @FXML private StackPane avatarPane;
+    @FXML private ImageView     imgNavAvatar;
+    @FXML private Circle        circleNavAvatar;
+    @FXML private Label         lblNavInitials;
+    private final GravatarService gravatarService = new GravatarService();
 
     // --- Tutor Courses dropdown ---
     private ContextMenu coursesDropdown;
@@ -86,6 +95,7 @@ public class NovaDashboardController {
         // Store user ID globally for library module
         if (user != null) {
             utils.SessionManager.setCurrentUserId(user.getId());
+        loadNavGravatarAsync(user.getEmail(), user.getUsername());
         }
 
         // If tutor, wire up the Courses button dropdown
@@ -356,5 +366,30 @@ public class NovaDashboardController {
             ParallelTransition transition = new ParallelTransition(fadeIn, slideUp);
             transition.play();
         }
+    }
+
+    // ── Gravatar API: load navbar avatar asynchronously ──────────────────────
+    private void loadNavGravatarAsync(String email, String username) {
+        String initials = username.length() >= 2
+            ? username.substring(0, 2).toUpperCase()
+            : username.toUpperCase();
+        if (lblNavInitials != null) lblNavInitials.setText(initials);
+
+        CompletableFuture.supplyAsync(() ->
+            gravatarService.getAvatarUrl(email, 40, "identicon")
+        ).thenAccept(url -> Platform.runLater(() -> {
+            try {
+                Image img = new Image(url, 40, 40, true, true, true);
+                img.progressProperty().addListener((obs, old, prog) -> {
+                    if (prog.doubleValue() >= 1.0 && !img.isError()) {
+                        imgNavAvatar.setImage(img);
+                        imgNavAvatar.setVisible(true);
+                        imgNavAvatar.setManaged(true);
+                        if (circleNavAvatar != null) circleNavAvatar.setVisible(false);
+                        if (lblNavInitials  != null) lblNavInitials.setVisible(false);
+                    }
+                });
+            } catch (Exception ignored) {}
+        }));
     }
 }
