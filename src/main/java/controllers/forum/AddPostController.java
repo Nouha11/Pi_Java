@@ -47,8 +47,15 @@ public class AddPostController {
 
     @FXML
     public void initialize() {
-        databaseSpaces = postService.getSpacesMap();
-        spaceCombo.getItems().addAll(databaseSpaces.keySet());
+        // 🔥 THE LAG FIX: Load spaces off the main thread so popup is instant
+        new Thread(() -> {
+            databaseSpaces = postService.getSpacesMap();
+            Platform.runLater(() -> {
+                if (databaseSpaces != null) {
+                    spaceCombo.getItems().addAll(databaseSpaces.keySet());
+                }
+            });
+        }).start();
 
         titleField.textProperty().addListener((observable, oldValue, newValue) -> clearError(titleField, titleError));
         contentArea.textProperty().addListener((observable, oldValue, newValue) -> clearError(contentArea, contentError));
@@ -64,12 +71,20 @@ public class AddPostController {
         titleField.setText(post.getTitle());
         contentArea.setText(post.getContent());
 
-        for (String spaceName : databaseSpaces.keySet()) {
-            if (databaseSpaces.get(spaceName).equals(post.getSpaceId())) {
-                spaceCombo.setValue(spaceName);
-                break;
+        // Wait for spaces to load before setting the combo value
+        new Thread(() -> {
+            while (databaseSpaces == null) {
+                try { Thread.sleep(50); } catch (InterruptedException e) {}
             }
-        }
+            Platform.runLater(() -> {
+                for (String spaceName : databaseSpaces.keySet()) {
+                    if (databaseSpaces.get(spaceName).equals(post.getSpaceId())) {
+                        spaceCombo.setValue(spaceName);
+                        break;
+                    }
+                }
+            });
+        }).start();
 
         if (post.getTags() != null) tagsField.setText(post.getTags());
         if (post.getLink() != null) linkField.setText(post.getLink());
@@ -161,7 +176,6 @@ public class AddPostController {
                 return;
             }
 
-            // 🔥 NEW: Get the dynamic user ID from the session
             int currentUserId = utils.UserSession.getInstance().getUserId();
             Post newPost = new Post(title, content, currentUserId, spaceId);
 

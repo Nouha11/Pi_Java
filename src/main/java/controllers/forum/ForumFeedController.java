@@ -1,5 +1,6 @@
 package controllers.forum;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,6 +23,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import models.forum.Post;
 import models.forum.Space;
 import services.forum.CommentService;
@@ -29,153 +31,93 @@ import services.forum.PostService;
 import services.forum.SpaceService;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ForumFeedController {
 
-    @FXML
-    private ScrollPane mainScrollPane;
-    @FXML
-    private VBox postsContainer;
-    @FXML
-    private VBox spacesContainer;
-    @FXML
-    private HBox paginationContainer;
+    @FXML private ScrollPane mainScrollPane;
+    @FXML private VBox postsContainer;
+    @FXML private VBox spacesContainer;
+    @FXML private VBox trendingTagsContainer;
+    @FXML private HBox paginationContainer;
 
-    @FXML
-    private HBox btnHome;
-    @FXML
-    private HBox btnPopular;
+    @FXML private HBox btnHome;
+    @FXML private HBox btnPopular;
+    @FXML private HBox btnSaved;
 
-    @FXML
-    private Label btnSortHot;
-    @FXML
-    private Label btnSortNew;
-    @FXML
-    private Label btnSortTop;
+    @FXML private Label btnSortHot;
+    @FXML private Label btnSortNew;
+    @FXML private Label btnSortTop;
 
-    @FXML
-    private Label lblBannerTitle;
-    @FXML
-    private Label lblBannerDesc;
-    @FXML
-    private Circle bannerIcon;
+    @FXML private Label lblBannerTitle;
+    @FXML private Label lblBannerDesc;
+    @FXML private Circle bannerIcon;
 
     private PostService postService = new PostService();
     private SpaceService spaceService = new SpaceService();
-    private CommentService commentService = new CommentService(); // Added to count comments
+    private CommentService commentService = new CommentService();
 
     private List<Post> allPostsCache;
+    private int currentUserId;
+
     private Integer currentSpaceFilterId = null;
+    private String currentTagFilter = null;
+    private boolean showSavedOnly = false;
+
     private HBox activeSidebarBtn;
-    private String currentSortMode = "HOT"; // Defaults to HOT
+    private String currentSortMode = "HOT";
 
     private int currentPage = 1;
     private final int POSTS_PER_PAGE = 5;
-
     private final String[] spaceColors = {"#10b981", "#0ea5e9", "#f59e0b", "#8b5cf6", "#ec4899", "#f43f5e"};
 
     @FXML
     public void initialize() {
+        currentUserId = utils.UserSession.getInstance().getUserId();
         activeSidebarBtn = btnHome;
+
+        Set<Integer> dbSavedPosts = postService.getSavedPostsForUser(currentUserId);
+        utils.ForumSession.savedPostsPerUser.put(currentUserId, dbSavedPosts);
+
         loadSpacesIntoSidebar();
         loadAllPosts();
     }
 
-    // --- SORTING LOGIC ---
-    @FXML
-    void handleSortHot(MouseEvent event) {
-        setSortMode("HOT", btnSortHot);
-    }
-
-    @FXML
-    void handleSortNew(MouseEvent event) {
-        setSortMode("NEW", btnSortNew);
-    }
-
-    @FXML
-    void handleSortTop(MouseEvent event) {
-        setSortMode("TOP", btnSortTop);
-    }
-
-    private void setSortMode(String mode, Label activeBtn) {
-        currentSortMode = mode;
-
-        String inactiveStyle = "-fx-padding: 8 15; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-color: transparent;";
-        String activeStyle = "-fx-padding: 8 15; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-color: #eff6ff; -fx-background-radius: 6;";
-
-        btnSortHot.setStyle(inactiveStyle);
-        btnSortNew.setStyle(inactiveStyle);
-        btnSortTop.setStyle(inactiveStyle);
-        activeBtn.setStyle(activeStyle);
-
-        currentPage = 1; // Reset pagination when sorting changes
-        refreshFeed();
+    private void setSidebarStyle(HBox box, String bgColor) {
+        if (box == null) return;
+        box.setPadding(new Insets(10, 15, 10, 15));
+        box.setStyle("-fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: " + bgColor + ";");
     }
 
     private void setActiveSidebarButton(HBox buttonClicked) {
-        btnHome.setStyle("-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;");
-        btnPopular.setStyle("-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;");
+        setSidebarStyle(btnHome, "transparent");
+        setSidebarStyle(btnPopular, "transparent");
+        setSidebarStyle(btnSaved, "transparent");
 
         for (Node node : spacesContainer.getChildren()) {
-            node.setStyle("-fx-padding: 8 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;");
+            if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
+        }
+
+        // Also clear any highlighted tags
+        if (trendingTagsContainer != null) {
+            for (Node node : trendingTagsContainer.getChildren()) {
+                if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
+            }
         }
 
         if (buttonClicked != null) {
-            buttonClicked.setStyle("-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #eff6ff;");
+            setSidebarStyle(buttonClicked, "#eff6ff");
         }
         activeSidebarBtn = buttonClicked;
-    }
-
-    private void loadSpacesIntoSidebar() {
-        if (spacesContainer == null) return;
-        spacesContainer.getChildren().clear();
-        List<Space> spaces = spaceService.afficher();
-
-        for (Space space : spaces) {
-            HBox spaceRow = new HBox(12);
-            spaceRow.setAlignment(Pos.CENTER_LEFT);
-            spaceRow.setStyle("-fx-padding: 8 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;");
-
-            String colorHex = spaceColors[space.getId() % spaceColors.length];
-            Circle dot = new Circle(5, Color.web(colorHex));
-
-            Label nameLabel = new Label(space.getName());
-            nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;");
-
-            spaceRow.getChildren().addAll(dot, nameLabel);
-
-            spaceRow.setOnMouseClicked(e -> {
-                setActiveSidebarButton(spaceRow);
-                currentSpaceFilterId = space.getId();
-                currentPage = 1;
-
-                lblBannerTitle.setText("NOVA / " + space.getName());
-                lblBannerDesc.setText(space.getDescription() != null ? space.getDescription() : "Welcome to the " + space.getName() + " community.");
-                bannerIcon.setFill(Color.web(colorHex));
-
-                refreshFeed();
-            });
-
-            spaceRow.setOnMouseEntered(e -> {
-                if (activeSidebarBtn != spaceRow)
-                    spaceRow.setStyle("-fx-padding: 8 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #f1f5f9;");
-            });
-            spaceRow.setOnMouseExited(e -> {
-                if (activeSidebarBtn != spaceRow)
-                    spaceRow.setStyle("-fx-padding: 8 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;");
-            });
-
-            spacesContainer.getChildren().add(spaceRow);
-        }
     }
 
     @FXML
     void handleShowAllPosts(MouseEvent event) {
         setActiveSidebarButton(btnHome);
         currentSpaceFilterId = null;
+        currentTagFilter = null;
+        showSavedOnly = false;
         currentPage = 1;
 
         if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / Home");
@@ -185,56 +127,259 @@ public class ForumFeedController {
         refreshFeed();
     }
 
-    private void loadAllPosts() {
-        allPostsCache = postService.afficher();
+    @FXML
+    void handleShowPopular(MouseEvent event) {
+        setActiveSidebarButton(btnPopular);
+        currentSpaceFilterId = null;
+        currentTagFilter = null;
+        showSavedOnly = false;
+        setSortMode("TOP", btnSortTop);
+
+        if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / Popular");
+        if (lblBannerDesc != null) lblBannerDesc.setText("The most upvoted discussions right now.");
+        if (bannerIcon != null) bannerIcon.setFill(Color.web("#f59e0b"));
+
         refreshFeed();
+    }
+
+    @FXML
+    void handleShowSavedPosts(MouseEvent event) {
+        setActiveSidebarButton(btnSaved);
+        currentSpaceFilterId = null;
+        currentTagFilter = null;
+        showSavedOnly = true;
+        currentPage = 1;
+
+        if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / Saved Posts");
+        if (lblBannerDesc != null) lblBannerDesc.setText("Your personal bookmarks and saved resources.");
+        if (bannerIcon != null) bannerIcon.setFill(Color.web("#8b5cf6"));
+
+        refreshFeed();
+    }
+
+    private void filterByTag(String tagName) {
+        currentSpaceFilterId = null;
+        showSavedOnly = false;
+        currentTagFilter = tagName.toLowerCase();
+        currentPage = 1;
+
+        if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / #" + tagName);
+        if (lblBannerDesc != null) lblBannerDesc.setText("Exploring discussions tagged with #" + tagName);
+        if (bannerIcon != null) bannerIcon.setFill(Color.web("#8b5cf6"));
+
+        // Make the sidebar tag visually active!
+        setActiveSidebarButton(null);
+        if (trendingTagsContainer != null) {
+            for (Node node : trendingTagsContainer.getChildren()) {
+                if (node instanceof HBox) {
+                    HBox box = (HBox) node;
+                    Label lbl = (Label) box.getChildren().get(1); // The text label
+                    if (lbl.getText().equalsIgnoreCase(tagName)) {
+                        setSidebarStyle(box, "#eff6ff");
+                        activeSidebarBtn = box;
+                    }
+                }
+            }
+        }
+
+        refreshFeed();
+    }
+
+    @FXML void handleSortHot(MouseEvent event) { setSortMode("HOT", btnSortHot); }
+    @FXML void handleSortNew(MouseEvent event) { setSortMode("NEW", btnSortNew); }
+    @FXML void handleSortTop(MouseEvent event) { setSortMode("TOP", btnSortTop); }
+
+    private void setSortMode(String mode, Label activeBtn) {
+        currentSortMode = mode;
+        String inactiveStyle = "-fx-padding: 8 15; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-color: transparent;";
+        String activeStyle = "-fx-padding: 8 15; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-color: #eff6ff; -fx-background-radius: 6;";
+
+        btnSortHot.setStyle(inactiveStyle);
+        btnSortNew.setStyle(inactiveStyle);
+        btnSortTop.setStyle(inactiveStyle);
+        activeBtn.setStyle(activeStyle);
+
+        currentPage = 1;
+        refreshFeed();
+    }
+
+    private void loadSpacesIntoSidebar() {
+        if (spacesContainer == null) return;
+        spacesContainer.getChildren().clear();
+        List<Space> spaces = spaceService.afficher();
+
+        for (Space space : spaces) {
+            final Space currentSpace = space;
+            final HBox spaceRow = new HBox(12);
+
+            spaceRow.setAlignment(Pos.CENTER_LEFT);
+            setSidebarStyle(spaceRow, "transparent");
+
+            String colorHex = spaceColors[currentSpace.getId() % spaceColors.length];
+            Circle dot = new Circle(5, Color.web(colorHex));
+            Label nameLabel = new Label(currentSpace.getName());
+            nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;");
+
+            spaceRow.getChildren().addAll(dot, nameLabel);
+
+            spaceRow.setOnMouseClicked(e -> {
+                setActiveSidebarButton(spaceRow);
+                currentSpaceFilterId = currentSpace.getId();
+                currentTagFilter = null;
+                showSavedOnly = false;
+                currentPage = 1;
+
+                lblBannerTitle.setText("NOVA / " + currentSpace.getName());
+                lblBannerDesc.setText(currentSpace.getDescription() != null ? currentSpace.getDescription() : "Welcome to the " + currentSpace.getName() + " community.");
+                bannerIcon.setFill(Color.web(colorHex));
+
+                refreshFeed();
+            });
+
+            spaceRow.setOnMouseEntered(e -> {
+                if (activeSidebarBtn != spaceRow) setSidebarStyle(spaceRow, "#f8fafc");
+            });
+            spaceRow.setOnMouseExited(e -> {
+                if (activeSidebarBtn != spaceRow) setSidebarStyle(spaceRow, "transparent");
+            });
+
+            spacesContainer.getChildren().add(spaceRow);
+        }
+    }
+
+    private void loadAllPosts() {
+        new Thread(() -> {
+            allPostsCache = postService.afficher();
+            Platform.runLater(() -> {
+                calculateTrendingTags();
+                refreshFeed();
+            });
+        }).start();
+    }
+
+    private void calculateTrendingTags() {
+        if (trendingTagsContainer == null || allPostsCache == null) return;
+        trendingTagsContainer.getChildren().clear();
+
+        Map<String, Long> tagCounts = allPostsCache.stream()
+                .filter(p -> p.getTags() != null && !p.getTags().trim().isEmpty())
+                .flatMap(p -> Arrays.stream(p.getTags().split(",")))
+                .map(String::trim)
+                .filter(t -> !t.isEmpty())
+                .collect(Collectors.groupingBy(String::toLowerCase, Collectors.counting()));
+
+        List<Map.Entry<String, Long>> topTags = tagCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+
+        if (topTags.isEmpty()) {
+            Label emptyLbl = new Label("No trending topics yet.");
+            emptyLbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-style: italic;");
+            trendingTagsContainer.getChildren().add(emptyLbl);
+            return;
+        }
+
+        for (Map.Entry<String, Long> entry : topTags) {
+            final String tagName = entry.getKey();
+            final HBox tagBox = new HBox(12); // Spacing matches other buttons
+            tagBox.setAlignment(Pos.CENTER_LEFT);
+
+            // Maintain highlight if this is the currently active tag
+            if (currentTagFilter != null && currentTagFilter.equals(tagName)) {
+                setSidebarStyle(tagBox, "#eff6ff");
+                activeSidebarBtn = tagBox;
+            } else {
+                setSidebarStyle(tagBox, "transparent");
+            }
+
+            Label hashLbl = new Label("#");
+            hashLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-font-size: 16px;");
+
+            Label lbl = new Label(tagName);
+            lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;");
+
+            tagBox.getChildren().addAll(hashLbl, lbl);
+
+            tagBox.setOnMouseClicked(e -> filterByTag(tagName));
+
+            tagBox.setOnMouseEntered(e -> {
+                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "#f8fafc");
+            });
+            tagBox.setOnMouseExited(e -> {
+                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "transparent");
+            });
+
+            trendingTagsContainer.getChildren().add(tagBox);
+        }
     }
 
     private void refreshFeed() {
         if (allPostsCache == null || postsContainer == null) return;
 
-        // 1. FILTERING
+        final Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
+
         List<Post> filteredPosts = allPostsCache.stream()
                 .filter(p -> currentSpaceFilterId == null || (p.getSpaceId() != null && p.getSpaceId().equals(currentSpaceFilterId)))
+                .filter(p -> currentTagFilter == null || (p.getTags() != null && p.getTags().toLowerCase().contains(currentTagFilter)))
+                .filter(p -> !showSavedOnly || mySavedPosts.contains(p.getId()))
                 .collect(Collectors.toList());
 
-        // 2. SORTING
         if ("NEW".equals(currentSortMode)) {
             filteredPosts.sort((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()));
         } else if ("TOP".equals(currentSortMode)) {
             filteredPosts.sort((p1, p2) -> Integer.compare(p2.getUpvotes(), p1.getUpvotes()));
-        } else { // HOT
+        } else {
             filteredPosts.sort((p1, p2) -> Double.compare(p2.getHotScore(), p1.getHotScore()));
         }
 
-        // 3. PAGINATION
         int totalPosts = filteredPosts.size();
-        int totalPages = (int) Math.ceil((double) totalPosts / POSTS_PER_PAGE);
-        if (totalPages == 0) totalPages = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
+
+        int calculatedPages = (int) Math.ceil((double) totalPosts / POSTS_PER_PAGE);
+        if (calculatedPages == 0) calculatedPages = 1;
+        final int finalTotalPages = calculatedPages;
+
+        if (currentPage > finalTotalPages) currentPage = finalTotalPages;
         if (currentPage < 1) currentPage = 1;
 
         int fromIndex = (currentPage - 1) * POSTS_PER_PAGE;
         int toIndex = Math.min(fromIndex + POSTS_PER_PAGE, totalPosts);
-        List<Post> pagePosts = filteredPosts.subList(fromIndex, toIndex);
+
+        final List<Post> pagePosts = filteredPosts.subList(fromIndex, toIndex);
 
         postsContainer.getChildren().clear();
 
-        for (Post p : pagePosts) {
-            if (utils.ForumSession.upvotedPosts.contains(p.getId())) p.setMyVote(1);
-            else if (utils.ForumSession.downvotedPosts.contains(p.getId())) p.setMyVote(-1);
-
-            postsContainer.getChildren().add(createPostCard(p));
+        if (pagePosts.isEmpty()) {
+            Label emptyLbl = new Label("No posts found. Be the first to start a discussion!");
+            emptyLbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 16px; -fx-padding: 30;");
+            postsContainer.getChildren().add(emptyLbl);
+            renderPagination(finalTotalPages);
+            return;
         }
 
-        renderPagination(totalPages);
-        Platform.runLater(() -> mainScrollPane.setVvalue(0.0));
+        new Thread(() -> {
+            Map<Integer, Integer> commentCounts = new HashMap<>();
+            for (Post p : pagePosts) {
+                commentCounts.put(p.getId(), commentService.getCommentsByPost(p.getId()).size());
+            }
+
+            Platform.runLater(() -> {
+                for (Post p : pagePosts) {
+                    if (utils.ForumSession.upvotedPosts.contains(p.getId())) p.setMyVote(1);
+                    else if (utils.ForumSession.downvotedPosts.contains(p.getId())) p.setMyVote(-1);
+
+                    postsContainer.getChildren().add(createPostCard(p, mySavedPosts, commentCounts.get(p.getId())));
+                }
+
+                renderPagination(finalTotalPages);
+                mainScrollPane.setVvalue(0.0);
+            });
+        }).start();
     }
 
     private void renderPagination(int totalPages) {
         if (paginationContainer == null) return;
         paginationContainer.getChildren().clear();
-
         if (totalPages <= 1) return;
 
         Label btnPrev = new Label("Prev");
@@ -278,7 +423,7 @@ public class ForumFeedController {
         paginationContainer.getChildren().add(btnNext);
     }
 
-    private Node createPostCard(Post post) {
+    private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount) {
         VBox voteBox = new VBox(5);
         voteBox.setAlignment(Pos.TOP_CENTER);
         voteBox.setPadding(new Insets(12, 12, 0, 12));
@@ -362,6 +507,23 @@ public class ForumFeedController {
         }
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 17));
 
+        HBox postTagsBox = new HBox(6);
+        if (post.getTags() != null && !post.getTags().isEmpty()) {
+            String[] tags = post.getTags().split(",");
+            for (String tag : tags) {
+                final String cleanTag = tag.trim();
+                if (!cleanTag.isEmpty()) {
+                    Label tagLbl = new Label("#" + cleanTag);
+                    tagLbl.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-padding: 2 6; -fx-background-radius: 4; -fx-font-size: 11px; -fx-font-weight: bold; -fx-cursor: hand;");
+                    tagLbl.setOnMouseClicked(e -> {
+                        e.consume();
+                        filterByTag(cleanTag);
+                    });
+                    postTagsBox.getChildren().add(tagLbl);
+                }
+            }
+        }
+
         Label contentLabel = new Label(post.getContent());
         contentLabel.setWrapText(true);
         contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 2px;");
@@ -381,30 +543,59 @@ public class ForumFeedController {
                     attachmentBox.setStyle("-fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-padding: 2; -fx-background-color: white; -fx-background-radius: 6;");
                     attachmentBox.getChildren().add(imageView);
                     VBox.setMargin(attachmentBox, new Insets(10, 0, 5, 0));
-                } catch (Exception e) {
-                }
+                } catch (Exception e) { }
             }
         }
 
-        // 🔥 DYNAMIC COMMENT COUNT FETCHING 🔥
-        int commentCount = commentService.getCommentsByPost(post.getId()).size();
-
         HBox footerRow = new HBox(20);
         footerRow.setPadding(new Insets(10, 0, 0, 0));
-        Label commentsLabel = new Label("💬 " + commentCount + " Comments");
+
+        Label commentsLabel = new Label("💬 " + preloadedCommentCount + " Comments");
         commentsLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 4 8;");
+
+        boolean isSaved = mySavedPosts.contains(post.getId());
+
+        final Label saveLabel = new Label(isSaved ? "🔖 Saved" : "🔖 Save");
+        saveLabel.setStyle("-fx-text-fill: " + (isSaved ? "#2563eb" : "#64748b") + "; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 4 8; -fx-cursor: hand;");
+
+        saveLabel.setOnMouseClicked(e -> {
+            e.consume();
+            if (mySavedPosts.contains(post.getId())) {
+                mySavedPosts.remove(post.getId());
+                postService.unsavePost(currentUserId, post.getId());
+
+                saveLabel.setText("🔖 Save");
+                saveLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 4 8; -fx-cursor: hand;");
+            } else {
+                mySavedPosts.add(post.getId());
+                postService.savePost(currentUserId, post.getId());
+
+                saveLabel.setText("🔖 Saved");
+                saveLabel.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 4 8; -fx-cursor: hand;");
+            }
+            if (showSavedOnly) refreshFeed();
+        });
+
         Label shareLabel = new Label("🔗 Share");
         shareLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 4 8;");
-        footerRow.getChildren().addAll(commentsLabel, shareLabel);
 
-        contentBox.getChildren().addAll(headerRow, titleLabel, contentLabel);
+        footerRow.getChildren().addAll(commentsLabel, saveLabel, shareLabel);
+
+        contentBox.getChildren().addAll(headerRow, titleLabel);
+        if (!postTagsBox.getChildren().isEmpty()) contentBox.getChildren().add(postTagsBox);
+        contentBox.getChildren().add(contentLabel);
         if (!attachmentBox.getChildren().isEmpty()) contentBox.getChildren().add(attachmentBox);
         contentBox.getChildren().add(footerRow);
 
         HBox mainCard = new HBox(0);
-        mainCard.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 8, 0, 0, 3); -fx-cursor: hand;");
-        mainCard.getChildren().addAll(voteBox, contentBox);
+        String idleStyle = "-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;";
+        String hoverStyle = "-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;";
 
+        mainCard.setStyle(idleStyle);
+        mainCard.setOnMouseEntered(e -> mainCard.setStyle(hoverStyle));
+        mainCard.setOnMouseExited(e -> mainCard.setStyle(idleStyle));
+
+        mainCard.getChildren().addAll(voteBox, contentBox);
         mainCard.setOnMouseClicked(e -> openPostDetails(post));
 
         return mainCard;
@@ -419,9 +610,11 @@ public class ForumFeedController {
             popupStage.setTitle("Create a New Post");
             popupStage.setScene(new Scene(root, 700, 600));
             popupStage.initModality(Modality.APPLICATION_MODAL);
+
             popupStage.showAndWait();
 
             loadAllPosts();
+
         } catch (Exception e) {
             System.err.println("🚨 Error loading Add Post: " + e.getMessage());
             e.printStackTrace();

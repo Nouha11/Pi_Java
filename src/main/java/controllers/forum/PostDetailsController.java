@@ -23,19 +23,20 @@ import models.forum.Comment;
 import models.forum.Post;
 import services.forum.CommentService;
 import services.forum.PostService;
-import services.api.GeminiService; //  Imported AI Service
+import services.api.GeminiService;
 
 import javafx.scene.layout.Region;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class PostDetailsController {
 
     @FXML private Button backButton, upvoteButton, editButton, deleteButton;
     @FXML private Button lockButton, submitCommentBtn, uploadCommentImgBtn;
-    @FXML private Button summarizeBtn; // 🔥 New Summarize Button
+    @FXML private Button summarizeBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
     @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
     @FXML private Label topCommentBadgeLabel, commentImgNameLabel;
@@ -45,14 +46,16 @@ public class PostDetailsController {
     @FXML private TextArea commentArea;
     @FXML private VBox commentsContainer;
 
+    // 🔥 Make sure you add fx:id="saveButton" and onAction="#handleSavePost" to the button in FXML!
+    @FXML private Button saveButton;
+
     private Post currentPost;
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
-    private GeminiService geminiService = new GeminiService(); // 🔥 AI Service Instance
+    private GeminiService geminiService = new GeminiService();
 
     private String selectedCommentFileName = null;
     private String selectedCommentFilePath = null;
-
     private int currentUserId;
 
     @FXML
@@ -85,8 +88,8 @@ public class PostDetailsController {
         }
 
         contentLabel.setText(post.getContent());
-        upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
-        statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
+        if (upvoteBadgeLabel != null) upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
+        if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
         if (utils.ForumSession.upvotedPosts.contains(post.getId())) {
             currentPost.setMyVote(1);
@@ -98,7 +101,6 @@ public class PostDetailsController {
             upvoteButton.setText("👍 Upvote");
         }
 
-        // 🔥 Only show the summarize button if the post is longer than 100 characters
         if (post.getContent() != null && post.getContent().length() > 100) {
             if (summarizeBtn != null) {
                 summarizeBtn.setVisible(true);
@@ -111,6 +113,18 @@ public class PostDetailsController {
             }
         }
 
+        // Initialize Save Button State dynamically based on DB cache
+        if (saveButton != null) {
+            Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
+            if (mySavedPosts.contains(post.getId())) {
+                saveButton.setText("🔖 Saved");
+                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+            } else {
+                saveButton.setText("🔖 Save");
+                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+            }
+        }
+
         updateLockUI();
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
@@ -118,17 +132,121 @@ public class PostDetailsController {
             if (!imgFile.exists()) imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/forum/" + post.getImageName());
 
             if (imgFile.exists()) {
-                postImageView.setImage(new Image(imgFile.toURI().toString()));
+                postImageView.setImage(new Image(imgFile.toURI().toString(), true));
             }
         }
+
         loadComments();
     }
 
-    // Summarize Logic (Multi-threaded)
+    // 🔥 PERMANENT DB SAVE LOGIC INSIDE THE DETAILS VIEW 🔥
+    @FXML
+    void handleSavePost(ActionEvent event) {
+        Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
+
+        if (mySavedPosts.contains(currentPost.getId())) {
+            mySavedPosts.remove(currentPost.getId());
+            postService.unsavePost(currentUserId, currentPost.getId()); // Update DB
+
+            if (saveButton != null) {
+                saveButton.setText("🔖 Save");
+                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+            }
+        } else {
+            mySavedPosts.add(currentPost.getId());
+            postService.savePost(currentUserId, currentPost.getId()); // Update DB
+
+            if (saveButton != null) {
+                saveButton.setText("🔖 Saved");
+                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+            }
+        }
+    }
+
+    private void loadComments() {
+        commentsContainer.getChildren().clear();
+
+        Label loadingLabel = new Label("Loading comments...");
+        loadingLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic;");
+        commentsContainer.getChildren().add(loadingLabel);
+
+        new Thread(() -> {
+            List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
+
+            Platform.runLater(() -> {
+                commentsContainer.getChildren().clear();
+
+                String replyCount = String.valueOf(comments.size());
+                if (repliesCountLabel != null) repliesCountLabel.setText("Replies (" + replyCount + ")");
+                if (statsRepliesLabel != null) statsRepliesLabel.setText("💬 Replies: " + replyCount);
+                if (topCommentBadgeLabel != null) topCommentBadgeLabel.setText("💬 " + replyCount + " Comments");
+
+                if (comments.isEmpty()) {
+                    Label emptyLabel = new Label("No comments yet. Be the first to share your thoughts!");
+                    emptyLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic; -fx-font-size: 14px;");
+                    commentsContainer.getChildren().add(emptyLabel);
+                    return;
+                }
+
+                for (Comment c : comments) {
+                    VBox commentCard = new VBox(8);
+                    commentCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;");
+
+                    HBox headerBox = new HBox(10);
+                    Label author = new Label(c.getAuthorName() != null ? c.getAuthorName() : "Student");
+                    author.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
+                    Label time = new Label("• Reply");
+                    time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
+                    headerBox.getChildren().addAll(author, time);
+
+                    Label content = new Label(c.getContent());
+                    content.setWrapText(true);
+                    content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
+
+                    VBox imageBox = new VBox();
+                    if (c.getImageName() != null && !c.getImageName().isEmpty()) {
+                        File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
+                        if (imgFile.exists()) {
+                            try {
+                                ImageView commentImgView = new ImageView(new Image(imgFile.toURI().toString(), true));
+                                commentImgView.setFitWidth(350);
+                                commentImgView.setPreserveRatio(true);
+
+                                imageBox.setStyle("-fx-padding: 10 0 5 0;");
+                                imageBox.getChildren().add(commentImgView);
+                            } catch (Exception e) {
+                                System.err.println("Could not load comment image.");
+                            }
+                        }
+                    }
+
+                    if (c.getAuthorId() == currentUserId) {
+                        HBox actionsBox = new HBox(10);
+                        actionsBox.setAlignment(Pos.CENTER_RIGHT);
+
+                        Button editBtn = new Button("Edit");
+                        editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                        editBtn.setOnAction(e -> handleEditComment(c));
+
+                        Button deleteBtn = new Button("Delete");
+                        deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                        deleteBtn.setOnAction(e -> handleDeleteComment(c));
+
+                        actionsBox.getChildren().addAll(editBtn, deleteBtn);
+                        commentCard.getChildren().addAll(headerBox, content, imageBox, actionsBox);
+                    } else {
+                        commentCard.getChildren().addAll(headerBox, content, imageBox);
+                    }
+
+                    commentsContainer.getChildren().add(commentCard);
+                }
+            });
+        }).start();
+    }
+
     @FXML
     void handleSummarizePost(ActionEvent event) {
         String fullContent = currentPost.getContent();
-
         summarizeBtn.setDisable(true);
         String originalText = summarizeBtn.getText();
         summarizeBtn.setText("✨ AI is reading...");
@@ -141,17 +259,14 @@ public class PostDetailsController {
                 summarizeBtn.setText(originalText);
 
                 if (aiSummary != null && !aiSummary.contains("Error")) {
-                    // 🔥 NEW: Custom Modern AI Popup
                     Stage summaryStage = new Stage();
                     summaryStage.initModality(Modality.APPLICATION_MODAL);
-                    summaryStage.initStyle(StageStyle.TRANSPARENT); // Removes ugly OS borders
+                    summaryStage.initStyle(StageStyle.TRANSPARENT);
 
                     VBox root = new VBox(20);
                     root.setAlignment(Pos.CENTER);
-                    // Beautiful styling: White card, rounded corners, soft shadow
                     root.setStyle("-fx-background-color: white; -fx-padding: 35; -fx-background-radius: 16; -fx-border-radius: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 8);");
 
-                    // Header
                     Label title = new Label("✨ AI Summary");
                     title.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: #9333ea;");
 
@@ -162,26 +277,20 @@ public class PostDetailsController {
                     headerBox.setAlignment(Pos.CENTER);
                     headerBox.getChildren().addAll(title, subtitle);
 
-                    // Content
                     Label content = new Label(aiSummary);
                     content.setWrapText(true);
                     content.setMaxWidth(450);
                     content.setStyle("-fx-font-size: 15px; -fx-text-fill: #334155; -fx-line-spacing: 6px; -fx-alignment: center;");
 
-                    // Beautiful Close Button
                     Button closeBtn = new Button("Awesome, thanks!");
                     closeBtn.setStyle("-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;");
                     closeBtn.setOnAction(e -> summaryStage.close());
 
-                    // Add everything to the popup
                     root.getChildren().addAll(headerBox, content, closeBtn);
 
-                    // Make the scene background transparent so the drop shadow renders correctly
                     Scene scene = new Scene(root);
                     scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
                     summaryStage.setScene(scene);
-
-                    // Center the popup on the screen
                     summaryStage.centerOnScreen();
                     summaryStage.showAndWait();
 
@@ -198,102 +307,45 @@ public class PostDetailsController {
 
     private void updateLockUI() {
         if (currentPost.isLocked()) {
-            topTitleLabel.setText("🔒 " + currentPost.getTitle());
-            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
+            if (topTitleLabel != null) {
+                topTitleLabel.setText("🔒 " + currentPost.getTitle());
+                topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;");
+            }
+            if (statusLabel != null) {
+                statusLabel.setText("🔒 Status: Locked");
+                statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+            }
+            if (lockButton != null) lockButton.setText("🔓 Unlock");
 
-            statusLabel.setText("🔒 Status: Locked");
-            statusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-            lockButton.setText("🔓 Unlock");
-
-            commentArea.setDisable(true);
-            commentArea.setPromptText("🔒 This discussion has been locked by the author or an admin.");
-            submitCommentBtn.setDisable(true);
-            submitCommentBtn.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6;");
+            if (commentArea != null) {
+                commentArea.setDisable(true);
+                commentArea.setPromptText("🔒 This discussion has been locked by the author or an admin.");
+            }
+            if (submitCommentBtn != null) {
+                submitCommentBtn.setDisable(true);
+                submitCommentBtn.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6;");
+            }
             if(uploadCommentImgBtn != null) uploadCommentImgBtn.setDisable(true);
         } else {
-            topTitleLabel.setText(currentPost.getTitle());
-            topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+            if (topTitleLabel != null) {
+                topTitleLabel.setText(currentPost.getTitle());
+                topTitleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+            }
+            if (statusLabel != null) {
+                statusLabel.setText("🛡 Status: Open");
+                statusLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+            }
+            if (lockButton != null) lockButton.setText("🔒 Lock");
 
-            statusLabel.setText("🛡 Status: Open");
-            statusLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
-            lockButton.setText("🔒 Lock");
-
-            commentArea.setDisable(false);
-            commentArea.setPromptText("Write a reply...");
-            submitCommentBtn.setDisable(false);
-            submitCommentBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;");
+            if (commentArea != null) {
+                commentArea.setDisable(false);
+                commentArea.setPromptText("Write a reply...");
+            }
+            if (submitCommentBtn != null) {
+                submitCommentBtn.setDisable(false);
+                submitCommentBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;");
+            }
             if(uploadCommentImgBtn != null) uploadCommentImgBtn.setDisable(false);
-        }
-    }
-
-    private void loadComments() {
-        commentsContainer.getChildren().clear();
-        List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
-
-        String replyCount = String.valueOf(comments.size());
-
-        repliesCountLabel.setText("Replies (" + replyCount + ")");
-        statsRepliesLabel.setText("💬 Replies: " + replyCount);
-        topCommentBadgeLabel.setText("💬 " + replyCount + " Comments");
-
-        if (comments.isEmpty()) {
-            Label emptyLabel = new Label("No comments yet. Be the first to share your thoughts!");
-            emptyLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic; -fx-font-size: 14px;");
-            commentsContainer.getChildren().add(emptyLabel);
-            return;
-        }
-
-        for (Comment c : comments) {
-            VBox commentCard = new VBox(8);
-            commentCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;");
-
-            HBox headerBox = new HBox(10);
-            Label author = new Label(c.getAuthorName() != null ? c.getAuthorName() : "Student");
-            author.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
-            Label time = new Label("• Reply");
-            time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
-            headerBox.getChildren().addAll(author, time);
-
-            Label content = new Label(c.getContent());
-            content.setWrapText(true);
-            content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
-
-            VBox imageBox = new VBox();
-            if (c.getImageName() != null && !c.getImageName().isEmpty()) {
-                File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
-                if (imgFile.exists()) {
-                    try {
-                        ImageView commentImgView = new ImageView(new Image(imgFile.toURI().toString(), true));
-                        commentImgView.setFitWidth(350);
-                        commentImgView.setPreserveRatio(true);
-
-                        imageBox.setStyle("-fx-padding: 10 0 5 0;");
-                        imageBox.getChildren().add(commentImgView);
-                    } catch (Exception e) {
-                        System.err.println("Could not load comment image.");
-                    }
-                }
-            }
-
-            if (c.getAuthorId() == currentUserId) {
-                HBox actionsBox = new HBox(10);
-                actionsBox.setAlignment(Pos.CENTER_RIGHT);
-
-                Button editBtn = new Button("Edit");
-                editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
-                editBtn.setOnAction(e -> handleEditComment(c));
-
-                Button deleteBtn = new Button("Delete");
-                deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
-                deleteBtn.setOnAction(e -> handleDeleteComment(c));
-
-                actionsBox.getChildren().addAll(editBtn, deleteBtn);
-                commentCard.getChildren().addAll(headerBox, content, imageBox, actionsBox);
-            } else {
-                commentCard.getChildren().addAll(headerBox, content, imageBox);
-            }
-
-            commentsContainer.getChildren().add(commentCard);
         }
     }
 
@@ -311,7 +363,7 @@ public class PostDetailsController {
         if (selectedFile != null) {
             selectedCommentFileName = selectedFile.getName();
             selectedCommentFilePath = selectedFile.getAbsolutePath();
-            commentImgNameLabel.setText("Selected: " + selectedCommentFileName);
+            if (commentImgNameLabel != null) commentImgNameLabel.setText("Selected: " + selectedCommentFileName);
         }
     }
 
@@ -482,19 +534,23 @@ public class PostDetailsController {
             utils.ForumSession.upvotedPosts.add(currentPost.getId());
             utils.ForumSession.downvotedPosts.remove(currentPost.getId());
 
-            upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
-            upvoteButton.setText("👍 Upvoted");
+            if (upvoteButton != null) {
+                upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
+                upvoteButton.setText("👍 Upvoted");
+            }
         } else {
             postService.updateUpvotes(currentPost.getId(), -1);
             currentPost.setUpvotes(currentPost.getUpvotes() - 1);
             currentPost.setMyVote(0);
             utils.ForumSession.upvotedPosts.remove(currentPost.getId());
 
-            upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
-            upvoteButton.setText("👍 Upvote");
+            if (upvoteButton != null) {
+                upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
+                upvoteButton.setText("👍 Upvote");
+            }
         }
-        upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
-        statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
+        if (upvoteBadgeLabel != null) upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
+        if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
     }
 
     @FXML
