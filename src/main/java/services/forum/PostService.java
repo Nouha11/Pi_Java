@@ -390,4 +390,45 @@ public class PostService {
         }
         return posts;
     }
+
+    // ==========================================
+    // 🔥 FETCH SINGLE POST BY ID (FOR NOTIFICATIONS) 🔥
+    // ==========================================
+    public Post getPostById(int id) {
+        String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
+                "(SELECT GROUP_CONCAT(t.name SEPARATOR ',') FROM post_tags pt JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id = p.id) AS tags_string " +
+                "FROM post p " +
+                "LEFT JOIN user u ON p.author_id = u.id " +
+                "LEFT JOIN space s ON p.space_id = s.id " +
+                "WHERE p.id = ?";
+        try {
+            PreparedStatement ps = cnx.prepareStatement(req);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Post p = new Post();
+                p.setId(rs.getInt("id"));
+                p.setTitle(rs.getString("title"));
+                p.setContent(rs.getString("content"));
+                p.setUpvotes(rs.getInt("upvotes"));
+                p.setLocked(rs.getBoolean("is_locked"));
+                try { p.setHotScore(rs.getDouble("hot_score")); } catch (Exception e) {}
+                p.setCreatedAt(rs.getTimestamp("created_at"));
+                p.setAuthorId(rs.getInt("author_id"));
+                if (rs.getObject("space_id") != null) p.setSpaceId(rs.getInt("space_id"));
+                p.setAuthorName(rs.getString("author_name"));
+                p.setSpaceName(rs.getString("space_name"));
+                try {
+                    p.setTags(rs.getString("tags_string"));
+                    p.setImageName(rs.getString("image_name"));
+                    p.setLink(rs.getString("link"));
+                } catch (SQLException ignore) {}
+                return p;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching single post: " + e.getMessage());
+        }
+        return null;
+    }
 }
