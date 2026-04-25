@@ -314,4 +314,50 @@ public class PostService {
         }
         return stats;
     }
+    // ==========================================
+    // 🔥 FORUM ACTIVITY ENGINE 🔥
+    // ==========================================
+    public Map<String, Integer> getUserStats(int userId) {
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("posts", 0);
+        stats.put("upvotes", 0);
+        stats.put("comments", 0);
+        try {
+            PreparedStatement ps = cnx.prepareStatement("SELECT COUNT(*), SUM(upvotes) FROM post WHERE author_id = ?");
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                stats.put("posts", rs.getInt(1));
+                stats.put("upvotes", rs.getObject(2) != null ? rs.getInt(2) : 0);
+            }
+
+            PreparedStatement ps2 = cnx.prepareStatement("SELECT COUNT(*) FROM comment WHERE author_id = ?");
+            ps2.setInt(1, userId);
+            ResultSet rs2 = ps2.executeQuery();
+            if (rs2.next()) {
+                stats.put("comments", rs2.getInt(1));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching user stats: " + e.getMessage());
+        }
+        return stats;
+    }
+
+    public List<Post> getPostsByUserId(int userId) {
+        List<Post> posts = new ArrayList<>();
+        String req = "SELECT p.*, s.name AS space_name FROM post p LEFT JOIN space s ON p.space_id = s.id WHERE p.author_id = ? ORDER BY p.created_at DESC LIMIT 5";
+        try {
+            PreparedStatement ps = cnx.prepareStatement(req);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Post p = new Post();
+                p.setId(rs.getInt("id"));
+                p.setTitle(rs.getString("title"));
+                p.setSpaceName(rs.getString("space_name"));
+                posts.add(p);
+            }
+        } catch (SQLException e) { }
+        return posts;
+    }
 }

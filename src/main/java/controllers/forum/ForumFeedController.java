@@ -43,7 +43,7 @@ public class ForumFeedController {
     @FXML private HBox btnHome;
     @FXML private HBox btnPopular;
     @FXML private HBox btnSaved;
-    @FXML private HBox btnSandbox; // 🔥 Added Sandbox Button
+    @FXML private HBox btnSandbox;
 
     @FXML private Label btnSortHot;
     @FXML private Label btnSortNew;
@@ -98,10 +98,16 @@ public class ForumFeedController {
         setSidebarStyle(btnHome, "transparent");
         setSidebarStyle(btnPopular, "transparent");
         setSidebarStyle(btnSaved, "transparent");
-        setSidebarStyle(btnSandbox, "transparent"); // 🔥 Reset Sandbox style
+        setSidebarStyle(btnSandbox, "transparent");
 
         for (Node node : spacesContainer.getChildren()) {
             if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
+        }
+
+        if (trendingTagsContainer != null) {
+            for (Node node : trendingTagsContainer.getChildren()) {
+                if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
+            }
         }
 
         if (buttonClicked != null) {
@@ -165,6 +171,19 @@ public class ForumFeedController {
         if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / #" + tagName);
         if (lblBannerDesc != null) lblBannerDesc.setText("Exploring discussions tagged with #" + tagName);
         if (bannerIcon != null) bannerIcon.setFill(Color.web("#8b5cf6"));
+
+        if (trendingTagsContainer != null) {
+            for (Node node : trendingTagsContainer.getChildren()) {
+                if (node instanceof HBox) {
+                    HBox box = (HBox) node;
+                    Label lbl = (Label) box.getChildren().get(1);
+                    if (lbl.getText().equalsIgnoreCase(tagName)) {
+                        setSidebarStyle(box, "#eff6ff");
+                        activeSidebarBtn = box;
+                    }
+                }
+            }
+        }
 
         refreshFeed();
     }
@@ -266,15 +285,32 @@ public class ForumFeedController {
 
         for (Map.Entry<String, Long> entry : topTags) {
             final String tagName = entry.getKey();
-            final HBox tagBox = new HBox(8);
-            tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;");
-            Label lbl = new Label("#" + tagName);
-            lbl.setStyle("-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;");
-            tagBox.getChildren().add(lbl);
+            final HBox tagBox = new HBox(12);
+            tagBox.setAlignment(Pos.CENTER_LEFT);
+
+            if (currentTagFilter != null && currentTagFilter.equals(tagName)) {
+                setSidebarStyle(tagBox, "#eff6ff");
+                activeSidebarBtn = tagBox;
+            } else {
+                setSidebarStyle(tagBox, "transparent");
+            }
+
+            Label hashLbl = new Label("#");
+            hashLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-font-size: 16px;");
+
+            Label lbl = new Label(tagName);
+            lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;");
+
+            tagBox.getChildren().addAll(hashLbl, lbl);
 
             tagBox.setOnMouseClicked(e -> filterByTag(tagName));
-            tagBox.setOnMouseEntered(e -> tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;"));
-            tagBox.setOnMouseExited(e -> tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;"));
+
+            tagBox.setOnMouseEntered(e -> {
+                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "#f8fafc");
+            });
+            tagBox.setOnMouseExited(e -> {
+                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "transparent");
+            });
 
             trendingTagsContainer.getChildren().add(tagBox);
         }
@@ -459,9 +495,31 @@ public class ForumFeedController {
         dot.setStyle("-fx-font-size: 8px; -fx-text-fill: #22c55e;");
         Label spaceLabel = new Label("NOVA/ " + (post.getSpaceName() != null ? post.getSpaceName() : "General"));
         spaceLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #0f172a;");
-        Label authorLabel = new Label(" •  Posted by u/" + (post.getAuthorName() != null ? post.getAuthorName() : "Unknown"));
-        authorLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
-        headerRow.getChildren().addAll(dot, spaceLabel, authorLabel);
+
+        // ==========================================
+        // 🔥 THE EVENT BUBBLING FIX 🔥
+        // ==========================================
+        final int finalAuthorId = post.getAuthorId();
+        final String finalAuthorName = post.getAuthorName() != null ? post.getAuthorName() : "Unknown";
+
+        Label prefixLabel = new Label(" •  Posted by ");
+        prefixLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
+
+        Label authorLabel = new Label("u/" + finalAuthorName);
+        authorLabel.setStyle("-fx-text-fill: #3b82f6; -fx-font-size: 12px; -fx-font-weight: bold; -fx-cursor: hand;");
+        authorLabel.setOnMouseEntered(e -> authorLabel.setUnderline(true));
+        authorLabel.setOnMouseExited(e -> authorLabel.setUnderline(false));
+
+        // Use setOnMousePressed to stop the click from reaching the post card
+        authorLabel.setOnMousePressed(e -> {
+            e.consume();
+            openUserProfile(finalAuthorId, finalAuthorName);
+        });
+
+        HBox authorBox = new HBox(prefixLabel, authorLabel);
+        authorBox.setAlignment(Pos.CENTER_LEFT);
+        headerRow.getChildren().addAll(dot, spaceLabel, authorBox);
+        // ==========================================
 
         Label titleLabel = new Label();
         if (post.isLocked()) {
@@ -587,7 +645,6 @@ public class ForumFeedController {
         }
     }
 
-    // 🔥 NEW: Method to handle launching the Sandbox
     @FXML
     void handleOpenSandbox(MouseEvent event) {
         try {
@@ -601,6 +658,25 @@ public class ForumFeedController {
         } catch (Exception ex) {
             System.err.println("🚨 Error loading Code Sandbox: " + ex.getMessage());
             ex.printStackTrace();
+        }
+    }
+
+    private void openUserProfile(int userId, String username) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/forum_activity.fxml"));
+            Parent root = loader.load();
+
+            ForumActivityController controller = loader.getController();
+            controller.loadUserData(userId, username);
+
+            Stage popupStage = new Stage();
+            popupStage.setTitle(username + " - Forum Activity");
+            popupStage.setScene(new Scene(root, 450, 550));
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.show();
+        } catch (Exception e) {
+            System.err.println("🚨 Error loading Forum Activity: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
