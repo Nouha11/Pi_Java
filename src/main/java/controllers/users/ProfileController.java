@@ -33,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class ProfileController implements Initializable {
 
-    // ── FXML fields ───────────────────────────────────────────────────────────
     @FXML private Label         lblInitials;
     @FXML private Label         lblFullName;
     @FXML private Label         lblRoleBadge;
@@ -54,13 +53,13 @@ public class ProfileController implements Initializable {
     @FXML private PasswordField pfConfirm;
     @FXML private Label         lblPwdMsg;
 
-    // ── Services ──────────────────────────────────────────────────────────────
     private User               currentUser;
     private BorderPane         mainLayout;
+    private Parent             previousView;   // page to restore on Back
+
     private final UserService     userService     = new UserService();
     private final GravatarService gravatarService = new GravatarService();
 
-    // Folder where uploaded avatars are stored (relative to working dir)
     private static final String UPLOAD_DIR = "uploads/avatars/";
 
     @Override
@@ -69,18 +68,25 @@ public class ProfileController implements Initializable {
             lblPwdMsg.setVisible(false);
             lblPwdMsg.setManaged(false);
         }
-        // Ensure upload directory exists
         new File(UPLOAD_DIR).mkdirs();
     }
 
+    // ── Entry points ──────────────────────────────────────────────────────────
+
     public void setCurrentUser(User user, BorderPane layout) {
-        this.currentUser = user;
-        this.mainLayout  = layout;
+        setCurrentUser(user, layout, null);
+    }
+
+    public void setCurrentUser(User user, BorderPane layout, Parent previous) {
+        this.currentUser  = user;
+        this.mainLayout   = layout;
+        this.previousView = previous;
         populateProfile();
         loadAvatarAsync();
     }
 
     // ── Populate static fields ────────────────────────────────────────────────
+
     private void populateProfile() {
         String username = currentUser.getUsername();
         String initials = username.length() >= 2
@@ -106,12 +112,11 @@ public class ProfileController implements Initializable {
         if (lblGravatarStatus != null) lblGravatarStatus.setText("");
     }
 
-    // ── Avatar loading: uploaded pic first, then Gravatar fallback ────────────
+    // ── Avatar: uploaded pic first, Gravatar fallback ─────────────────────────
+
     private void loadAvatarAsync() {
         String localPic = currentUser.getProfilePicture();
-
         if (localPic != null && !localPic.isBlank()) {
-            // Load uploaded profile picture
             File f = new File(localPic);
             if (f.exists()) {
                 showImageInAvatar(new Image(f.toURI().toString(), 150, 150, true, true));
@@ -121,7 +126,6 @@ public class ProfileController implements Initializable {
             }
         }
 
-        // Fallback: load Gravatar asynchronously
         String email = currentUser.getEmail();
         CompletableFuture.supplyAsync(() -> {
             boolean real = gravatarService.hasGravatar(email);
@@ -154,6 +158,7 @@ public class ProfileController implements Initializable {
     }
 
     // ── Upload profile picture ────────────────────────────────────────────────
+
     @FXML
     private void onUploadPicture() {
         FileChooser chooser = new FileChooser();
@@ -166,32 +171,28 @@ public class ProfileController implements Initializable {
         if (selected == null) return;
 
         try {
-            // Copy file to uploads/avatars/<userId>_<filename>
             String destName = currentUser.getId() + "_" + selected.getName();
             Path dest = Paths.get(UPLOAD_DIR + destName);
             Files.copy(selected.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
 
-            // Save path to DB
             String picPath = dest.toString();
             userService.updateProfilePicture(currentUser.getId(), picPath);
             currentUser.setProfilePicture(picPath);
 
-            // Show immediately
             showImageInAvatar(new Image(dest.toUri().toString(), 150, 150, true, true));
             if (lblGravatarInfo   != null) lblGravatarInfo.setText("Custom photo");
             if (lblGravatarStatus != null) lblGravatarStatus.setText("Custom photo");
             showMsg("Profile picture updated!", false);
-
         } catch (IOException | SQLException e) {
             showMsg("Upload failed: " + e.getMessage(), true);
         }
     }
 
     // ── Remove profile picture ────────────────────────────────────────────────
+
     @FXML
     private void onRemovePicture() {
         try {
-            // Delete file if it exists
             String pic = currentUser.getProfilePicture();
             if (pic != null) {
                 File f = new File(pic);
@@ -200,7 +201,6 @@ public class ProfileController implements Initializable {
             userService.updateProfilePicture(currentUser.getId(), null);
             currentUser.setProfilePicture(null);
 
-            // Revert to Gravatar
             imgAvatar.setVisible(false);
             imgAvatar.setManaged(false);
             paneInitials.setVisible(true);
@@ -213,6 +213,7 @@ public class ProfileController implements Initializable {
     }
 
     // ── Change password ───────────────────────────────────────────────────────
+
     @FXML
     private void onChangePassword() {
         hideMsg();
@@ -250,7 +251,32 @@ public class ProfileController implements Initializable {
         }
     }
 
+    // ── Back — restores the previous page ────────────────────────────────────
+
+    @FXML
+    private void onBackToList() {
+        try {
+            if (previousView != null) {
+                controllers.NovaDashboardController.setView(previousView);
+            } else if (mainLayout != null) {
+                FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/users/user-list.fxml"));
+                Parent root = loader.load();
+                UserListController ctrl = loader.getController();
+                ctrl.setCurrentUser(currentUser);
+                mainLayout.setCenter(root);
+            } else {
+                FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/studysession/UserStudyDashboard.fxml"));
+                controllers.NovaDashboardController.setView(loader.load());
+            }
+        } catch (Exception e) {
+            showMsg("Navigation error: " + e.getMessage(), true);
+        }
+    }
+
     // ── Logout ────────────────────────────────────────────────────────────────
+
     @FXML
     private void onLogout() {
         try {
@@ -270,28 +296,8 @@ public class ProfileController implements Initializable {
         }
     }
 
-    // ── Back navigation ───────────────────────────────────────────────────────
-    @FXML
-    private void onBackToList() {
-        try {
-            if (mainLayout != null) {
-                FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/views/users/user-list.fxml"));
-                Parent root = loader.load();
-                UserListController ctrl = loader.getController();
-                ctrl.setCurrentUser(currentUser);
-                mainLayout.setCenter(root);
-            } else {
-                FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/views/studysession/UserStudyDashboard.fxml"));
-                controllers.NovaDashboardController.setView(loader.load());
-            }
-        } catch (Exception e) {
-            showMsg("Navigation error: " + e.getMessage(), true);
-        }
-    }
-
     // ── Helpers ───────────────────────────────────────────────────────────────
+
     private void showMsg(String msg, boolean isError) {
         lblPwdMsg.setText(msg);
         lblPwdMsg.setStyle(isError
