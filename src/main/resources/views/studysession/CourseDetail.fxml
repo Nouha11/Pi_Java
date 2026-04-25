@@ -3,78 +3,202 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="0" prefWidth="900" prefHeight="600"
-      style="-fx-background-color: #f8fafc;"
-      stylesheets="@../../css/study.css"
-      xmlns:fx="http://javafx.com/fxml/1"
-      xmlns="http://javafx.com/javafx/17.0.12"
-      fx:controller="controllers.studysession.CourseDetailController">
+<BorderPane prefWidth="960" prefHeight="720"
+            style="-fx-background-color: #f8fafc;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.CourseDetailController">
 
-    <!-- HEADER -->
-    <VBox style="-fx-background-color: white; -fx-border-color: #f1f5f9;
-                 -fx-border-width: 0 0 1 0; -fx-padding: 20 24;">
-        <HBox alignment="CENTER_LEFT" spacing="16">
-            <VBox HBox.hgrow="ALWAYS" spacing="6">
+    <!-- ══════════════════════════════════════════════════════════
+         TOP BAR — course name heading
+         ══════════════════════════════════════════════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16"
+              style="-fx-background-color: #1a237e; -fx-padding: 14 24;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 8, 0, 0, 3);">
+            <Label text="🔍" style="-fx-font-size: 18px; -fx-text-fill: white;"/>
+            <VBox HBox.hgrow="ALWAYS" spacing="2">
                 <Label fx:id="lblCourseName" text="—"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label fx:id="lblCategory"
-                           style="-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;
-                                  -fx-font-weight: bold; -fx-padding: 3 10;
-                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
-                    <Label fx:id="lblDifficulty"
-                           style="-fx-background-color: #ede9fe; -fx-text-fill: #7c3aed;
-                                  -fx-font-weight: bold; -fx-padding: 3 10;
-                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
-                    <Label fx:id="lblStatus"
-                           style="-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;
-                                  -fx-font-weight: bold; -fx-padding: 3 10;
-                                  -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
-                    <Label fx:id="lblPublished"
-                           style="-fx-text-fill: #64748b; -fx-font-size: 12px;" text="—"/>
+                       style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;
+                              -fx-font-family: 'Segoe UI Semibold', 'Segoe UI', Arial, sans-serif;"/>
+                <Label fx:id="lblProvider" text="Provided by Nova"
+                       style="-fx-text-fill: #b0bec5; -fx-font-size: 12px;"/>
+            </VBox>
+            <Label fx:id="lblStatus"
+                   style="-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;
+                          -fx-font-weight: bold; -fx-padding: 3 10;
+                          -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+            <Label fx:id="lblPublished"
+                   style="-fx-text-fill: #b0bec5; -fx-font-size: 12px;" text="—"/>
+        </HBox>
+    </top>
+
+    <!-- ══════════════════════════════════════════════════════════
+         CENTER — scrollable content
+         ══════════════════════════════════════════════════════════ -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: #f8fafc; -fx-background: #f8fafc;
+                           -fx-border-color: transparent;">
+            <VBox spacing="16" style="-fx-padding: 24 32;">
+
+                <!-- ── Course Info Card ── -->
+                <VBox spacing="12"
+                      style="-fx-background-color: white; -fx-background-radius: 12;
+                             -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                             -fx-border-width: 1; -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                    <Label text="📘 Course Information"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                    <Separator/>
+
+                    <!-- Badges row: category, difficulty, duration -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label fx:id="lblCategory"
+                               style="-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;
+                                      -fx-font-weight: bold; -fx-padding: 3 10;
+                                      -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                        <Label fx:id="lblDifficulty"
+                               style="-fx-background-color: #ede9fe; -fx-text-fill: #7c3aed;
+                                      -fx-font-weight: bold; -fx-padding: 3 10;
+                                      -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                        <Label fx:id="lblDuration"
+                               style="-fx-text-fill: #64748b; -fx-font-size: 12px;" text="—"/>
+                    </HBox>
+
+                    <!-- Description -->
+                    <Label text="About this course"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"/>
+                    <TextArea fx:id="txtDescription" editable="false" wrapText="true" prefRowCount="3"
+                              style="-fx-background-color: transparent; -fx-border-color: transparent;
+                                     -fx-font-size: 13px; -fx-text-fill: #334155;"/>
+
+                    <!-- Progress bar + percentage -->
+                    <VBox spacing="6">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="Your Progress"
+                                   style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #374151;"
+                                   HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblProgress"
+                                   style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"
+                                   text="0%"/>
+                        </HBox>
+                        <ProgressBar fx:id="progressBar" progress="0.0"
+                                     maxWidth="Infinity" prefHeight="10"
+                                     style="-fx-accent: #22c55e; -fx-background-radius: 5;
+                                            -fx-background-color: #e2e8f0;"/>
+                    </VBox>
+                </VBox>
+
+                <!-- ── Planned Sessions Section ── -->
+                <VBox spacing="12"
+                      style="-fx-background-color: white; -fx-background-radius: 12;
+                             -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                             -fx-border-width: 1; -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                    <!-- Section header with Add button -->
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label text="📅 Planned Sessions"
+                                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                            <Label fx:id="lblPlanCount" text="0 sessions"
+                                   style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                        </VBox>
+                        <Button text="➕ Add Planning Session" onAction="#handleAddPlanning"
+                                style="-fx-background-color: #3b82f6; -fx-text-fill: white;
+                                       -fx-font-weight: bold; -fx-padding: 7 14;
+                                       -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 11px;"/>
+                    </HBox>
+                    <Separator/>
+
+                    <!-- Upcoming sub-section -->
+                    <VBox spacing="8">
+                        <Label text="⏳ Upcoming"
+                               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2563eb;"/>
+                        <VBox fx:id="vboxUpcoming" spacing="8"/>
+                    </VBox>
+
+                    <!-- Completed sub-section -->
+                    <VBox spacing="8" style="-fx-padding: 8 0 0 0;">
+                        <Label text="✅ Completed"
+                               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #16a34a;"/>
+                        <VBox fx:id="vboxCompleted" spacing="8"/>
+                    </VBox>
+                </VBox>
+
+                <!-- ── Quick Analytics Section ── -->
+                <VBox spacing="12"
+                      style="-fx-background-color: white; -fx-background-radius: 12;
+                             -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                             -fx-border-width: 1; -fx-padding: 20;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                    <Label text="📊 Quick Analytics"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                    <Separator/>
+
+                    <HBox spacing="12">
+                        <!-- Total Sessions -->
+                        <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #f8f9fa; -fx-background-radius: 10;
+                                     -fx-border-color: #e2e8f0; -fx-border-radius: 10;
+                                     -fx-border-width: 1; -fx-padding: 16 12;">
+                            <Label fx:id="lblTotalSessions" text="0"
+                                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                            <Label text="Total Sessions"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #78909c; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <!-- Completed Sessions -->
+                        <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #f0fdf4; -fx-background-radius: 10;
+                                     -fx-border-color: #bbf7d0; -fx-border-radius: 10;
+                                     -fx-border-width: 1; -fx-padding: 16 12;">
+                            <Label fx:id="lblCompletedSessions" text="0"
+                                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #16a34a;"/>
+                            <Label text="Completed"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #78909c; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <!-- Missed Sessions -->
+                        <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #fff1f2; -fx-background-radius: 10;
+                                     -fx-border-color: #fecdd3; -fx-border-radius: 10;
+                                     -fx-border-width: 1; -fx-padding: 16 12;">
+                            <Label fx:id="lblMissedSessions" text="0"
+                                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #ef4444;"/>
+                            <Label text="Missed"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #78909c; -fx-font-weight: bold;"/>
+                        </VBox>
+
+                        <!-- Total Planned Time -->
+                        <VBox spacing="4" alignment="CENTER" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #eff6ff; -fx-background-radius: 10;
+                                     -fx-border-color: #bfdbfe; -fx-border-radius: 10;
+                                     -fx-border-width: 1; -fx-padding: 16 12;">
+                            <Label fx:id="lblTotalTime" text="0 min"
+                                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2563eb;"/>
+                            <Label text="Total Planned Time"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #78909c; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- ── Start Studying Button ── -->
+                <HBox alignment="CENTER" style="-fx-padding: 8 0 16 0;">
+                    <Button text="▶ Start Studying" onAction="#handleStartStudying"
+                            style="-fx-background-color: #1a237e; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-font-size: 14px;
+                                   -fx-padding: 12 40; -fx-background-radius: 10;
+                                   -fx-cursor: hand;
+                                   -fx-effect: dropshadow(gaussian, rgba(26,35,126,0.35), 8, 0, 0, 3);"/>
                 </HBox>
+
             </VBox>
-            <VBox alignment="CENTER_RIGHT" spacing="4">
-                <Label fx:id="lblDuration"  style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="—"/>
-                <Label fx:id="lblProgress"  style="-fx-text-fill: #64748b; -fx-font-size: 13px;" text="—"/>
-            </VBox>
-        </HBox>
-    </VBox>
-
-    <!-- DESCRIPTION -->
-    <VBox style="-fx-background-color: white; -fx-border-color: #f1f5f9;
-                 -fx-border-width: 0 0 1 0; -fx-padding: 14 24;">
-        <Label text="About this course"
-               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;"/>
-        <TextArea fx:id="txtDescription" editable="false" wrapText="true" prefRowCount="3"
-                  style="-fx-background-color: transparent; -fx-border-color: transparent;
-                         -fx-font-size: 13px; -fx-text-fill: #334155;"/>
-    </VBox>
-
-    <!-- PLANNINGS PANEL -->
-    <VBox VBox.vgrow="ALWAYS" spacing="0"
-          style="-fx-background-color: white; -fx-background-radius: 0;">
-
-        <!-- Panel header -->
-        <HBox alignment="CENTER_LEFT" spacing="12"
-              style="-fx-padding: 16 24; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;">
-            <VBox spacing="3" HBox.hgrow="ALWAYS">
-                <Label text="Planning Sessions"
-                       style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #0f172a;"/>
-                <Label fx:id="lblPlanCount" text="0 sessions"
-                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
-            </VBox>
-            <Button text="➕ Add Planning Session" onAction="#handleAddPlanning"
-                    style="-fx-background-color: #3b82f6; -fx-text-fill: white;
-                           -fx-font-weight: bold; -fx-padding: 8 16;
-                           -fx-background-radius: 8; -fx-cursor: hand;"/>
-        </HBox>
-
-        <!-- Cards -->
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
-            <VBox fx:id="cardsContainer" spacing="8" style="-fx-padding: 12;"/>
         </ScrollPane>
-    </VBox>
+    </center>
 
-</VBox>
+</BorderPane>
