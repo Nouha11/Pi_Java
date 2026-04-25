@@ -140,7 +140,6 @@ public class NovaDashboardController {
             return;
         }
 
-        // 🔥 CUSTOM FLOATING POPUP (Ignores global CSS)
         notificationPopup = new Popup();
         notificationPopup.setAutoHide(true);
 
@@ -160,7 +159,7 @@ public class NovaDashboardController {
         ScrollPane scroll = new ScrollPane(itemsBox);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setFitToWidth(true);
-        scroll.setMaxHeight(400); // 🔥 Stops the menu from stretching off screen
+        scroll.setMaxHeight(400);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: white; -fx-border-color: transparent;");
 
         List<models.Notification> notifs = notificationService.getUserNotifications(currentUser.getId());
@@ -185,7 +184,7 @@ public class NovaDashboardController {
 
                 String iconStr = n.getIcon();
                 if (iconStr == null || iconStr.startsWith("bi-") || iconStr.startsWith("fa-") || iconStr.length() > 4) {
-                    iconStr = "🔔"; // Fallback for raw CSS tags from teammates
+                    iconStr = "🔔";
                 }
                 Label iconLbl = new Label(iconStr);
                 iconLbl.setStyle("-fx-font-size: 18px;");
@@ -236,6 +235,12 @@ public class NovaDashboardController {
                                     models.forum.Post targetPost = new services.forum.PostService().getPostById(postId);
                                     if (targetPost != null) {
                                         utils.ForumSession.currentPost = targetPost;
+
+                                        // 🔥 TELL IT TO AUTO-SCROLL TO THE BOTTOM 🔥
+                                        if ("FORUM_REPLY".equals(n.getType())) {
+                                            controllers.forum.PostDetailsController.scrollToBottomFlag = true;
+                                        }
+
                                         setActiveButton(btnForum);
                                         loadPage(route);
                                         return;
@@ -261,7 +266,6 @@ public class NovaDashboardController {
         rootBox.getChildren().add(scroll);
         notificationPopup.getContent().add(rootBox);
 
-        // Position the popup exactly below the bell icon
         Point2D p = notificationPane.localToScreen(0.0, 0.0);
         notificationPopup.show(notificationPane.getScene().getWindow(), p.getX() - 320, p.getY() + 40);
     }
@@ -414,7 +418,6 @@ public class NovaDashboardController {
     }
 
     public static void setView(Parent view) {
-        // Save current view so Back button can restore it
         if (staticContentArea != null && !staticContentArea.getChildren().isEmpty()) {
             previousView = (Parent) staticContentArea.getChildren().get(0);
         }

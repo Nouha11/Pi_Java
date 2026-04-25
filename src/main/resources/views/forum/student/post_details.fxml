@@ -22,8 +22,7 @@
             </children>
         </HBox>
 
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
-            <content>
+        <ScrollPane fx:id="mainScrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">            <content>
                 <VBox spacing="25.0" style="-fx-padding: 10 30 40 30;">
                     <children>
 
@@ -78,6 +77,8 @@
                                                     <Button fx:id="summarizeBtn" onAction="#handleSummarizePost" style="-fx-background-color: #f3e8ff; -fx-text-fill: #9333ea; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16; -fx-background-radius: 8;" text="✨ TL;DR Summary" />
                                                     <Button fx:id="saveButton" onAction="#handleSavePost" style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;" text="🔖 Save" />
                                                     <Button style="-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;" text="↩ Reply" />
+
+                                                    <Button fx:id="reportPostBtn" onAction="#handleReportPost" style="-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;" text="🚩 Report" />
 
                                                     <Region HBox.hgrow="ALWAYS" />
 

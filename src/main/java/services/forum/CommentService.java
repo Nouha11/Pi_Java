@@ -25,19 +25,14 @@ public class CommentService {
             pst.setString(1, c.getContent().trim());
             pst.setInt(2, c.getPostId());
             pst.setInt(3, c.getAuthorId());
-
             if (c.getParentId() != null) pst.setInt(4, c.getParentId());
             else pst.setNull(4, Types.INTEGER);
-
             pst.setBoolean(5, c.isSolution());
             pst.setString(6, c.getImageName());
             pst.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 
             pst.executeUpdate();
-
-            // Trigger Notification
             notifyPostOwner(c.getPostId(), c.getAuthorId());
-
         } catch (SQLException e) {
             System.err.println("❌ Error adding comment: " + e.getMessage());
         }
@@ -62,20 +57,10 @@ public class CommentService {
 
                     String message = commenterName + " replied to your discussion: '" + postTitle + "'";
 
-                    // 🔥 UPDATED: Point to post_details.fxml instead of forum_feed.fxml
                     Notification n = new Notification(
-                            "FORUM_REPLY",
-                            "New Reply",
-                            message,
-                            "/views/forum/student/post_details.fxml",
-                            "💬",
-                            "#3b82f6",
-                            postOwnerId
+                            "FORUM_REPLY", "New Reply", message, "/views/forum/student/post_details.fxml", "💬", "#3b82f6", postOwnerId
                     );
-
-                    // 🔥 UPDATED: Store the Post ID in the metadata so the UI knows what to open
                     n.setMetadata(String.valueOf(postId));
-
                     notificationService.sendNotification(n);
                 }
             }
@@ -113,6 +98,22 @@ public class CommentService {
             pst.setInt(1, id);
             pst.executeUpdate();
         } catch (SQLException e) {}
+    }
+
+    // ==========================================
+    // 🔥 NEW: MODERATOR "SOFT DELETE" 🔥
+    // ==========================================
+    public void censorByModerator(int commentId) {
+        String censorText = "🚫 *[This comment was removed by a moderator for violating community guidelines]*";
+        String query = "UPDATE comment SET content = ?, image_name = NULL, updated_at = ? WHERE id = ?";
+        try (PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, censorText);
+            pst.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            pst.setInt(3, commentId);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("❌ Error censoring comment: " + e.getMessage());
+        }
     }
 
     public void markAsSolution(int commentId) {

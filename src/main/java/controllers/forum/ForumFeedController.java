@@ -73,7 +73,6 @@ public class ForumFeedController {
     private int currentPage = 1;
     private final int POSTS_PER_PAGE = 5;
 
-    // Compact Sidebar Styles
     private final String SIDEBAR_IDLE = "-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: transparent;";
     private final String SIDEBAR_HOVER = "-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #f8fafc;";
     private final String SIDEBAR_ACTIVE = "-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #eff6ff;";
@@ -184,7 +183,6 @@ public class ForumFeedController {
         refreshFeed();
     }
 
-    // 🔥 RESTORED LOGIC FOR TAG FILTERING 🔥
     private void filterByTag(String tagName) {
         setActiveSidebarButton(null);
         currentSpaceFilterId = null;
@@ -395,7 +393,9 @@ public class ForumFeedController {
 
         headerRow.getChildren().addAll(spaceLabel, new Label(" • "), authorLabel);
 
-        Label titleLabel = new Label(post.getTitle());
+        // 🔥 ADDING LOCK ICON NEXT TO TITLE IF LOCKED 🔥
+        String displayTitle = post.isLocked() ? "🔒 " + post.getTitle() : post.getTitle();
+        Label titleLabel = new Label(displayTitle);
         titleLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 15px; -fx-font-weight: bold;");
 
         Label contentLabel = new Label(post.getContent());
@@ -442,7 +442,15 @@ public class ForumFeedController {
         contentBox.getChildren().add(footerRow);
 
         HBox mainCard = new HBox(voteBox, contentBox);
-        mainCard.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;");
+
+        // 🔥 STYLING LOGIC FOR LOCKED POSTS 🔥
+        if (post.isLocked()) {
+            mainCard.setOpacity(0.65); // Dims the entire card making it look inactive
+            mainCard.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;");
+        } else {
+            mainCard.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand;");
+        }
+
         mainCard.setOnMouseClicked(e -> openPostDetails(post));
         return mainCard;
     }
@@ -463,7 +471,6 @@ public class ForumFeedController {
         refreshFeed();
     }
 
-    // 🔥 RESTORED LOGIC FOR BUTTONS 🔥
     @FXML
     void handleGoToCreatePost(MouseEvent event) {
         try {
@@ -491,10 +498,7 @@ public class ForumFeedController {
             popupStage.setScene(new Scene(root, 900, 700));
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.showAndWait();
-        } catch (Exception ex) {
-            System.err.println("🚨 Error loading Code Sandbox: " + ex.getMessage());
-            ex.printStackTrace();
-        }
+        } catch (Exception ex) {}
     }
 
     private void openUserProfile(int userId, String username) {
