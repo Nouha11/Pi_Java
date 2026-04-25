@@ -21,7 +21,7 @@
 
     <BorderPane fx:id="mainAppUI" style="-fx-background-color: #f8fafc;">
         <top>
-            <HBox alignment="CENTER_LEFT" prefHeight="85.0" spacing="20.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;">
+            <HBox alignment="CENTER_LEFT" minHeight="85.0" prefHeight="85.0" spacing="20.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;">
                 <children>
 
                     <ImageView fitHeight="60.0" preserveRatio="true" style="-fx-cursor: hand;">
