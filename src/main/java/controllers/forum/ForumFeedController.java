@@ -1,6 +1,5 @@
 package controllers.forum;
 
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,7 +22,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import models.forum.Post;
 import models.forum.Space;
 import services.forum.CommentService;
@@ -45,6 +43,7 @@ public class ForumFeedController {
     @FXML private HBox btnHome;
     @FXML private HBox btnPopular;
     @FXML private HBox btnSaved;
+    @FXML private HBox btnSandbox; // 🔥 Added Sandbox Button
 
     @FXML private Label btnSortHot;
     @FXML private Label btnSortNew;
@@ -70,6 +69,11 @@ public class ForumFeedController {
 
     private int currentPage = 1;
     private final int POSTS_PER_PAGE = 5;
+
+    private final String SIDEBAR_IDLE = "-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;";
+    private final String SIDEBAR_HOVER = "-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #f8fafc;";
+    private final String SIDEBAR_ACTIVE = "-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #eff6ff;";
+
     private final String[] spaceColors = {"#10b981", "#0ea5e9", "#f59e0b", "#8b5cf6", "#ec4899", "#f43f5e"};
 
     @FXML
@@ -94,16 +98,10 @@ public class ForumFeedController {
         setSidebarStyle(btnHome, "transparent");
         setSidebarStyle(btnPopular, "transparent");
         setSidebarStyle(btnSaved, "transparent");
+        setSidebarStyle(btnSandbox, "transparent"); // 🔥 Reset Sandbox style
 
         for (Node node : spacesContainer.getChildren()) {
             if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
-        }
-
-        // Also clear any highlighted tags
-        if (trendingTagsContainer != null) {
-            for (Node node : trendingTagsContainer.getChildren()) {
-                if(node instanceof HBox) setSidebarStyle((HBox) node, "transparent");
-            }
         }
 
         if (buttonClicked != null) {
@@ -158,6 +156,7 @@ public class ForumFeedController {
     }
 
     private void filterByTag(String tagName) {
+        setActiveSidebarButton(null);
         currentSpaceFilterId = null;
         showSavedOnly = false;
         currentTagFilter = tagName.toLowerCase();
@@ -166,21 +165,6 @@ public class ForumFeedController {
         if (lblBannerTitle != null) lblBannerTitle.setText("NOVA / #" + tagName);
         if (lblBannerDesc != null) lblBannerDesc.setText("Exploring discussions tagged with #" + tagName);
         if (bannerIcon != null) bannerIcon.setFill(Color.web("#8b5cf6"));
-
-        // Make the sidebar tag visually active!
-        setActiveSidebarButton(null);
-        if (trendingTagsContainer != null) {
-            for (Node node : trendingTagsContainer.getChildren()) {
-                if (node instanceof HBox) {
-                    HBox box = (HBox) node;
-                    Label lbl = (Label) box.getChildren().get(1); // The text label
-                    if (lbl.getText().equalsIgnoreCase(tagName)) {
-                        setSidebarStyle(box, "#eff6ff");
-                        activeSidebarBtn = box;
-                    }
-                }
-            }
-        }
 
         refreshFeed();
     }
@@ -282,33 +266,15 @@ public class ForumFeedController {
 
         for (Map.Entry<String, Long> entry : topTags) {
             final String tagName = entry.getKey();
-            final HBox tagBox = new HBox(12); // Spacing matches other buttons
-            tagBox.setAlignment(Pos.CENTER_LEFT);
-
-            // Maintain highlight if this is the currently active tag
-            if (currentTagFilter != null && currentTagFilter.equals(tagName)) {
-                setSidebarStyle(tagBox, "#eff6ff");
-                activeSidebarBtn = tagBox;
-            } else {
-                setSidebarStyle(tagBox, "transparent");
-            }
-
-            Label hashLbl = new Label("#");
-            hashLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-font-size: 16px;");
-
-            Label lbl = new Label(tagName);
-            lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;");
-
-            tagBox.getChildren().addAll(hashLbl, lbl);
+            final HBox tagBox = new HBox(8);
+            tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;");
+            Label lbl = new Label("#" + tagName);
+            lbl.setStyle("-fx-text-fill: #475569; -fx-font-size: 13px; -fx-font-weight: bold;");
+            tagBox.getChildren().add(lbl);
 
             tagBox.setOnMouseClicked(e -> filterByTag(tagName));
-
-            tagBox.setOnMouseEntered(e -> {
-                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "#f8fafc");
-            });
-            tagBox.setOnMouseExited(e -> {
-                if (activeSidebarBtn != tagBox) setSidebarStyle(tagBox, "transparent");
-            });
+            tagBox.setOnMouseEntered(e -> tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;"));
+            tagBox.setOnMouseExited(e -> tagBox.setStyle("-fx-padding: 6 10; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-cursor: hand;"));
 
             trendingTagsContainer.getChildren().add(tagBox);
         }
@@ -618,6 +584,23 @@ public class ForumFeedController {
         } catch (Exception e) {
             System.err.println("🚨 Error loading Add Post: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // 🔥 NEW: Method to handle launching the Sandbox
+    @FXML
+    void handleOpenSandbox(MouseEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/forum/student/code_sandbox.fxml"));
+            Parent root = loader.load();
+            Stage popupStage = new Stage();
+            popupStage.setTitle("NOVA Code Sandbox");
+            popupStage.setScene(new Scene(root, 900, 700));
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.showAndWait();
+        } catch (Exception ex) {
+            System.err.println("🚨 Error loading Code Sandbox: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 

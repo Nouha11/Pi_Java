@@ -31,6 +31,11 @@
                 <Label text="🔖" style="-fx-font-size: 18px;"/>
                 <Label text="Saved Posts" style="-fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-size: 14px;"/>
             </HBox>
+
+            <HBox fx:id="btnSandbox" alignment="CENTER_LEFT" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;" onMouseClicked="#handleOpenSandbox">
+                <Label text="💻" style="-fx-font-size: 18px;"/>
+                <Label text="Code Sandbox" style="-fx-font-weight: bold; -fx-text-fill: #64748b; -fx-font-size: 14px;"/>
+            </HBox>
         </VBox>
 
         <VBox spacing="8.0">
