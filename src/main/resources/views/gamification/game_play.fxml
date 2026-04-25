@@ -90,7 +90,7 @@
     </StackPane>
 
     <!-- BOTTOM ACTION BAR -->
-    <HBox style="-fx-background-color: white; -fx-border-color: #e4e8f0; -fx-border-width: 1 0 0 0;
+    <HBox fx:id="bottomBar" style="-fx-background-color: white; -fx-border-color: #e4e8f0; -fx-border-width: 1 0 0 0;
                  -fx-padding: 12 20;" alignment="CENTER_RIGHT" spacing="12">
         <Button fx:id="btnStart" text="▶  Start Game" onAction="#startGame"
                 style="-fx-background-color: linear-gradient(to right, #3b4fd8, #5b6ef5);

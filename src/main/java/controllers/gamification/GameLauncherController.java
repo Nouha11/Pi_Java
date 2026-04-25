@@ -49,6 +49,12 @@ public class GameLauncherController {
         this.contentArea = contentArea;
     }
 
+    public void setInitialTab(int tabIndex) {
+        if (tabPane != null && tabIndex >= 0 && tabIndex < tabPane.getTabs().size()) {
+            tabPane.getSelectionModel().select(tabIndex);
+        }
+    }
+
     @FXML
     public void initialize() {
         filterType.setItems(FXCollections.observableArrayList(
