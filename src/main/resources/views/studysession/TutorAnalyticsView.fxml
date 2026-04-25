@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane style="-fx-background-color: #f0f2f8;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.TutorAnalyticsController">
+
+    <!-- PAGE HEADER -->
+    <top>
+        <VBox style="-fx-background-color: white; -fx-border-color: #dee2e6;
+                     -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox HBox.hgrow="ALWAYS" spacing="3">
+                    <Label text="📊 Course Analytics"
+                           style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    <Label text="Track student engagement and course performance"
+                           style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                <Button text="🔄 Refresh" onAction="#handleRefresh"
+                        style="-fx-background-color: #f0f2f8; -fx-text-fill: #546e7a;
+                               -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                               -fx-font-size: 11px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CONTENT -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
+            <VBox spacing="20">
+                <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+                <!-- SUMMARY CARDS -->
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <!-- Total Enrolled Students Card -->
+                    <VBox styleClass="stat-card" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Total Enrolled" styleClass="stat-card-label"/>
+                        <Label fx:id="lblTotalEnrolled" text="0" styleClass="stat-card-value"/>
+                    </VBox>
+
+                    <!-- Active Students Card -->
+                    <VBox styleClass="stat-card" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Active Students" styleClass="stat-card-label"/>
+                        <Label fx:id="lblActiveStudents" text="0" styleClass="stat-card-value"/>
+                    </VBox>
+
+                    <!-- Completion Rate Card -->
+                    <VBox styleClass="stat-card" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Completion Rate" styleClass="stat-card-label"/>
+                        <Label fx:id="lblCompletionRate" text="0%" styleClass="stat-card-value"/>
+                    </VBox>
+
+                    <!-- Total Courses Card -->
+                    <VBox styleClass="stat-card" spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Total Courses" styleClass="stat-card-label"/>
+                        <Label fx:id="lblTotalCourses" text="0" styleClass="stat-card-value"/>
+                    </VBox>
+                </HBox>
+
+                <!-- MOST POPULAR COURSE HIGHLIGHT -->
+                <VBox fx:id="popularCourseCard" styleClass="chart-card" spacing="8" visible="true" managed="true">
+                    <Label text="🏆 Most Popular Course" styleClass="chart-title"/>
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label fx:id="lblPopularCourseName" text="—"
+                                   style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                            <Label fx:id="lblPopularCourseEnrollments" text="0 enrollments"
+                                   style="-fx-font-size: 13; -fx-text-fill: #64748b;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- PER-COURSE BREAKDOWN TABLE -->
+                <VBox styleClass="chart-card" spacing="12">
+                    <Label text="Per-Course Breakdown" styleClass="chart-title"/>
+                    <TableView fx:id="courseBreakdownTable" styleClass="data-table" prefHeight="300">
+                        <columns>
+                            <TableColumn fx:id="colCourseName" text="Course Name" prefWidth="300" />
+                            <TableColumn fx:id="colEnrolledCount" text="Enrolled Students" prefWidth="150" />
+                            <TableColumn fx:id="colProgress" text="Progress" prefWidth="200" />
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <!-- EMPTY STATE -->
+                <VBox fx:id="emptyState" alignment="CENTER" spacing="12"
+                      style="-fx-padding: 80 0 0 0;" visible="false" managed="false">
+                    <Label text="📚"  style="-fx-font-size: 48;"/>
+                    <Label text="No courses yet"
+                           style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #546e7a;"/>
+                    <Label text="Create your first course to see analytics."
+                           style="-fx-font-size: 13; -fx-text-fill: #90a4ae;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- BOTTOM STATUS -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="8"
+              style="-fx-padding: 6 24; -fx-background-color: white;
+                     -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="statusLabel" text="Ready"
+                   style="-fx-text-fill: #546e7a; -fx-font-size: 11;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

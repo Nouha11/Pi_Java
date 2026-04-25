@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane style="-fx-background-color: #f0f2f8;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.TutorCourseController">
+
+    <!-- PAGE HEADER -->
+    <top>
+        <VBox style="-fx-background-color: white; -fx-border-color: #dee2e6;
+                     -fx-border-width: 0 0 1 0; -fx-padding: 16 24 16 24;">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox HBox.hgrow="ALWAYS" spacing="3">
+                    <Label text="📘 My Courses"
+                           style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                    <Label text="Manage your course catalog and track enrollments"
+                           style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                <Button text="➕ New Course" onAction="#handleNew"
+                        style="-fx-background-color: #3949ab; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-padding: 5 12;
+                               -fx-background-radius: 8; -fx-cursor: hand;
+                               -fx-font-size: 11px;"/>
+            </HBox>
+
+            <!-- FILTER BAR inside header -->
+            <HBox alignment="CENTER_LEFT" spacing="10"
+                  style="-fx-padding: 12 0 0 0;">
+                <Label text="🔍" style="-fx-font-size: 14; -fx-text-fill: #546e7a;"/>
+                <TextField fx:id="searchField"
+                           promptText="Search courses…"
+                           prefWidth="200"
+                           style="-fx-background-radius: 20; -fx-padding: 6 14;"/>
+                <ComboBox fx:id="filterDifficulty" prefWidth="130" promptText="All Difficulties"
+                          style="-fx-background-radius: 6;"/>
+                <ComboBox fx:id="filterCategory"   prefWidth="140" promptText="All Categories"
+                          style="-fx-background-radius: 6;"/>
+                <ComboBox fx:id="filterStatus"     prefWidth="130" promptText="All Statuses"
+                          style="-fx-background-radius: 6;"/>
+                <Button text="🔄" onAction="#handleRefresh"
+                        style="-fx-background-color: #f0f2f8; -fx-text-fill: #546e7a;
+                               -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                               -fx-font-size: 11px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statsLabel"
+                       style="-fx-text-fill: #6c757d; -fx-font-size: 12;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- SCROLLABLE CARD GRID -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
+            <VBox spacing="0">
+                <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+                <!-- CARDS CONTAINER — FlowPane for responsive grid -->
+                <FlowPane fx:id="courseCardsPane"
+                          hgap="18" vgap="18"
+                          prefWrapLength="900"/>
+
+                <!-- EMPTY STATE -->
+                <VBox fx:id="emptyState" alignment="CENTER" spacing="12"
+                      style="-fx-padding: 80 0 0 0;" visible="false" managed="false">
+                    <Label text="📭"  style="-fx-font-size: 48;"/>
+                    <Label text="No courses found"
+                           style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #546e7a;"/>
+                    <Label text="Create your first course to get started."
+                           style="-fx-font-size: 13; -fx-text-fill: #90a4ae;"/>
+                    <Button text="➕ Add First Course" onAction="#handleNew"
+                            style="-fx-background-color: #3949ab; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-padding: 5 12;
+                                   -fx-background-radius: 8; -fx-cursor: hand;
+                                   -fx-font-size: 11px;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- BOTTOM STATUS -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="8"
+              style="-fx-padding: 6 24; -fx-background-color: white;
+                     -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="statusLabel" text="Ready"
+                   style="-fx-text-fill: #546e7a; -fx-font-size: 11;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

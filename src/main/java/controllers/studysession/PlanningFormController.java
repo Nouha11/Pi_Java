@@ -120,10 +120,12 @@ public class PlanningFormController implements Initializable {
             errStatus.setText("Status is required.");
             errStatus.setVisible(true);
             errStatus.setManaged(true);
+            cbStatus.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             ok = false;
         } else {
             errStatus.setVisible(false);
             errStatus.setManaged(false);
+            cbStatus.setStyle("");
         }
         if (courseId <= 0) {
             lblError.setText("⚠ No course selected. Open this form from a course.");
@@ -140,16 +142,19 @@ public class PlanningFormController implements Initializable {
             errTitle.setText("Title is required.");
             errTitle.setVisible(true);
             errTitle.setManaged(true);
+            txtTitle.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
         if (v.trim().length() < 3) {
             errTitle.setText("Minimum 3 characters.");
             errTitle.setVisible(true);
             errTitle.setManaged(true);
+            txtTitle.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
         errTitle.setVisible(false);
         errTitle.setManaged(false);
+        txtTitle.setStyle("");
         return true;
     }
 
@@ -159,16 +164,19 @@ public class PlanningFormController implements Initializable {
             errDate.setText("Date is required.");
             errDate.setVisible(true);
             errDate.setManaged(true);
+            dpDate.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
         if (!isEdit && d.isBefore(LocalDate.now())) {
             errDate.setText("Date cannot be in the past.");
             errDate.setVisible(true);
             errDate.setManaged(true);
+            dpDate.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
         errDate.setVisible(false);
         errDate.setManaged(false);
+        dpDate.setStyle("");
         return true;
     }
 
@@ -178,17 +186,20 @@ public class PlanningFormController implements Initializable {
             errTime.setText("Time is required (HH:mm).");
             errTime.setVisible(true);
             errTime.setManaged(true);
+            txtTime.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
         try {
             LocalTime.parse(v.trim());
             errTime.setVisible(false);
             errTime.setManaged(false);
+            txtTime.setStyle("");
             return true;
         } catch (Exception e) {
             errTime.setText("Invalid time format. Use HH:mm (e.g. 09:30).");
             errTime.setVisible(true);
             errTime.setManaged(true);
+            txtTime.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
     }
@@ -199,11 +210,13 @@ public class PlanningFormController implements Initializable {
             if (val <= 0) throw new NumberFormatException();
             errDuration.setVisible(false);
             errDuration.setManaged(false);
+            txtDuration.setStyle("");
             return true;
         } catch (NumberFormatException e) {
             errDuration.setText("Must be a positive integer (minutes).");
             errDuration.setVisible(true);
             errDuration.setManaged(true);
+            txtDuration.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3;");
             return false;
         }
     }
@@ -225,6 +238,13 @@ public class PlanningFormController implements Initializable {
         errTime.setVisible(false);      errTime.setManaged(false);
         errDuration.setVisible(false);  errDuration.setManaged(false);
         errStatus.setVisible(false);    errStatus.setManaged(false);
+        
+        // Clear red borders
+        txtTitle.setStyle("");
+        dpDate.setStyle("");
+        txtTime.setStyle("");
+        txtDuration.setStyle("");
+        cbStatus.setStyle("");
     }
 
     private void closeWindow() { ((Stage) btnSave.getScene().getWindow()).close(); }
