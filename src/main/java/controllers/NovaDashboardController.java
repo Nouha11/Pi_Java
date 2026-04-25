@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.users.User;
 import controllers.users.ProfileController;
+import controllers.gamification.GameLauncherController;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -196,7 +197,16 @@ public class NovaDashboardController {
 
     @FXML void handleShowGamification(ActionEvent event) {
         setActiveButton(btnGames);
-        loadPage("/views/gamification/user_games.fxml");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/gamification/game_launcher.fxml"));
+            Parent view = loader.load();
+            GameLauncherController ctrl = loader.getController();
+            ctrl.setContentArea(contentArea);
+            setView(view);
+        } catch (Exception e) {
+            System.out.println("💥 Could not load game launcher: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML void handleShowRewards(ActionEvent event) {

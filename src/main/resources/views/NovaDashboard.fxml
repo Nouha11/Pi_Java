@@ -38,7 +38,7 @@
                         <Button fx:id="btnLibrary" mnemonicParsing="false" onAction="#handleShowLibrary" styleClass="nav-btn" text="Library" />
                         <Button fx:id="btnForum" mnemonicParsing="false" onAction="#handleShowForum" styleClass="nav-btn" text="Forum" />
                         <Button fx:id="btnQuiz" mnemonicParsing="false" onAction="#handleShowQuiz" styleClass="nav-btn" text="Quizzes" />
-                        <Button fx:id="btnGames" mnemonicParsing="false" onAction="#handleShowGamification" styleClass="nav-btn" text="Games" />
+                        <Button fx:id="btnGames" mnemonicParsing="false" onAction="#handleShowGamification" styleClass="nav-btn" text="🎮 Play Games" />
                         <Button fx:id="btnRewards" mnemonicParsing="false" onAction="#handleShowRewards" styleClass="nav-btn" text="Rewards" />
                     </HBox>
 

@@ -21,6 +21,20 @@ public class GameDashboardController {
     }
 
     @FXML
+    public void showPlayGames() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/gamification/game_launcher.fxml"));
+            Parent view = loader.load();
+            GameLauncherController ctrl = loader.getController();
+            ctrl.setContentArea(contentArea);
+            contentArea.getChildren().setAll(view);
+        } catch (Exception e) {
+            System.err.println("Navigation error: " + e.getMessage());
+        }
+    }
+
+    @FXML
     public void showRewards() {
         loadView("/views/gamification/reward_list.fxml");
     }
