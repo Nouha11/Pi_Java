@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="650" prefWidth="530" spacing="0" styleClass="form-pane"
+<VBox prefHeight="750" prefWidth="530" spacing="0" styleClass="form-pane"
       stylesheets="@../../css/study.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
@@ -92,6 +92,28 @@
          </rowConstraints>
         </GridPane>
     </ScrollPane>
+
+    <!-- PDF RESOURCES SECTION -->
+    <VBox fx:id="vboxPdfSection" spacing="8" style="-fx-background-color:white; -fx-background-radius:12; -fx-border-color:#e2e8f0; -fx-border-radius:12; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),8,0,0,2);">
+        <padding><Insets bottom="14" left="16" right="16" top="14" /></padding>
+        <VBox.margin><Insets left="20" right="20" top="10" /></VBox.margin>
+
+        <!-- Section header row -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e293b;" text="📎 PDF Resources" />
+            <Button fx:id="btnAddPdf" onAction="#handleAddPdf"
+                    style="-fx-background-color:#3b82f6; -fx-text-fill:white; -fx-background-radius:8; -fx-cursor:hand; -fx-padding:4 10; -fx-font-size:11px;"
+                    text="➕ Add PDF" />
+        </HBox>
+
+        <!-- Status / info label -->
+        <Label fx:id="lblPdfStatus" managed="true" maxWidth="Infinity"
+               style="-fx-font-size:11px; -fx-text-fill:#64748b;" text="Save the course first to add PDF resources."
+               visible="true" wrapText="true" />
+
+        <!-- List of existing PDFs -->
+        <VBox fx:id="vboxPdfList" spacing="6" />
+    </VBox>
 
     <!-- FOOTER BUTTONS -->
     <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="form-footer">

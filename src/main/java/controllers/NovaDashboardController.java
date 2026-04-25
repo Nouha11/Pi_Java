@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -37,6 +39,9 @@ public class NovaDashboardController {
     // --- User Session ---
     private User currentUser;
     @FXML private StackPane avatarPane;
+
+    // --- Tutor Courses dropdown ---
+    private ContextMenu coursesDropdown;
 
     @FXML
     public void initialize() {
@@ -70,10 +75,108 @@ public class NovaDashboardController {
     // --- TEAMMATE'S USER SESSION LOGIC ---
     public void setCurrentUser(User user) {
         this.currentUser = user;
+
+        // Allow ROLE_STUDENT, ROLE_USER, and ROLE_TUTOR — redirect only admins
+        if (user != null && user.getRole() == User.Role.ROLE_ADMIN) {
+            System.err.println("[ACCESS DENIED] Role " + user.getRole() + " attempted to access Student Dashboard");
+            redirectToCorrectDashboard(user);
+            return;
+        }
+
         // Store user ID globally for library module
         if (user != null) {
             utils.SessionManager.setCurrentUserId(user.getId());
         }
+
+        // If tutor, wire up the Courses button dropdown
+        if (user != null && user.getRole() == User.Role.ROLE_TUTOR) {
+            Platform.runLater(this::setupTutorCoursesDropdown);
+        }
+    }
+    
+    /**
+     * Subtask 14.2: Redirect users to their correct dashboard based on role.
+     * Only admins are redirected — tutors now use NovaDashboard with a dropdown.
+     */
+    private void redirectToCorrectDashboard(User user) {
+        try {
+            Stage stage = (Stage) mainAppUI.getScene().getWindow();
+            FXMLLoader loader;
+            Parent root;
+            javafx.scene.Scene scene;
+
+            if (user.getRole() == User.Role.ROLE_ADMIN) {
+                loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
+                root = loader.load();
+                controllers.admin.AdminDashboardController adminCtrl = loader.getController();
+                adminCtrl.setCurrentUser(user);
+                scene = new javafx.scene.Scene(root, 1280, 800);
+                scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+                stage.setTitle("NOVA - Admin Dashboard");
+            } else {
+                // Should not reach here, but handle gracefully
+                return;
+            }
+
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            System.err.println("Redirect error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sets up a dropdown on the Courses nav button for tutors.
+     * Shows "My Courses" and "Enrollment Requests" as menu items.
+     */
+    private void setupTutorCoursesDropdown() {
+        if (btnCourses == null) return;
+
+        // Build the dropdown menu
+        coursesDropdown = new ContextMenu();
+        coursesDropdown.setStyle(
+            "-fx-background-color: white;" +
+            "-fx-background-radius: 8;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 4);" +
+            "-fx-border-color: #e2e8f0; -fx-border-radius: 8;"
+        );
+
+        MenuItem itemMyCourses = new MenuItem("📚  My Courses");
+        itemMyCourses.setStyle(
+            "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;"
+        );
+        itemMyCourses.setOnAction(e -> {
+            setActiveButton(btnCourses);
+            loadPage("/views/studysession/TutorCourseView.fxml");
+        });
+
+        MenuItem itemEnrollments = new MenuItem("📋  Enrollment Requests");
+        itemEnrollments.setStyle(
+            "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;"
+        );
+        itemEnrollments.setOnAction(e -> {
+            setActiveButton(btnCourses);
+            loadPage("/views/studysession/EnrollmentRequestsView.fxml");
+        });
+
+        MenuItem itemStudentProgress = new MenuItem("👥  Student Progress");
+        itemStudentProgress.setStyle(
+            "-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;"
+        );
+        itemStudentProgress.setOnAction(e -> {
+            setActiveButton(btnCourses);
+            loadPage("/views/studysession/TutorProgressMonitorView.fxml");
+        });
+
+        coursesDropdown.getItems().addAll(itemMyCourses, itemEnrollments, itemStudentProgress);
+
+        // Replace the Courses button action with dropdown show
+        btnCourses.setOnAction(null);
+        btnCourses.setOnAction(event -> {
+            coursesDropdown.show(btnCourses,
+                javafx.geometry.Side.BOTTOM, 0, 4);
+        });
     }
 
     @FXML

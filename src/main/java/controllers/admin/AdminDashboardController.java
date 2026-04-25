@@ -135,11 +135,55 @@ public class AdminDashboardController {
 
     public void setCurrentUser(User user) {
         if (user == null) return;
+        
+        // Subtask 14.2: Role-based access guard for Admin Dashboard
+        if (user.getRole() != User.Role.ROLE_ADMIN) {
+            System.err.println("[ACCESS DENIED] Role " + user.getRole() + " attempted to access Admin Dashboard");
+            redirectToCorrectDashboard(user);
+            return;
+        }
+        
         adminUsername = user.getUsername();
         lblCurrentUser.setText(adminUsername);
         lblCurrentRole.setText(user.getRole().name());
         if (lblAvatarInitial != null && !adminUsername.isEmpty())
             lblAvatarInitial.setText(String.valueOf(adminUsername.charAt(0)).toUpperCase());
+    }
+    
+    /**
+     * Subtask 14.2: Redirect users to their correct dashboard based on role
+     */
+    private void redirectToCorrectDashboard(User user) {
+        try {
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            FXMLLoader loader;
+            Parent root;
+            javafx.scene.Scene scene;
+            
+            if (user.getRole() == User.Role.ROLE_TUTOR) {
+                loader = new FXMLLoader(getClass().getResource("/views/studysession/TutorDashboard.fxml"));
+                root = loader.load();
+                controllers.studysession.TutorDashboardController tutorCtrl = loader.getController();
+                tutorCtrl.setCurrentUser(user);
+                scene = new javafx.scene.Scene(root, 1280, 800);
+                scene.getStylesheets().add(getClass().getResource("/css/study.css").toExternalForm());
+                stage.setTitle("NOVA - Tutor Dashboard");
+            } else {
+                // Default to Student Dashboard
+                loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
+                root = loader.load();
+                controllers.NovaDashboardController dashCtrl = loader.getController();
+                dashCtrl.setCurrentUser(user);
+                scene = new javafx.scene.Scene(root, 1300, 800);
+                stage.setTitle("NOVA - Student Hub");
+            }
+            
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            System.err.println("Redirect error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // ── TOGGLES ───────────────────────────────────────────────────────────────
