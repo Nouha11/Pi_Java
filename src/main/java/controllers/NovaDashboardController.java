@@ -35,6 +35,7 @@ public class NovaDashboardController {
 
     @FXML private StackPane contentArea;
     private static StackPane staticContentArea;
+    private static Parent previousView = null; // tracks the view before profile opens
 
     // --- Navigation Buttons ---
     @FXML private Button btnHome, btnCourses, btnLibrary, btnForum, btnQuiz, btnGames, btnRewards;
@@ -196,7 +197,7 @@ public class NovaDashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/users/profile.fxml"));
             Parent profileView = loader.load();
             ProfileController ctrl = loader.getController();
-            ctrl.setCurrentUser(currentUser, null);
+            ctrl.setCurrentUser(currentUser, null, previousView);
             setView(profileView);
         } catch (Exception e) {
             System.err.println("Profile error: " + e.getMessage());
@@ -349,6 +350,10 @@ public class NovaDashboardController {
     }
 
     public static void setView(Parent view) {
+        // Save current view so Back button can restore it
+        if (staticContentArea != null && !staticContentArea.getChildren().isEmpty()) {
+            previousView = (Parent) staticContentArea.getChildren().get(0);
+        }
         if (staticContentArea != null) {
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
