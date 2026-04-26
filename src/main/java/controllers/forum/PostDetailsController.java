@@ -27,11 +27,13 @@ import services.forum.CommentService;
 import services.forum.PostService;
 import services.forum.ReportService;
 import services.api.GeminiService;
+import services.api.ReactionService;
 
 import javafx.scene.layout.Region;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,25 +42,32 @@ public class PostDetailsController {
     @FXML private ScrollPane mainScrollPane;
     public static boolean scrollToBottomFlag = false;
 
-    @FXML private Button backButton, upvoteButton, editButton, deleteButton;
+    @FXML private Button backButton, editButton, deleteButton;
     @FXML private Button lockButton, submitCommentBtn, uploadCommentImgBtn;
     @FXML private Button summarizeBtn, reportPostBtn;
     @FXML private Label breadcrumbSpaceLabel, badgeSpaceLabel, topTitleLabel;
-    @FXML private Label authorLabel, dateLabel, upvoteBadgeLabel;
+    @FXML private Label authorLabel, dateLabel;
     @FXML private Label topCommentBadgeLabel, commentImgNameLabel;
     @FXML private Label contentLabel, statusLabel;
     @FXML private ImageView postImageView;
     @FXML private Label repliesCountLabel, statsRepliesLabel, statsUpvotesLabel;
     @FXML private TextArea commentArea;
     @FXML private VBox commentsContainer;
-
     @FXML private Button saveButton;
+
+    // VOTE & REACTION UI ELEMENTS
+    @FXML private HBox voteBox;
+    @FXML private Label upArrowBtn;
+    @FXML private Label voteCountLabel;
+    @FXML private Label downArrowBtn;
+    @FXML private HBox reactionBarContainer;
 
     private Post currentPost;
     private CommentService commentService = new CommentService();
     private PostService postService = new PostService();
     private GeminiService geminiService = new GeminiService();
     private ReportService reportService = new ReportService();
+    private ReactionService reactionService = new ReactionService();
 
     private String selectedCommentFileName = null;
     private String selectedCommentFilePath = null;
@@ -75,6 +84,12 @@ public class PostDetailsController {
         commentArea.textProperty().addListener((obs, oldVal, newVal) -> {
             commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
         });
+
+        // Report button hover effect
+        if(reportPostBtn != null) {
+            reportPostBtn.setOnMouseEntered(e -> reportPostBtn.setStyle("-fx-background-color: #ffe4e6; -fx-border-color: transparent; -fx-text-fill: #e11d48; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 7 14; -fx-background-radius: 6;"));
+            reportPostBtn.setOnMouseExited(e -> reportPostBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #fecdd3; -fx-border-radius: 6; -fx-text-fill: #e11d48; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 7 14; -fx-background-radius: 6;"));
+        }
     }
 
     public void setPostData(Post post) {
@@ -104,18 +119,16 @@ public class PostDetailsController {
         }
 
         contentLabel.setText(post.getContent());
-        if (upvoteBadgeLabel != null) upvoteBadgeLabel.setText(post.getUpvotes() + " Upvotes");
         if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
-        if (utils.ForumSession.upvotedPosts.contains(post.getId())) {
-            currentPost.setMyVote(1);
-            upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
-            upvoteButton.setText("👍 Upvoted");
-        } else {
-            currentPost.setMyVote(0);
-            upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
-            upvoteButton.setText("👍 Upvote");
-        }
+        if (utils.ForumSession.upvotedPosts.contains(post.getId())) currentPost.setMyVote(1);
+        else if (utils.ForumSession.downvotedPosts.contains(post.getId())) currentPost.setMyVote(-1);
+        else currentPost.setMyVote(0);
+
+        updateVoteUI();
+
+        upArrowBtn.setOnMouseClicked(e -> handleVote(1));
+        downArrowBtn.setOnMouseClicked(e -> handleVote(-1));
 
         if (post.getContent() != null && post.getContent().length() > 100) {
             if (summarizeBtn != null) summarizeBtn.setVisible(true);
@@ -127,10 +140,10 @@ public class PostDetailsController {
             Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
             if (mySavedPosts.contains(post.getId())) {
                 saveButton.setText("🔖 Saved");
-                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+                saveButton.setStyle("-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 6; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12; -fx-font-size: 12px; -fx-background-radius: 6;");
             } else {
                 saveButton.setText("🔖 Save");
-                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+                saveButton.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12; -fx-font-size: 12px; -fx-background-radius: 6;");
             }
         }
 
@@ -144,6 +157,14 @@ public class PostDetailsController {
             }
         }
 
+        if (editButton != null) editButton.setVisible(post.getAuthorId() == currentUserId);
+        if (deleteButton != null) deleteButton.setVisible(post.getAuthorId() == currentUserId);
+
+        if (lockButton != null) {
+            boolean isAdmin = "ROLE_ADMIN".equals(utils.UserSession.getInstance().getRole());
+            lockButton.setVisible(isAdmin || post.getAuthorId() == currentUserId);
+        }
+
         updateLockUI();
 
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
@@ -155,8 +176,105 @@ public class PostDetailsController {
             }
         }
 
+        new Thread(() -> {
+            Map<String, Integer> counts = reactionService.getReactionsForPost(post.getId());
+            String myReact = reactionService.getUserReactionForPost(currentUserId, post.getId());
+            Platform.runLater(() -> renderReactions(counts, myReact));
+        }).start();
+
         loadComments();
     }
+
+    // ==========================================
+    // 🔥 REACTION & VOTING ENGINE 🔥
+    // ==========================================
+
+    // API Call to fetch Emojis from CDN
+    private String getEmojiApiUrl(String emoji) {
+        String hex = switch (emoji) {
+            case "👍" -> "1f44d";
+            case "❤️" -> "2764";
+            case "😂" -> "1f602";
+            case "💡" -> "1f4a1";
+            default -> "1f44d";
+        };
+        return "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/" + hex + ".png";
+    }
+
+    private void updateVoteUI() {
+        voteCountLabel.setText(String.valueOf(currentPost.getUpvotes()));
+        upArrowBtn.setStyle(currentPost.getMyVote() == 1 ? "-fx-text-fill: #ef4444; -fx-font-size: 14px; -fx-cursor: hand;" : "-fx-text-fill: #94a3b8; -fx-font-size: 14px; -fx-cursor: hand;");
+        downArrowBtn.setStyle(currentPost.getMyVote() == -1 ? "-fx-text-fill: #3b82f6; -fx-font-size: 14px; -fx-cursor: hand;" : "-fx-text-fill: #94a3b8; -fx-font-size: 14px; -fx-cursor: hand;");
+    }
+
+    private void handleVote(int type) {
+        if (currentPost.getMyVote() == type) {
+            postService.updateUpvotes(currentPost.getId(), -type);
+            currentPost.setUpvotes(currentPost.getUpvotes() - type);
+            currentPost.setMyVote(0);
+            utils.ForumSession.upvotedPosts.remove(currentPost.getId());
+            utils.ForumSession.downvotedPosts.remove(currentPost.getId());
+        } else {
+            int change = (currentPost.getMyVote() == -type) ? type * 2 : type;
+            postService.updateUpvotes(currentPost.getId(), change);
+            currentPost.setUpvotes(currentPost.getUpvotes() + change);
+            currentPost.setMyVote(type);
+            if (type == 1) { utils.ForumSession.upvotedPosts.add(currentPost.getId()); utils.ForumSession.downvotedPosts.remove(currentPost.getId()); }
+            else { utils.ForumSession.downvotedPosts.add(currentPost.getId()); utils.ForumSession.upvotedPosts.remove(currentPost.getId()); }
+        }
+        updateVoteUI();
+        if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
+    }
+
+    private void renderReactions(Map<String, Integer> reactionCounts, String myReaction) {
+        if (reactionBarContainer == null) return;
+        reactionBarContainer.getChildren().clear();
+        String[] allowedEmojis = {"👍", "❤️", "😂", "💡"};
+
+        for (String emoji : allowedEmojis) {
+            int count = reactionCounts != null ? reactionCounts.getOrDefault(emoji, 0) : 0;
+            boolean isActive = emoji.equals(myReaction);
+
+            HBox pill = new HBox(6);
+            pill.setAlignment(Pos.CENTER);
+
+            // 🔥 IMAGE API USAGE HERE 🔥
+            ImageView emojiIcon = new ImageView(new Image(getEmojiApiUrl(emoji), true));
+            emojiIcon.setFitWidth(18);
+            emojiIcon.setFitHeight(18);
+            emojiIcon.setPreserveRatio(true);
+
+            Label countLbl = new Label(count > 0 ? String.valueOf(count) : "");
+            countLbl.setStyle(isActive ? "-fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 13px;" : "-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px;");
+
+            pill.getChildren().add(emojiIcon);
+            if (count > 0) pill.getChildren().add(countLbl);
+
+            String baseStyle = isActive ?
+                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 5 12; -fx-cursor: hand;" :
+                    "-fx-background-color: #f1f5f9; -fx-border-color: transparent; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 6 13; -fx-cursor: hand;";
+            String hoverStyle = isActive ?
+                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 5 12; -fx-cursor: hand;" :
+                    "-fx-background-color: #e2e8f0; -fx-border-color: transparent; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 6 13; -fx-cursor: hand;";
+
+            pill.setStyle(baseStyle);
+            pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
+            pill.setOnMouseExited(e -> pill.setStyle(baseStyle));
+
+            pill.setOnMouseClicked(e -> {
+                e.consume();
+                new Thread(() -> {
+                    reactionService.reactToPost(currentUserId, currentPost.getId(), emoji);
+                    Map<String, Integer> updatedCounts = reactionService.getReactionsForPost(currentPost.getId());
+                    String updatedMyReact = reactionService.getUserReactionForPost(currentUserId, currentPost.getId());
+                    Platform.runLater(() -> renderReactions(updatedCounts, updatedMyReact));
+                }).start();
+            });
+
+            reactionBarContainer.getChildren().add(pill);
+        }
+    }
+    // ==========================================
 
     private void loadComments() {
         commentsContainer.getChildren().clear();
@@ -247,19 +365,13 @@ public class PostDetailsController {
                     commentsContainer.getChildren().add(commentCard);
                 }
 
-                // ==========================================
-                // 🔥 BULLETPROOF JAVA-FX SCROLL FIX 🔥
-                // ==========================================
                 if (scrollToBottomFlag && mainScrollPane != null) {
                     scrollToBottomFlag = false;
 
-                    // We must wait ~250ms for JavaFX to finish calculating the new heights
                     PauseTransition waitBeforeScroll = new PauseTransition(Duration.millis(250));
                     waitBeforeScroll.setOnFinished(ev -> {
-                        // Force the scroll pane to the absolute maximum value
                         mainScrollPane.setVvalue(mainScrollPane.getVmax());
 
-                        // Grab the newest comment and flash it
                         if (!commentsContainer.getChildren().isEmpty()) {
                             Node lastNode = commentsContainer.getChildren().get(commentsContainer.getChildren().size() - 1);
 
@@ -268,7 +380,6 @@ public class PostDetailsController {
 
                             lastNode.setStyle(flashStyle);
 
-                            // Revert back to normal after 2.5 seconds
                             PauseTransition revert = new PauseTransition(Duration.seconds(2.5));
                             revert.setOnFinished(e -> lastNode.setStyle(baseStyle));
                             revert.play();
@@ -276,8 +387,6 @@ public class PostDetailsController {
                     });
                     waitBeforeScroll.play();
                 }
-                // ==========================================
-
             });
         }).start();
     }
@@ -375,14 +484,14 @@ public class PostDetailsController {
             postService.unsavePost(currentUserId, currentPost.getId());
             if (saveButton != null) {
                 saveButton.setText("🔖 Save");
-                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+                saveButton.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12; -fx-font-size: 12px; -fx-background-radius: 6;");
             }
         } else {
             mySavedPosts.add(currentPost.getId());
             postService.savePost(currentUserId, currentPost.getId());
             if (saveButton != null) {
                 saveButton.setText("🔖 Saved");
-                saveButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 16;");
+                saveButton.setStyle("-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 6; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 6 12; -fx-font-size: 12px; -fx-background-radius: 6;");
             }
         }
     }
@@ -596,7 +705,7 @@ public class PostDetailsController {
         cancelBtn.setOnAction(e -> dialogStage.close());
 
         Button deleteBtn = new Button("Yes, Delete");
-        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
+        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -background-radius: 6; -fx-cursor: hand;");
         deleteBtn.setOnAction(e -> {
             commentService.supprimer(c.getId());
             loadComments();
@@ -627,33 +736,6 @@ public class PostDetailsController {
             commentArea.setPromptText("Write a thoughtful reply...");
         });
         pause.play();
-    }
-
-    @FXML
-    void handleUpvote(ActionEvent event) {
-        if (currentPost.getMyVote() != 1) {
-            int changeAmount = (currentPost.getMyVote() == -1) ? 2 : 1;
-            postService.updateUpvotes(currentPost.getId(), changeAmount);
-            currentPost.setUpvotes(currentPost.getUpvotes() + changeAmount);
-            currentPost.setMyVote(1);
-            utils.ForumSession.upvotedPosts.add(currentPost.getId());
-            utils.ForumSession.downvotedPosts.remove(currentPost.getId());
-            if (upvoteButton != null) {
-                upvoteButton.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-font-weight: bold; -fx-cursor: hand;");
-                upvoteButton.setText("👍 Upvoted");
-            }
-        } else {
-            postService.updateUpvotes(currentPost.getId(), -1);
-            currentPost.setUpvotes(currentPost.getUpvotes() - 1);
-            currentPost.setMyVote(0);
-            utils.ForumSession.upvotedPosts.remove(currentPost.getId());
-            if (upvoteButton != null) {
-                upvoteButton.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-cursor: hand;");
-                upvoteButton.setText("👍 Upvote");
-            }
-        }
-        if (upvoteBadgeLabel != null) upvoteBadgeLabel.setText(currentPost.getUpvotes() + " Upvotes");
-        if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + currentPost.getUpvotes());
     }
 
     @FXML

@@ -16,12 +16,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.forum.Post;
@@ -29,6 +28,7 @@ import models.forum.Space;
 import services.forum.CommentService;
 import services.forum.PostService;
 import services.forum.SpaceService;
+import services.api.ReactionService;
 
 import java.io.File;
 import java.util.*;
@@ -60,6 +60,7 @@ public class ForumFeedController {
     private PostService postService = new PostService();
     private SpaceService spaceService = new SpaceService();
     private CommentService commentService = new CommentService();
+    private ReactionService reactionService = new ReactionService();
 
     private List<Post> allPostsCache;
     private int currentUserId;
@@ -117,6 +118,18 @@ public class ForumFeedController {
                 }).start();
             });
         }
+    }
+
+    // 🔥 HELPER METHOD FOR EMOJI API 🔥
+    private String getEmojiApiUrl(String emoji) {
+        String hex = switch (emoji) {
+            case "👍" -> "1f44d";
+            case "❤️" -> "2764";
+            case "😂" -> "1f602";
+            case "💡" -> "1f4a1";
+            default -> "1f44d";
+        };
+        return "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/" + hex + ".png";
     }
 
     private void setSidebarStyle(HBox box, String bgColor, String textColor) {
@@ -325,12 +338,24 @@ public class ForumFeedController {
 
         new Thread(() -> {
             Map<Integer, Integer> commentCounts = new HashMap<>();
-            for (Post p : pagePosts) commentCounts.put(p.getId(), commentService.getCommentsByPost(p.getId()).size());
+            Map<Integer, Map<String, Integer>> allReactions = new HashMap<>();
+            Map<Integer, String> userReactions = new HashMap<>();
+
+            for (Post p : pagePosts) {
+                commentCounts.put(p.getId(), commentService.getCommentsByPost(p.getId()).size());
+                allReactions.put(p.getId(), reactionService.getReactionsForPost(p.getId()));
+                userReactions.put(p.getId(), reactionService.getUserReactionForPost(currentUserId, p.getId()));
+            }
+
             Platform.runLater(() -> {
                 for (Post p : pagePosts) {
                     if (utils.ForumSession.upvotedPosts.contains(p.getId())) p.setMyVote(1);
                     else if (utils.ForumSession.downvotedPosts.contains(p.getId())) p.setMyVote(-1);
-                    postsContainer.getChildren().add(createPostCard(p, mySavedPosts, commentCounts.get(p.getId())));
+
+                    postsContainer.getChildren().add(createPostCard(
+                            p, mySavedPosts, commentCounts.get(p.getId()),
+                            allReactions.get(p.getId()), userReactions.get(p.getId())
+                    ));
                 }
                 renderPagination(finalTotalPages);
                 mainScrollPane.setVvalue(0.0);
@@ -355,12 +380,8 @@ public class ForumFeedController {
         }
     }
 
-    // ==========================================
-    // 🔥 MODERNIZED POST CARD GENERATION 🔥
-    // ==========================================
-    private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount) {
+    private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount, Map<String, Integer> reactionCounts, String myReaction) {
 
-        // --- 1. Vote Box (Left Side) ---
         VBox voteBox = new VBox(4);
         voteBox.setAlignment(Pos.TOP_CENTER);
         voteBox.setPadding(new Insets(15, 12, 0, 12));
@@ -389,12 +410,10 @@ public class ForumFeedController {
         downArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, -1); });
         voteBox.getChildren().addAll(upArrowBtn, voteCount, downArrowBtn);
 
-        // --- 2. Content Box (Right Side) ---
         VBox contentBox = new VBox(8);
         contentBox.setPadding(new Insets(15, 20, 15, 20));
         HBox.setHgrow(contentBox, Priority.ALWAYS);
 
-        // Header: Space • Author • Time
         HBox headerRow = new HBox(8);
         headerRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -411,23 +430,19 @@ public class ForumFeedController {
 
         headerRow.getChildren().addAll(spaceBadge, authorLabel);
 
-        // Title
         String displayTitle = post.isLocked() ? "🔒 " + post.getTitle() : post.getTitle();
         Label titleLabel = new Label(displayTitle);
         titleLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 18px; -fx-font-weight: 900;");
 
-        // Content Preview
         Label contentLabel = new Label(post.getContent());
         contentLabel.setWrapText(true);
-        contentLabel.setMaxHeight(60); // Truncate long text on the feed
+        contentLabel.setMaxHeight(60);
         contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 2px;");
 
-        // Image Attachment
         VBox attachmentBox = new VBox();
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
-            if (!imgFile.exists())
-                imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/forum/" + post.getImageName());
+            if (!imgFile.exists()) imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/forum/" + post.getImageName());
 
             if (imgFile.exists()) {
                 try {
@@ -436,17 +451,63 @@ public class ForumFeedController {
                     iv.setFitHeight(200);
                     iv.setFitWidth(600);
                     iv.setPreserveRatio(true);
-
-                    // Rounded corners for the image wrapper
                     attachmentBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 8; -fx-padding: 2;");
                     attachmentBox.getChildren().add(iv);
                 } catch (Exception e) {}
             }
         }
 
-        // Footer: Comments & Save
         HBox footerRow = new HBox(15);
+        footerRow.setAlignment(Pos.CENTER_LEFT);
         footerRow.setPadding(new Insets(10, 0, 0, 0));
+
+        HBox reactionBar = new HBox(8);
+        reactionBar.setAlignment(Pos.CENTER_LEFT);
+        String[] allowedEmojis = {"👍", "❤️", "😂", "💡"};
+
+        for (String emoji : allowedEmojis) {
+            int count = reactionCounts != null ? reactionCounts.getOrDefault(emoji, 0) : 0;
+            boolean isActive = emoji.equals(myReaction);
+
+            HBox pill = new HBox(4);
+            pill.setAlignment(Pos.CENTER);
+
+            // 🔥 CHANGED TO IMAGEVIEW WITH API URL 🔥
+            ImageView emojiIcon = new ImageView(new Image(getEmojiApiUrl(emoji), true));
+            emojiIcon.setFitWidth(18);
+            emojiIcon.setFitHeight(18);
+            emojiIcon.setPreserveRatio(true);
+
+            Label countLbl = new Label(count > 0 ? String.valueOf(count) : "");
+            countLbl.setStyle(isActive ? "-fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 12px;" : "-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 12px;");
+
+            pill.getChildren().add(emojiIcon);
+            if (count > 0) pill.getChildren().add(countLbl);
+
+            String baseStyle = isActive ?
+                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+            String hoverStyle = isActive ?
+                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #e2e8f0; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+
+            pill.setStyle(baseStyle);
+            pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
+            pill.setOnMouseExited(e -> pill.setStyle(baseStyle));
+
+            pill.setOnMouseClicked(e -> {
+                e.consume();
+                new Thread(() -> {
+                    reactionService.reactToPost(currentUserId, post.getId(), emoji);
+                    Platform.runLater(this::refreshFeed);
+                }).start();
+            });
+
+            reactionBar.getChildren().add(pill);
+        }
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
         HBox commentsBtn = new HBox(6);
         commentsBtn.setAlignment(Pos.CENTER);
@@ -460,7 +521,7 @@ public class ForumFeedController {
         saveBtn.setAlignment(Pos.CENTER);
         saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: " + (isSaved ? "#eff6ff" : "transparent") + ";");
         Label saveLabel = new Label(isSaved ? "🔖 Saved" : "🔖 Save");
-        saveLabel.setStyle("-fx-text-fill: " + (isSaved ? "#2563eb" : "#64748b") + "; -fx-font-size: 12px; -fx-font-weight: bold;");
+        saveLabel.setStyle("-fx-text-fill: " + (isSaved ? "#2563eb" : "#64748b") + "-fx-font-size: 12px; -fx-font-weight: bold;");
         saveBtn.getChildren().add(saveLabel);
 
         saveBtn.setOnMouseEntered(e -> { if (!isSaved) saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #f1f5f9;"); });
@@ -473,12 +534,11 @@ public class ForumFeedController {
             refreshFeed();
         });
 
-        footerRow.getChildren().addAll(commentsBtn, saveBtn);
+        footerRow.getChildren().addAll(reactionBar, spacer, commentsBtn, saveBtn);
         contentBox.getChildren().addAll(headerRow, titleLabel, contentLabel);
         if(!attachmentBox.getChildren().isEmpty()) contentBox.getChildren().add(attachmentBox);
         contentBox.getChildren().add(footerRow);
 
-        // --- 3. Assemble the Main Card ---
         HBox mainCard = new HBox(voteBox, contentBox);
 
         String baseStyle = "-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 10, 0, 0, 4); -fx-cursor: hand;";
@@ -492,7 +552,7 @@ public class ForumFeedController {
             mainCard.setStyle(baseStyle);
             mainCard.setOnMouseEntered(e -> {
                 mainCard.setStyle(hoverStyle);
-                mainCard.setTranslateY(-1); // Subtle lift effect
+                mainCard.setTranslateY(-1);
             });
             mainCard.setOnMouseExited(e -> {
                 mainCard.setStyle(baseStyle);
@@ -503,7 +563,6 @@ public class ForumFeedController {
         mainCard.setOnMouseClicked(e -> openPostDetails(post));
         return mainCard;
     }
-    // ==========================================
 
     private void handleVote(Post post, int type) {
         if (post.getMyVote() == type) {
