@@ -250,13 +250,7 @@ public class NovaDashboardController {
                                     models.forum.Post targetPost = new services.forum.PostService().getPostById(postId);
                                     if (targetPost != null) {
                                         utils.ForumSession.currentPost = targetPost;
-
-                                        // ­ƒöÑ TELL IT TO AUTO-SCROLL TO THE BOTTOM ­ƒöÑ
-                                        if ("FORUM_REPLY".equals(n.getType())) {
-                                            controllers.forum.PostDetailsController.scrollToBottomFlag = true;
-                                        }
-
-                                        setActiveButton(btnForum);
+setActiveButton(btnForum);
                                         loadPage(route);
                                         return;
                                     }
@@ -493,18 +487,27 @@ public class NovaDashboardController {
         themePopup.show(btnTheme.getScene().getWindow(), b.getMinX() - 160, b.getMaxY() + 6);
     }
 
+    // Schedule pane reference (shown inline in popup)
+    private javafx.scene.layout.VBox schedulePane;
+    private javafx.scene.control.Spinner<Integer> spDarkH, spDarkM, spLightH, spLightM;
+
     private void buildThemePopup() {
         themePopup = new Popup();
         themePopup.setAutoHide(true);
+
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(0);
         card.setStyle("-fx-background-color:#1e1e2e;-fx-border-color:#3d3d5c;-fx-border-width:1;-fx-border-radius:12;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.4),20,0,0,6);-fx-padding:8 0;");
-        card.setPrefWidth(220);
+        card.setPrefWidth(260);
+
         javafx.scene.control.Label title = new javafx.scene.control.Label("Appearance");
         title.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:6 16 8 16;");
         card.getChildren().add(title);
+
         javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
         sep.setStyle("-fx-background-color:#2d2d4e;");
         card.getChildren().add(sep);
+
+        // Mode buttons
         String[] lbls = {"\u2600  Light", "\uD83C\uDF19  Dark", "\u23F0  Schedule"};
         ThemeManager.Mode[] modes = {ThemeManager.Mode.LIGHT, ThemeManager.Mode.DARK, ThemeManager.Mode.SCHEDULED};
         for (int i = 0; i < lbls.length; i++) {
@@ -512,29 +515,97 @@ public class NovaDashboardController {
             boolean active = ThemeManager.getInstance().getMode() == m;
             javafx.scene.control.Button btn = new javafx.scene.control.Button(lbls[i]);
             btn.setMaxWidth(Double.MAX_VALUE);
-            btn.setStyle("-fx-background-color:"+(active?"rgba(79,142,247,0.15)":"transparent")+";-fx-text-fill:"+(active?"#60a5fa":"#e2e8f0")+";-fx-font-size:13px;-fx-font-weight:"+(active?"bold":"normal")+";-fx-padding:10 16;-fx-cursor:hand;-fx-background-radius:0;-fx-alignment:CENTER_LEFT;-fx-pref-width:220;");
+            btn.setStyle("-fx-background-color:"+(active?"rgba(79,142,247,0.15)":"transparent")+";-fx-text-fill:"+(active?"#60a5fa":"#e2e8f0")+";-fx-font-size:13px;-fx-font-weight:"+(active?"bold":"normal")+";-fx-padding:10 16;-fx-cursor:hand;-fx-background-radius:0;-fx-alignment:CENTER_LEFT;-fx-pref-width:260;");
             btn.setOnAction(e -> {
-                if (m == ThemeManager.Mode.SCHEDULED) { themePopup.hide(); openScheduleDialog(); }
-                else { if (m == ThemeManager.Mode.LIGHT) ThemeManager.getInstance().setLight(); else ThemeManager.getInstance().setDark(); themePopup.hide(); themePopup = null; }
+                if (m == ThemeManager.Mode.LIGHT)  { ThemeManager.getInstance().setLight(); themePopup.hide(); themePopup = null; }
+                else if (m == ThemeManager.Mode.DARK) { ThemeManager.getInstance().setDark(); themePopup.hide(); themePopup = null; }
+                else { toggleSchedulePane(); }
             });
             card.getChildren().add(btn);
         }
+
+        // ── Inline schedule pane ──────────────────────────────────────────────
+        schedulePane = new javafx.scene.layout.VBox(10);
+        schedulePane.setStyle("-fx-padding:14 16;-fx-background-color:#16162a;-fx-border-color:transparent transparent #2d2d4e transparent;-fx-border-width:0 0 1 0;");
+        schedulePane.setVisible(false);
+        schedulePane.setManaged(false);
+
+        // Presets
+        javafx.scene.control.Label presetLbl = new javafx.scene.control.Label("QUICK PRESETS");
+        presetLbl.setStyle("-fx-text-fill:#64748b;-fx-font-size:10px;-fx-font-weight:bold;");
+        javafx.scene.control.ComboBox<String> cbPresets = new javafx.scene.control.ComboBox<>();
+        cbPresets.getItems().add("-- Custom --");
+        cbPresets.getItems().addAll(ThemeManager.PRESETS.keySet());
+        cbPresets.setValue("-- Custom --");
+        cbPresets.setMaxWidth(Double.MAX_VALUE);
+        cbPresets.setStyle("-fx-background-color:#252535;-fx-text-fill:#e2e8f0;-fx-border-color:#3d3d5c;-fx-border-radius:6;-fx-background-radius:6;");
+
+        // Dark time row
+        javafx.scene.control.Label darkLbl = new javafx.scene.control.Label("DARK AT");
+        darkLbl.setStyle("-fx-text-fill:#64748b;-fx-font-size:10px;-fx-font-weight:bold;");
+        spDarkH = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,20));
+        spDarkM = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0,5));
+        spDarkH.setPrefWidth(60); spDarkM.setPrefWidth(60); spDarkH.setEditable(true); spDarkM.setEditable(true);
+        javafx.scene.control.Label colon1 = new javafx.scene.control.Label(":");
+        colon1.setStyle("-fx-text-fill:#e2e8f0;-fx-font-size:16px;-fx-font-weight:bold;");
+        javafx.scene.layout.HBox darkRow = new javafx.scene.layout.HBox(6, spDarkH, colon1, spDarkM);
+        darkRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Light time row
+        javafx.scene.control.Label lightLbl = new javafx.scene.control.Label("LIGHT AT");
+        lightLbl.setStyle("-fx-text-fill:#64748b;-fx-font-size:10px;-fx-font-weight:bold;");
+        spLightH = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,7));
+        spLightM = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0,5));
+        spLightH.setPrefWidth(60); spLightM.setPrefWidth(60); spLightH.setEditable(true); spLightM.setEditable(true);
+        javafx.scene.control.Label colon2 = new javafx.scene.control.Label(":");
+        colon2.setStyle("-fx-text-fill:#e2e8f0;-fx-font-size:16px;-fx-font-weight:bold;");
+        javafx.scene.layout.HBox lightRow = new javafx.scene.layout.HBox(6, spLightH, colon2, spLightM);
+        lightRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Preview label
+        javafx.scene.control.Label preview = new javafx.scene.control.Label();
+        preview.setStyle("-fx-text-fill:#4f8ef7;-fx-font-size:11px;-fx-font-weight:bold;");
+        Runnable updatePreview = () -> preview.setText(String.format("Dark %02d:%02d  Light %02d:%02d",
+            spDarkH.getValue(), spDarkM.getValue(), spLightH.getValue(), spLightM.getValue()));
+        spDarkH.valueProperty().addListener((o,a,b)->updatePreview.run());
+        spDarkM.valueProperty().addListener((o,a,b)->updatePreview.run());
+        spLightH.valueProperty().addListener((o,a,b)->updatePreview.run());
+        spLightM.valueProperty().addListener((o,a,b)->updatePreview.run());
+        updatePreview.run();
+
+        // Preset selection
+        cbPresets.setOnAction(e -> {
+            String sel = cbPresets.getValue();
+            if (sel == null || sel.equals("-- Custom --")) return;
+            java.time.LocalTime[] t = ThemeManager.PRESETS.get(sel);
+            if (t == null) return;
+            spDarkH.getValueFactory().setValue(t[0].getHour());
+            spDarkM.getValueFactory().setValue(t[0].getMinute());
+            spLightH.getValueFactory().setValue(t[1].getHour());
+            spLightM.getValueFactory().setValue(t[1].getMinute());
+        });
+
+        // Apply button
+        javafx.scene.control.Button btnApply = new javafx.scene.control.Button("Apply Schedule");
+        btnApply.setMaxWidth(Double.MAX_VALUE);
+        btnApply.setStyle("-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:6;-fx-cursor:hand;");
+        btnApply.setOnAction(e -> {
+            ThemeManager.getInstance().setScheduled(
+                java.time.LocalTime.of(spDarkH.getValue(), spDarkM.getValue()),
+                java.time.LocalTime.of(spLightH.getValue(), spLightM.getValue()));
+            themePopup.hide();
+            themePopup = null;
+        });
+
+        schedulePane.getChildren().addAll(presetLbl, cbPresets, darkLbl, darkRow, lightLbl, lightRow, preview, btnApply);
+        card.getChildren().add(schedulePane);
         themePopup.getContent().add(card);
     }
 
-    private void openScheduleDialog() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/users/theme-settings.fxml"));
-            Parent root = loader.load();
-            javafx.scene.Scene dlgScene = new javafx.scene.Scene(root, 440, 400);
-            dlgScene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
-            ThemeManager.getInstance().register(dlgScene);
-            Stage dialog = new Stage();
-            dialog.setTitle("Schedule Dark Mode");
-            dialog.setScene(dlgScene);
-            dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            dialog.setResizable(false);
-            dialog.showAndWait();
-        } catch (Exception e) { e.printStackTrace(); }
+    private void toggleSchedulePane() {
+        if (schedulePane == null) return;
+        boolean show = !schedulePane.isVisible();
+        schedulePane.setVisible(show);
+        schedulePane.setManaged(show);
     }
 }
