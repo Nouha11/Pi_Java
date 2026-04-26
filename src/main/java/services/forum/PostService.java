@@ -13,12 +13,26 @@ import java.util.HashMap;
 public class PostService {
 
     private Connection cnx;
+    private ModerationPipeline moderationPipeline;
 
     public PostService() {
         cnx = MyConnection.getInstance().getCnx();
+        this.moderationPipeline = new ModerationPipeline();
     }
 
     public void ajouter(Post p) {
+        // 1. Sanitize text
+        String originalTitle = p.getTitle();
+        String sanitizedTitle = moderationPipeline.sanitize(originalTitle);
+        p.setTitle(sanitizedTitle);
+
+        String originalContent = p.getContent();
+        String sanitizedContent = moderationPipeline.sanitize(originalContent);
+        p.setContent(sanitizedContent);
+
+        boolean wasFlagged = !originalTitle.equals(sanitizedTitle) || !originalContent.equals(sanitizedContent);
+
+        // 2. Save to database
         String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, image_name, link) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -44,11 +58,17 @@ public class PostService {
 
             ps.executeUpdate();
 
+            // 3. Get Real ID and Trigger Report
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 int newPostId = rs.getInt(1);
                 p.setId(newPostId);
                 syncTags(newPostId, p.getTags());
+
+                if (wasFlagged) {
+                    String fullOriginal = "Title: " + originalTitle + " | Content: " + originalContent;
+                    moderationPipeline.triggerAutoReport(p.getAuthorId(), fullOriginal, "POST", newPostId);
+                }
             }
 
             System.out.println("Post ajouté avec succès ! ✅");
@@ -105,6 +125,16 @@ public class PostService {
     }
 
     public void modifier(Post p) {
+        String originalTitle = p.getTitle();
+        String sanitizedTitle = moderationPipeline.sanitize(originalTitle);
+        p.setTitle(sanitizedTitle);
+
+        String originalContent = p.getContent();
+        String sanitizedContent = moderationPipeline.sanitize(originalContent);
+        p.setContent(sanitizedContent);
+
+        boolean wasFlagged = !originalTitle.equals(sanitizedTitle) || !originalContent.equals(sanitizedContent);
+
         String req = "UPDATE post SET title = ?, content = ?, space_id = ?, updated_at = ?, image_name = ?, link = ? WHERE id = ?";
         try {
             PreparedStatement ps = cnx.prepareStatement(req);
@@ -126,6 +156,11 @@ public class PostService {
 
             ps.executeUpdate();
             syncTags(p.getId(), p.getTags());
+
+            if (wasFlagged) {
+                String fullOriginal = "Title: " + originalTitle + " | Content: " + originalContent;
+                moderationPipeline.triggerAutoReport(p.getAuthorId(), fullOriginal, "POST", p.getId());
+            }
 
             System.out.println("✅ Post updated successfully in DB!");
         } catch (SQLException e) {
@@ -183,9 +218,7 @@ public class PostService {
                     linkPs.setInt(2, tagId);
                     linkPs.executeUpdate();
                 }
-            } catch (SQLException e) {
-                System.err.println("Error syncing tag: " + tagName + " -> " + e.getMessage());
-            }
+            } catch (SQLException e) {}
         }
     }
 
@@ -198,9 +231,7 @@ public class PostService {
             while (rs.next()) {
                 saved.add(rs.getInt(1));
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching saved posts: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return saved;
     }
 
@@ -269,9 +300,7 @@ public class PostService {
         try {
             ResultSet rs = cnx.createStatement().executeQuery("SELECT COUNT(*) FROM post");
             if (rs.next()) count = rs.getInt(1);
-        } catch (SQLException e) {
-            System.err.println("Error fetching total posts: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return count;
     }
 
@@ -284,9 +313,7 @@ public class PostService {
                 String space = rs.getString(1) != null ? rs.getString(1) : "General";
                 stats.put(space, rs.getInt(2));
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching space stats: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return stats;
     }
 
@@ -310,9 +337,7 @@ public class PostService {
             if (rs2.next()) {
                 stats.put("comments", rs2.getInt(1));
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching user stats: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return stats;
     }
 
@@ -334,13 +359,9 @@ public class PostService {
         return posts;
     }
 
-    // ==========================================
-    // 🔥 REAL-TIME SEARCH ENGINE (FIXED SQL QUERY) 🔥
-    // ==========================================
     public List<Post> searchPosts(String keyword) {
         List<Post> posts = new ArrayList<>();
 
-        // 🔥 FIXED: Added JOIN statements so it can actually fetch the Author Name and Tags!
         String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
                 "(SELECT GROUP_CONCAT(t.name SEPARATOR ',') FROM post_tags pt JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id = p.id) AS tags_string " +
                 "FROM post p " +
@@ -362,16 +383,11 @@ public class PostService {
                 p.setTitle(rs.getString("title"));
                 p.setContent(rs.getString("content"));
                 p.setAuthorId(rs.getInt("author_id"));
-
-                // It will no longer crash here because author_name is now in the query
                 p.setAuthorName(rs.getString("author_name"));
-
                 if (rs.getObject("space_id") != null) p.setSpaceId(rs.getInt("space_id"));
                 p.setSpaceName(rs.getString("space_name"));
-
                 p.setUpvotes(rs.getInt("upvotes"));
                 p.setCreatedAt(rs.getTimestamp("created_at"));
-
                 try {
                     p.setTags(rs.getString("tags_string"));
                     p.setImageName(rs.getString("image_name"));
@@ -385,15 +401,10 @@ public class PostService {
 
                 posts.add(p);
             }
-        } catch (SQLException e) {
-            System.err.println("🚨 Search Error: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return posts;
     }
 
-    // ==========================================
-    // 🔥 FETCH SINGLE POST BY ID (FOR NOTIFICATIONS) 🔥
-    // ==========================================
     public Post getPostById(int id) {
         String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
                 "(SELECT GROUP_CONCAT(t.name SEPARATOR ',') FROM post_tags pt JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id = p.id) AS tags_string " +
@@ -426,9 +437,7 @@ public class PostService {
                 } catch (SQLException ignore) {}
                 return p;
             }
-        } catch (SQLException e) {
-            System.err.println("Error fetching single post: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return null;
     }
 }

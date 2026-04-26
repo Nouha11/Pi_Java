@@ -13,15 +13,25 @@ public class CommentService {
 
     private Connection conn;
     private NotificationService notificationService;
+    private ModerationPipeline moderationPipeline;
 
     public CommentService() {
         conn = MyConnection.getInstance().getCnx();
         notificationService = new NotificationService();
+        moderationPipeline = new ModerationPipeline();
     }
 
     public void ajouter(Comment c) {
+        // 1. Sanitize the text
+        String originalContent = c.getContent();
+        String sanitizedContent = moderationPipeline.sanitize(originalContent);
+        boolean wasFlagged = !originalContent.equals(sanitizedContent);
+
+        c.setContent(sanitizedContent);
+
+        // 2. Save it to the database
         String query = "INSERT INTO comment (content, post_id, author_id, parent_id, is_solution, image_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pst = conn.prepareStatement(query)) {
+        try (PreparedStatement pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, c.getContent().trim());
             pst.setInt(2, c.getPostId());
             pst.setInt(3, c.getAuthorId());
@@ -31,7 +41,21 @@ public class CommentService {
             pst.setString(6, c.getImageName());
             pst.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 
-            pst.executeUpdate();
+            int rows = pst.executeUpdate();
+
+            // 3. Get the real ID and FIRE THE REPORT if needed
+            if (rows > 0) {
+                ResultSet rs = pst.getGeneratedKeys();
+                if (rs.next()) {
+                    int newCommentId = rs.getInt(1);
+                    c.setId(newCommentId);
+
+                    if (wasFlagged) {
+                        moderationPipeline.triggerAutoReport(c.getAuthorId(), originalContent, "COMMENT", newCommentId);
+                    }
+                }
+            }
+
             notifyPostOwner(c.getPostId(), c.getAuthorId());
         } catch (SQLException e) {
             System.err.println("❌ Error adding comment: " + e.getMessage());
@@ -100,9 +124,6 @@ public class CommentService {
         } catch (SQLException e) {}
     }
 
-    // ==========================================
-    // 🔥 NEW: MODERATOR "SOFT DELETE" 🔥
-    // ==========================================
     public void censorByModerator(int commentId) {
         String censorText = "🚫 *[This comment was removed by a moderator for violating community guidelines]*";
         String query = "UPDATE comment SET content = ?, image_name = NULL, updated_at = ? WHERE id = ?";
@@ -134,11 +155,23 @@ public class CommentService {
     }
 
     public void modifier(Comment c) {
+        // 1. Sanitize the updated text
+        String originalContent = c.getContent();
+        String sanitizedContent = moderationPipeline.sanitize(originalContent);
+        boolean wasFlagged = !originalContent.equals(sanitizedContent);
+
+        c.setContent(sanitizedContent);
+
         try (PreparedStatement pst = conn.prepareStatement("UPDATE comment SET content = ?, updated_at = ? WHERE id = ?")) {
             pst.setString(1, c.getContent().trim());
             pst.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             pst.setInt(3, c.getId());
             pst.executeUpdate();
+
+            // 2. Trigger auto-report if they tried to sneak a bad word into an edit
+            if (wasFlagged) {
+                moderationPipeline.triggerAutoReport(c.getAuthorId(), originalContent, "COMMENT", c.getId());
+            }
         } catch (SQLException e) {}
     }
 }
