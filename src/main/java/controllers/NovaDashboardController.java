@@ -23,6 +23,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Popup;
+import javafx.scene.image.Image;
+import javafx.stage.Popup;
+import utils.ThemeManager;
+import java.util.concurrent.CompletableFuture;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.users.User;
@@ -48,12 +52,19 @@ public class NovaDashboardController {
 
     private User currentUser;
     @FXML private StackPane avatarPane;
+    @FXML private javafx.scene.layout.HBox navBar;
+    @FXML private ImageView  imgNavAvatar;
+    @FXML private Circle     circleNavAvatar;
+    @FXML private Label      lblNavInitials;
+    @FXML private Button     btnTheme;
+    private final services.users.GravatarService gravatarService = new services.users.GravatarService();
+    private Popup themePopup;
 
     @FXML private StackPane notificationPane;
     @FXML private StackPane badgePane;
     @FXML private Label notificationCount;
 
-    // 🔥 CHANGED TO POPUP TO FIX CSS CONFLICTS 🔥
+    // ­ƒöÑ CHANGED TO POPUP TO FIX CSS CONFLICTS ­ƒöÑ
     private Popup notificationPopup;
 
     private Timeline notificationPoller;
@@ -67,6 +78,9 @@ public class NovaDashboardController {
             if (mainAppUI != null && mainAppUI.getScene() != null) {
                 Stage stage = (Stage) mainAppUI.getScene().getWindow();
                 stage.setMaximized(true);
+                ThemeManager.getInstance().register(stage.getScene());
+                ThemeManager.getInstance().setDashboardController(NovaDashboardController.this);
+                ThemeManager.getInstance().applyToScene(stage.getScene());
                 stage.setFullScreenExitHint("");
             }
         });
@@ -96,6 +110,7 @@ public class NovaDashboardController {
 
         if (user != null) {
             utils.SessionManager.setCurrentUserId(user.getId());
+            loadNavGravatarAsync(user.getEmail(), user.getUsername());
             notificationService = new services.NotificationService();
             startNotificationPoller();
         }
@@ -106,7 +121,7 @@ public class NovaDashboardController {
     }
 
     // ==========================================
-    // 🔥 NOTIFICATION UI & ROUTING ENGINE 🔥
+    // ­ƒöÑ NOTIFICATION UI & ROUTING ENGINE ­ƒöÑ
     // ==========================================
     private void startNotificationPoller() {
         updateNotificationBadge();
@@ -140,7 +155,6 @@ public class NovaDashboardController {
             return;
         }
 
-        // 🔥 CUSTOM FLOATING POPUP (Ignores global CSS)
         notificationPopup = new Popup();
         notificationPopup.setAutoHide(true);
 
@@ -160,7 +174,7 @@ public class NovaDashboardController {
         ScrollPane scroll = new ScrollPane(itemsBox);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setFitToWidth(true);
-        scroll.setMaxHeight(400); // 🔥 Stops the menu from stretching off screen
+        scroll.setMaxHeight(400);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: white; -fx-border-color: transparent;");
 
         List<models.Notification> notifs = notificationService.getUserNotifications(currentUser.getId());
@@ -185,7 +199,7 @@ public class NovaDashboardController {
 
                 String iconStr = n.getIcon();
                 if (iconStr == null || iconStr.startsWith("bi-") || iconStr.startsWith("fa-") || iconStr.length() > 4) {
-                    iconStr = "🔔"; // Fallback for raw CSS tags from teammates
+                    iconStr = "­ƒöö";
                 }
                 Label iconLbl = new Label(iconStr);
                 iconLbl.setStyle("-fx-font-size: 18px;");
@@ -236,6 +250,12 @@ public class NovaDashboardController {
                                     models.forum.Post targetPost = new services.forum.PostService().getPostById(postId);
                                     if (targetPost != null) {
                                         utils.ForumSession.currentPost = targetPost;
+
+                                        // ­ƒöÑ TELL IT TO AUTO-SCROLL TO THE BOTTOM ­ƒöÑ
+                                        if ("FORUM_REPLY".equals(n.getType())) {
+                                            controllers.forum.PostDetailsController.scrollToBottomFlag = true;
+                                        }
+
                                         setActiveButton(btnForum);
                                         loadPage(route);
                                         return;
@@ -261,7 +281,6 @@ public class NovaDashboardController {
         rootBox.getChildren().add(scroll);
         notificationPopup.getContent().add(rootBox);
 
-        // Position the popup exactly below the bell icon
         Point2D p = notificationPane.localToScreen(0.0, 0.0);
         notificationPopup.show(notificationPane.getScene().getWindow(), p.getX() - 320, p.getY() + 40);
     }
@@ -297,15 +316,15 @@ public class NovaDashboardController {
         coursesDropdown = new ContextMenu();
         coursesDropdown.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-radius: 8;");
 
-        MenuItem itemMyCourses = new MenuItem("📚  My Courses");
+        MenuItem itemMyCourses = new MenuItem("­ƒôÜ  My Courses");
         itemMyCourses.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
         itemMyCourses.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorCourseView.fxml"); });
 
-        MenuItem itemEnrollments = new MenuItem("📋  Enrollment Requests");
+        MenuItem itemEnrollments = new MenuItem("­ƒôï  Enrollment Requests");
         itemEnrollments.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
         itemEnrollments.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/EnrollmentRequestsView.fxml"); });
 
-        MenuItem itemStudentProgress = new MenuItem("👥  Student Progress");
+        MenuItem itemStudentProgress = new MenuItem("­ƒæÑ  Student Progress");
         itemStudentProgress.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
         itemStudentProgress.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorProgressMonitorView.fxml"); });
 
@@ -333,8 +352,8 @@ public class NovaDashboardController {
             Stage stage = (Stage) mainAppUI.getScene().getWindow();
             boolean isCurrentlyFullscreen = stage.isFullScreen();
             stage.setFullScreen(!isCurrentlyFullscreen);
-            if (!isCurrentlyFullscreen) btnFullscreen.setText("↙️");
-            else btnFullscreen.setText("⛶");
+            if (!isCurrentlyFullscreen) btnFullscreen.setText("ÔåÖ´©Å");
+            else btnFullscreen.setText("ÔøÂ");
         }
     }
 
@@ -401,6 +420,8 @@ public class NovaDashboardController {
             Parent view = FXMLLoader.load(resource);
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
+            view.sceneProperty().addListener((obs, old, scene) -> { if (scene != null) ThemeManager.getInstance().register(scene); });
+            if (view.getScene() != null) ThemeManager.getInstance().applyToScene(view.getScene());
         } catch (Exception e) {}
     }
 
@@ -414,13 +435,14 @@ public class NovaDashboardController {
     }
 
     public static void setView(Parent view) {
-        // Save current view so Back button can restore it
         if (staticContentArea != null && !staticContentArea.getChildren().isEmpty()) {
             previousView = (Parent) staticContentArea.getChildren().get(0);
         }
         if (staticContentArea != null) {
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
+            view.sceneProperty().addListener((obs, old, scene) -> { if (scene != null) ThemeManager.getInstance().register(scene); });
+            if (view.getScene() != null) ThemeManager.getInstance().applyToScene(view.getScene());
             view.setOpacity(0);
             view.setTranslateY(30);
             FadeTransition fadeIn = new FadeTransition(Duration.millis(450), view);
@@ -431,5 +453,88 @@ public class NovaDashboardController {
             ParallelTransition transition = new ParallelTransition(fadeIn, slideUp);
             transition.play();
         }
+    }
+
+    // ── Gravatar navbar avatar ────────────────────────────────────────────────
+    private void loadNavGravatarAsync(String email, String username) {
+        String initials = username.length() >= 2 ? username.substring(0, 2).toUpperCase() : username.toUpperCase();
+        if (lblNavInitials != null) lblNavInitials.setText(initials);
+        CompletableFuture.supplyAsync(() -> gravatarService.getAvatarUrl(email, 40, "identicon"))
+            .thenAccept(url -> Platform.runLater(() -> {
+                try {
+                    Image img = new Image(url, 40, 40, true, true, true);
+                    img.progressProperty().addListener((obs, old, prog) -> {
+                        if (prog.doubleValue() >= 1.0 && !img.isError()) {
+                            imgNavAvatar.setImage(img);
+                            imgNavAvatar.setVisible(true);
+                            imgNavAvatar.setManaged(true);
+                            if (circleNavAvatar != null) circleNavAvatar.setVisible(false);
+                            if (lblNavInitials   != null) lblNavInitials.setVisible(false);
+                        }
+                    });
+                } catch (Exception ignored) {}
+            }));
+    }
+
+    // ── Dark mode inline-style overrides ──────────────────────────────────────
+    public void applyDarkModeToNodes(boolean dark) {
+        if (mainAppUI != null) mainAppUI.setStyle(dark ? "-fx-background-color: #13131f;" : "-fx-background-color: #f8fafc;");
+        if (navBar    != null) navBar.setStyle(dark
+            ? "-fx-background-color: #1a1a2e; -fx-border-color: transparent transparent #2d2d4e transparent; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;"
+            : "-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;");
+    }
+
+    // ── Theme popup ───────────────────────────────────────────────────────────
+    @FXML
+    private void onOpenThemeSettings() {
+        if (themePopup == null) buildThemePopup();
+        if (themePopup.isShowing()) { themePopup.hide(); return; }
+        javafx.geometry.Bounds b = btnTheme.localToScreen(btnTheme.getBoundsInLocal());
+        themePopup.show(btnTheme.getScene().getWindow(), b.getMinX() - 160, b.getMaxY() + 6);
+    }
+
+    private void buildThemePopup() {
+        themePopup = new Popup();
+        themePopup.setAutoHide(true);
+        javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(0);
+        card.setStyle("-fx-background-color:#1e1e2e;-fx-border-color:#3d3d5c;-fx-border-width:1;-fx-border-radius:12;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.4),20,0,0,6);-fx-padding:8 0;");
+        card.setPrefWidth(220);
+        javafx.scene.control.Label title = new javafx.scene.control.Label("Appearance");
+        title.setStyle("-fx-text-fill:#94a3b8;-fx-font-size:11px;-fx-font-weight:bold;-fx-padding:6 16 8 16;");
+        card.getChildren().add(title);
+        javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
+        sep.setStyle("-fx-background-color:#2d2d4e;");
+        card.getChildren().add(sep);
+        String[] lbls = {"\u2600  Light", "\uD83C\uDF19  Dark", "\u23F0  Schedule"};
+        ThemeManager.Mode[] modes = {ThemeManager.Mode.LIGHT, ThemeManager.Mode.DARK, ThemeManager.Mode.SCHEDULED};
+        for (int i = 0; i < lbls.length; i++) {
+            final ThemeManager.Mode m = modes[i];
+            boolean active = ThemeManager.getInstance().getMode() == m;
+            javafx.scene.control.Button btn = new javafx.scene.control.Button(lbls[i]);
+            btn.setMaxWidth(Double.MAX_VALUE);
+            btn.setStyle("-fx-background-color:"+(active?"rgba(79,142,247,0.15)":"transparent")+";-fx-text-fill:"+(active?"#60a5fa":"#e2e8f0")+";-fx-font-size:13px;-fx-font-weight:"+(active?"bold":"normal")+";-fx-padding:10 16;-fx-cursor:hand;-fx-background-radius:0;-fx-alignment:CENTER_LEFT;-fx-pref-width:220;");
+            btn.setOnAction(e -> {
+                if (m == ThemeManager.Mode.SCHEDULED) { themePopup.hide(); openScheduleDialog(); }
+                else { if (m == ThemeManager.Mode.LIGHT) ThemeManager.getInstance().setLight(); else ThemeManager.getInstance().setDark(); themePopup.hide(); themePopup = null; }
+            });
+            card.getChildren().add(btn);
+        }
+        themePopup.getContent().add(card);
+    }
+
+    private void openScheduleDialog() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/users/theme-settings.fxml"));
+            Parent root = loader.load();
+            javafx.scene.Scene dlgScene = new javafx.scene.Scene(root, 440, 400);
+            dlgScene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+            ThemeManager.getInstance().register(dlgScene);
+            Stage dialog = new Stage();
+            dialog.setTitle("Schedule Dark Mode");
+            dialog.setScene(dlgScene);
+            dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            dialog.setResizable(false);
+            dialog.showAndWait();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }
