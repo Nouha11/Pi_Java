@@ -194,7 +194,7 @@ public class UserRewardsController {
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
         Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 6 Free Solid'; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
+        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
         StackPane sp = new StackPane(ico);
         sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
         sp.setStyle("-fx-background-color: " + bgGradient + "; -fx-background-radius: 50;");

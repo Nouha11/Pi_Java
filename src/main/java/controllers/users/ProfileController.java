@@ -251,7 +251,7 @@ public class ProfileController implements Initializable {
         boolean isMini = "MINI_GAME".equals(game.getCategory());
 
         Label iconLbl = new Label(typeIcon(game.getType()));
-        iconLbl.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:22px;-fx-text-fill:white;");
+        iconLbl.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:22px;-fx-text-fill:white;");
         StackPane iconCircle = new StackPane(iconLbl);
         iconCircle.setPrefSize(56, 56); iconCircle.setMaxSize(56, 56);
         iconCircle.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-background-radius:50;");
@@ -277,7 +277,7 @@ public class ProfileController implements Initializable {
 
         // Unfavorite button with proper FA graphic
         Label heartIco = new Label("\uF004");
-        heartIco.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:12px;-fx-text-fill:#e53e3e;");
+        heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:#e53e3e;");
         Label unfavTxt = new Label("  Unfavorite");
         unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#e53e3e;");
         HBox btnContent = new HBox(2, heartIco, unfavTxt); btnContent.setAlignment(Pos.CENTER);
@@ -285,12 +285,12 @@ public class ProfileController implements Initializable {
         btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;-fx-border-color:#fed7d7;-fx-border-radius:8;");
         btnRemove.setOnMouseEntered(e -> {
             btnRemove.setStyle("-fx-background-color:#e53e3e;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;");
-            heartIco.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:12px;-fx-text-fill:white;");
+            heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:white;");
             unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;");
         });
         btnRemove.setOnMouseExited(e -> {
             btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;-fx-border-color:#fed7d7;-fx-border-radius:8;");
-            heartIco.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:12px;-fx-text-fill:#e53e3e;");
+            heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:#e53e3e;");
             unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#e53e3e;");
         });
         btnRemove.setOnAction(e -> {

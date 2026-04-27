@@ -192,7 +192,7 @@ public class UserGamesController {
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
         Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 6 Free Solid'; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
+        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
         StackPane sp = new StackPane(ico);
         sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
         sp.setStyle("-fx-background-color: " + bgGradient + "; -fx-background-radius: 50;");
@@ -226,7 +226,7 @@ public class UserGamesController {
     private VBox miniStat(String faCode, String value, String label) {
         VBox b = new VBox(1); b.setAlignment(Pos.CENTER);
         Label ico = new Label(faCode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 6 Free Solid'; -fx-font-size: 11px; -fx-text-fill: #3b4fd8;");
+        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: 11px; -fx-text-fill: #3b4fd8;");
         Label v = new Label(value); v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2d3748;");
         HBox top = new HBox(3, ico, v); top.setAlignment(Pos.CENTER);
         Label l = new Label(label); l.setStyle("-fx-font-size: 10px; -fx-text-fill: #a0aec0;");

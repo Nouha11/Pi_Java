@@ -490,9 +490,11 @@ setActiveButton(btnForum);
                     Image img = new Image(url, 40, 40, true, true, true);
                     img.progressProperty().addListener((obs, old, prog) -> {
                         if (prog.doubleValue() >= 1.0 && !img.isError()) {
-                            imgNavAvatar.setImage(img);
-                            imgNavAvatar.setVisible(true);
-                            imgNavAvatar.setManaged(true);
+                            if (imgNavAvatar != null) {
+                                imgNavAvatar.setImage(img);
+                                imgNavAvatar.setVisible(true);
+                                imgNavAvatar.setManaged(true);
+                            }
                             if (circleNavAvatar != null) circleNavAvatar.setVisible(false);
                             if (lblNavInitials   != null) lblNavInitials.setVisible(false);
                         }

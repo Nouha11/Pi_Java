@@ -246,7 +246,7 @@ public class GamePlayController {
         flip1.setFromX(1); flip1.setToX(0);
         flip1.setOnFinished(e -> {
             card.setText(sym);
-            String fontStyle = isText ? "" : "-fx-font-family:'Font Awesome 6 Free Solid';";
+            String fontStyle = isText ? "" : "-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;";
             card.setStyle("-fx-background-color:" + col + ";-fx-text-fill:white;" + fontStyle + "-fx-font-size:" + (isText ? "14" : "24") + "px;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.2),8,0,0,3);");
             ScaleTransition flip2 = new ScaleTransition(Duration.millis(150), card);
             flip2.setFromX(0); flip2.setToX(1); flip2.play();
@@ -260,7 +260,7 @@ public class GamePlayController {
                 matchedPairs++; score += 100; lblScore.setText("Score: " + score);
                 PauseTransition pt = new PauseTransition(Duration.millis(300));
                 pt.setOnFinished(ev -> {
-                    String matched = "-fx-background-color:linear-gradient(to bottom right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:24px;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(39,174,96,0.4),8,0,0,3);";
+                    String matched = "-fx-background-color:linear-gradient(to bottom right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:24px;-fx-background-radius:12;-fx-effect:dropshadow(gaussian,rgba(39,174,96,0.4),8,0,0,3);";
                     memoryCards.get(a).setStyle(matched); memoryCards.get(b).setStyle(matched);
                     flippedIndices.clear(); canFlip = true;
                     int pairs = "HARD".equals(game.getDifficulty()) ? 8 : "MEDIUM".equals(game.getDifficulty()) ? 6 : 4;
@@ -557,7 +557,7 @@ public class GamePlayController {
             if (targetsHit + targetsMissed >= totalTargets) { endGame((double) targetsHit / totalTargets >= 0.6); return; }
             String[] t = targets[new Random().nextInt(targets.length)];
             Button btn = new Button(t[0]); btn.setPrefSize(64, 64);
-            btn.setStyle("-fx-background-color:linear-gradient(to bottom right," + t[1] + "," + t[2] + ");-fx-text-fill:white;-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:24px;-fx-background-radius:50;-fx-cursor:hand;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.25),10,0,0,4);");
+            btn.setStyle("-fx-background-color:linear-gradient(to bottom right," + t[1] + "," + t[2] + ");-fx-text-fill:white;-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:24px;-fx-background-radius:50;-fx-cursor:hand;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.25),10,0,0,4);");
             double x = 20 + Math.random() * (700 - 84), y = 20 + Math.random() * (380 - 84);
             btn.setLayoutX(x); btn.setLayoutY(y); btn.setScaleX(0); btn.setScaleY(0);
             arena.getChildren().add(btn); activeTarget = btn;
@@ -655,7 +655,7 @@ public class GamePlayController {
                 if (exIdx[0] >= exercises.length) { running = false; endGame(true); return; }
                 secs[0] = 10;
                 String[] ex = exercises[exIdx[0]];
-                Label ico = new Label(ex[0]); ico.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:32px;-fx-text-fill:white;");
+                Label ico = new Label(ex[0]); ico.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:32px;-fx-text-fill:white;");
                 exIcon.getChildren().setAll(ico);
                 exIcon.setStyle("-fx-background-color:linear-gradient(to bottom right," + ex[3] + "," + ex[4] + ");-fx-background-radius:50;");
                 nameLbl.setText(ex[1]); instrLbl.setText(ex[2]);
@@ -795,7 +795,7 @@ public class GamePlayController {
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
         Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:" + iconSize + "px;-fx-text-fill:" + iconColor + ";");
+        ico.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:" + iconSize + "px;-fx-text-fill:" + iconColor + ";");
         StackPane sp = new StackPane(ico); sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
         sp.setStyle("-fx-background-color:" + bgGradient + ";-fx-background-radius:50;");
         return sp;

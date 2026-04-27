@@ -193,7 +193,7 @@ public class GameLauncherController {
         final boolean[] isFav = {false};
         try { isFav[0] = userId > 0 && favService.isFavorite(userId, game.getId()); } catch (Exception ignored) {}
         Button btnFav = new Button(isFav[0] ? "\uF004" : "\uF08A");
-        btnFav.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:14px;"
+        btnFav.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:14px;"
                 + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
                 + "-fx-text-fill:" + (isFav[0] ? "#e53e3e" : "#a0aec0") + ";");
         btnFav.setOnAction(e -> {
@@ -202,7 +202,7 @@ public class GameLauncherController {
                 boolean nowFav = favService.toggle(userId, game.getId());
                 isFav[0] = nowFav;
                 btnFav.setText(nowFav ? "\uF004" : "\uF08A");
-                btnFav.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:14px;"
+                btnFav.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:14px;"
                         + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
                         + "-fx-text-fill:" + (nowFav ? "#e53e3e" : "#a0aec0") + ";");
             } catch (Exception ex) { System.err.println("Favorite error: " + ex.getMessage()); }
@@ -279,7 +279,7 @@ public class GameLauncherController {
     // ── FA helper ─────────────────────────────────────────────────────────────
     private Label faIcon(String unicode, double size) {
         Label l = new Label(unicode);
-        l.setStyle("-fx-font-family: 'Font Awesome 6 Free Solid'; -fx-font-size: " + size + "px;");
+        l.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: " + size + "px;");
         return l;
     }
 

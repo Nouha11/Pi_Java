@@ -14,8 +14,9 @@ public class MainFX extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
 
-        // Load FontAwesome so icons render everywhere
-        Font.loadFont(getClass().getResourceAsStream("/fonts/fa-solid-900.ttf"), 14);
+        // FontAwesome 5 is loaded automatically by Ikonli from the classpath
+        // Also load our bundled copy to ensure it's available as "Font Awesome 5 Free"
+        javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/fa-solid-900.ttf"), 14);
 
         String path = "/views/users/login.fxml";
         URL fxmlLocation = getClass().getResource(path);
