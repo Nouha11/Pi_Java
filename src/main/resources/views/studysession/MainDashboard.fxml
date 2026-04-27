@@ -60,10 +60,10 @@
     <!-- MAIN CONTENT -->
     <center>
         <StackPane fx:id="contentArea">
-            <fx:include fx:id="courseView"   source="CourseView.fxml"/>
-            <fx:include fx:id="planningView" source="PlanningView.fxml"/>
-            <fx:include fx:id="sessionView"  source="StudySessionView.fxml"/>
-            <fx:include fx:id="statsView"    source="StatsView.fxml"/>
+            <fx:include fx:id="courseView"    source="CourseView.fxml"/>
+            <fx:include fx:id="planningView"  source="PlanningView.fxml"/>
+            <fx:include fx:id="sessionView"   source="StudySessionView.fxml"/>
+            <fx:include fx:id="statsView"     source="StatsView.fxml"/>
         </StackPane>
     </center>
 

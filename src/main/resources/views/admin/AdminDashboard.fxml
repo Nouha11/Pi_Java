@@ -90,10 +90,15 @@
                             <Label fx:id="iconSessions" styleClass="admin-nav-icon"/>
                             <Label text="Study Sessions" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navStudyStats" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showStudyStats">
-                            <Label fx:id="iconStudyStats" styleClass="admin-nav-icon"/>
-                            <Label text="Statistics" styleClass="admin-nav-text"/>
+                        <HBox fx:id="navAnalytics" styleClass="admin-nav-row"
+                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showAnalytics">
+                            <Label fx:id="iconAnalytics" styleClass="admin-nav-icon"/>
+                            <Label text="&#x1F4CA; Analytics" styleClass="admin-nav-text"/>
+                        </HBox>
+                        <HBox fx:id="navCalendar" styleClass="admin-nav-row"
+                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showCalendar">
+                            <Label fx:id="iconCalendar" styleClass="admin-nav-icon"/>
+                            <Label text="&#x1F4C5; Calendar" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 

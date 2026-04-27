@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefWidth="1100" prefHeight="700"
+            style="-fx-background-color: #f0f2f8;"
+            stylesheets="@../../css/study.css"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.studysession.TutorProgressMonitorController">
+
+    <!-- ══════════════════════════════════════════════════════════
+         TOP BAR — title + search field
+         ══════════════════════════════════════════════════════════ -->
+    <top>
+        <VBox style="-fx-background-color: white;
+                     -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;
+                     -fx-padding: 16 24 16 24;">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+
+                <!-- Title block -->
+                <VBox HBox.hgrow="ALWAYS" spacing="3">
+                    <Label text="👥 Student Progress"
+                           style="-fx-font-size: 22px; -fx-font-weight: bold;
+                                  -fx-text-fill: #212529;"/>
+                    <Label text="Monitor enrolled students' learning progress across your courses"
+                           style="-fx-font-size: 12px; -fx-text-fill: #6c757d;"/>
+                </VBox>
+
+                <!-- Search field -->
+                <TextField fx:id="txtSearch"
+                           promptText="🔍 Search students…"
+                           prefWidth="240"
+                           style="-fx-background-radius: 20; -fx-padding: 6 14;
+                                  -fx-border-color: #e2e8f0; -fx-border-radius: 20;
+                                  -fx-font-size: 12px; -fx-background-color: #f8f9fa;"/>
+
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ══════════════════════════════════════════════════════════
+         CENTER — ScrollPane containing vboxCourseCards
+         ══════════════════════════════════════════════════════════ -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
+
+            <!-- Outer padding wrapper -->
+            <VBox>
+                <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+                <!-- Course cards are dynamically added here by the controller -->
+                <VBox fx:id="vboxCourseCards" spacing="20"/>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- ══════════════════════════════════════════════════════════
+         BOTTOM — status bar
+         ══════════════════════════════════════════════════════════ -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="8"
+              style="-fx-padding: 6 24; -fx-background-color: white;
+                     -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="lblStatus" text="Ready"
+                   style="-fx-text-fill: #546e7a; -fx-font-size: 11px;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

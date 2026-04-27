@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane prefWidth="1280" prefHeight="800"
+           stylesheets="@../../css/study.css"
+           xmlns:fx="http://javafx.com/fxml/1"
+           xmlns="http://javafx.com/javafx/17.0.12"
+           fx:controller="controllers.studysession.CourseContentController">
+
+<BorderPane prefWidth="1280" prefHeight="800">
+
+    <!-- ══════════════════════════════════════════════════════════
+         TOP BAR — course title heading
+         ══════════════════════════════════════════════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16"
+              style="-fx-background-color: #1a237e; -fx-padding: 14 24;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 8, 0, 0, 3);">
+            <Label text="📖" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+            <VBox HBox.hgrow="ALWAYS" spacing="2">
+                <Label fx:id="lblCourseTitle" text="Course Title"
+                       style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;
+                              -fx-font-family: 'Segoe UI Semibold', 'Segoe UI', Arial, sans-serif;"/>
+                <Label text="Course Learning Environment"
+                       style="-fx-text-fill: #b0bec5; -fx-font-size: 12px;"/>
+            </VBox>
+            <Label fx:id="lblStatus" text=""
+                   style="-fx-text-fill: #b0bec5; -fx-font-size: 12px; -fx-font-style: italic;"/>
+        </HBox>
+    </top>
+
+    <!-- ══════════════════════════════════════════════════════════
+         CENTER — SplitPane: left (timer + progress) | right (content)
+         ══════════════════════════════════════════════════════════ -->
+    <center>
+        <SplitPane dividerPositions="0.28" BorderPane.alignment="CENTER"
+                   style="-fx-background-color: #f4f6fb; -fx-border-color: transparent;">
+
+            <!-- ─────────────────────────────────────────────────
+                 LEFT PANEL — Pomodoro Timer + Progress
+                 ───────────────────────────────────────────────── -->
+            <VBox spacing="0" minWidth="280" maxWidth="380"
+                  style="-fx-background-color: white;
+                         -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;">
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                            style="-fx-background-color: transparent; -fx-background: transparent;
+                                   -fx-border-color: transparent;">
+                    <VBox spacing="20" style="-fx-padding: 24 20;">
+
+                        <!-- ── Pomodoro Timer Card ── -->
+                        <VBox spacing="12" alignment="CENTER"
+                              style="-fx-background-color: #f8f9fa; -fx-background-radius: 12;
+                                     -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                     -fx-border-width: 1; -fx-padding: 24 16;
+                                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                            <Label text="🍅 Pomodoro Timer"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-text-fill: #1a237e;"/>
+
+                            <!-- Timer display — ≥36px bold as required -->
+                            <Label fx:id="lblTimerDisplay" text="25:00"
+                                   style="-fx-font-size: 48px; -fx-font-weight: bold;
+                                          -fx-text-fill: #1a237e;
+                                          -fx-font-family: 'Segoe UI', monospace, Arial;
+                                          -fx-background-color: #e8eaf6;
+                                          -fx-background-radius: 50;
+                                          -fx-padding: 20 32; -fx-alignment: center;"/>
+
+                            <!-- Cycle count -->
+                            <Label fx:id="lblCycleCount" text="🍅 Cycles: 0"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-text-fill: #546e7a;"/>
+
+                            <!-- Timer control buttons -->
+                            <HBox spacing="8" alignment="CENTER">
+                                <Button fx:id="btnStart" text="▶ Start"
+                                        onAction="#handleStart"
+                                        style="-fx-background-color: #22c55e; -fx-text-fill: white;
+                                               -fx-font-weight: bold; -fx-font-size: 11px;
+                                               -fx-background-radius: 8; -fx-cursor: hand;
+                                               -fx-padding: 5 12;"/>
+                                <Button fx:id="btnPause" text="⏸ Pause"
+                                        onAction="#handlePause"
+                                        style="-fx-background-color: #f59e0b; -fx-text-fill: white;
+                                               -fx-font-weight: bold; -fx-font-size: 11px;
+                                               -fx-background-radius: 8; -fx-cursor: hand;
+                                               -fx-padding: 5 12;"/>
+                                <Button fx:id="btnReset" text="↺ Reset"
+                                        onAction="#handleReset"
+                                        style="-fx-background-color: #ef4444; -fx-text-fill: white;
+                                               -fx-font-weight: bold; -fx-font-size: 11px;
+                                               -fx-background-radius: 8; -fx-cursor: hand;
+                                               -fx-padding: 5 12;"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- ── Progress Card ── -->
+                        <VBox spacing="10"
+                              style="-fx-background-color: #f8f9fa; -fx-background-radius: 12;
+                                     -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                     -fx-border-width: 1; -fx-padding: 20 16;
+                                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                            <Label text="📈 Your Progress"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-text-fill: #1a237e;"/>
+
+                            <!-- Progress bar -->
+                            <ProgressBar fx:id="progressBar" progress="0.0"
+                                         maxWidth="Infinity" prefHeight="12"
+                                         style="-fx-accent: #22c55e; -fx-background-radius: 6;
+                                                -fx-background-color: #e2e8f0;"/>
+
+                            <!-- Progress percentage label -->
+                            <Label fx:id="lblProgressPct" text="📈 0% complete"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                          -fx-text-fill: #374151;"/>
+
+                            <!-- Last activity label -->
+                            <Label fx:id="lblLastActivity" text="Last activity: —"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- ─────────────────────────────────────────────────
+                 RIGHT PANEL — Content, Videos, Wiki, PDFs
+                 ───────────────────────────────────────────────── -->
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                        style="-fx-background-color: #f4f6fb; -fx-background: #f4f6fb;
+                               -fx-border-color: transparent;">
+                <VBox spacing="20" style="-fx-padding: 24 28;">
+
+                    <!-- ── Course Content Card ── -->
+                    <VBox fx:id="vboxContent" spacing="12"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                 -fx-border-width: 1; -fx-padding: 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+                        <Label text="📘 Course Content"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold;
+                                      -fx-text-fill: #1a237e;"/>
+                        <Separator/>
+                        <Label fx:id="lblCourseDescription"
+                               text="This is the content of the course. Your instructor will add detailed materials here."
+                               wrapText="true"
+                               style="-fx-font-size: 13px; -fx-text-fill: #374151; -fx-line-spacing: 3;"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Label fx:id="lblCategory"
+                                   style="-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;
+                                          -fx-font-weight: bold; -fx-padding: 3 10;
+                                          -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                            <Label fx:id="lblDifficulty"
+                                   style="-fx-background-color: #ede9fe; -fx-text-fill: #7c3aed;
+                                          -fx-font-weight: bold; -fx-padding: 3 10;
+                                          -fx-background-radius: 20; -fx-font-size: 12px;" text="—"/>
+                            <Label fx:id="lblDuration"
+                                   style="-fx-text-fill: #64748b; -fx-font-size: 12px;" text="—"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- ── YouTube Videos Section ── -->
+                    <VBox spacing="12"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                 -fx-border-width: 1; -fx-padding: 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+                        <Label text="▶ Recommended Videos"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold;
+                                      -fx-text-fill: #1a237e;"/>
+                        <Separator/>
+                        <!-- Videos are injected here by the controller -->
+                        <VBox fx:id="vboxVideos" spacing="10"/>
+                    </VBox>
+
+                    <!-- ── Wikipedia Summary Card ── -->
+                    <VBox spacing="12"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                 -fx-border-width: 1; -fx-padding: 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+                        <Label text="📖 Wikipedia Summary"
+                               style="-fx-font-size: 15px; -fx-font-weight: bold;
+                                      -fx-text-fill: #1a237e;"/>
+                        <Separator/>
+                        <!-- Wiki content is injected here by the controller -->
+                        <VBox fx:id="vboxWiki" spacing="10"/>
+                    </VBox>
+
+                    <!-- ── PDF Resources Section ── -->
+                    <VBox spacing="12"
+                          style="-fx-background-color: white; -fx-background-radius: 12;
+                                 -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                 -fx-border-width: 1; -fx-padding: 20;
+                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="📚 Resources"
+                                   style="-fx-font-size: 15px; -fx-font-weight: bold;
+                                          -fx-text-fill: #1a237e;" HBox.hgrow="ALWAYS"/>
+                            <!-- Search field for filtering PDF resources -->
+                            <TextField fx:id="txtResourceSearch"
+                                       promptText="🔍 Search resources…"
+                                       prefWidth="200"
+                                       style="-fx-background-radius: 20; -fx-padding: 5 12;
+                                              -fx-border-color: #e2e8f0; -fx-border-radius: 20;
+                                              -fx-font-size: 12px;"/>
+                        </HBox>
+                        <Separator/>
+                        <!-- PDF resource cards are injected here by the controller -->
+                        <VBox fx:id="vboxResources" spacing="10"/>
+                    </VBox>
+
+                </VBox>
+            </ScrollPane>
+
+        </SplitPane>
+    </center>
+
+</BorderPane>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AI STUDY ASSISTANT OVERLAY — floating chat widget
+         ══════════════════════════════════════════════════════════ -->
+    <fx:include source="AiStudyAssistantView.fxml" fx:id="aiAssistant"/>
+
+</StackPane>

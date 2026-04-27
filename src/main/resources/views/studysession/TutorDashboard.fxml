@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="0" prefWidth="1200" prefHeight="800"
+      style="-fx-background-color: #f0f2f8;"
+      stylesheets="@../../css/study.css"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.TutorDashboardController">
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="16"
+          style="-fx-background-color: #1a237e; -fx-padding: 16 24;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 8, 0, 0, 3);">
+        <VBox HBox.hgrow="ALWAYS" spacing="2">
+            <Label text="🎓 Tutor Dashboard"
+                   style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;"/>
+            <Label fx:id="lblWelcome" text="Welcome back!"
+                   style="-fx-text-fill: #b0bec5; -fx-font-size: 12;"/>
+        </VBox>
+        
+        <!-- User Avatar and Name -->
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Label fx:id="lblUsername" text="User"
+                   style="-fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+            <Label fx:id="lblAvatar" text="T"
+                   style="-fx-background-color: #3949ab; -fx-text-fill: white;
+                          -fx-font-size: 16; -fx-font-weight: bold;
+                          -fx-background-radius: 20; -fx-min-width: 40; -fx-min-height: 40;
+                          -fx-alignment: center;"/>
+        </HBox>
+    </HBox>
+
+    <!-- TAB PANE -->
+    <TabPane fx:id="mainTabPane" styleClass="main-tabs" VBox.vgrow="ALWAYS"
+             tabClosingPolicy="UNAVAILABLE">
+        
+        <!-- My Courses Tab — contains nested sub-tabs for Courses, Analytics, Calendar -->
+        <!-- Requirements: 8.1, 8.2, 9.2 -->
+        <Tab text="My Courses" fx:id="tabMyCourses">
+            <AnchorPane fx:id="tabMyCoursesPane">
+                <!-- Nested TabPane is built programmatically by TutorDashboardController -->
+            </AnchorPane>
+        </Tab>
+
+        <!-- Enrollment Requests Tab -->
+        <Tab text="Enrollment Requests" fx:id="tabEnrollmentRequests">
+            <AnchorPane>
+                <!-- Content will be loaded dynamically by controller -->
+            </AnchorPane>
+        </Tab>
+
+        <!-- Study Sessions Tab -->
+        <Tab text="Study Sessions" fx:id="tabStudySessions">
+            <AnchorPane>
+                <!-- Content will be loaded dynamically by controller -->
+            </AnchorPane>
+        </Tab>
+
+        <!-- Student Progress Tab -->
+        <Tab text="👥 Student Progress" fx:id="tabStudentProgress">
+            <AnchorPane>
+                <!-- Content will be loaded dynamically by controller -->
+            </AnchorPane>
+        </Tab>
+    </TabPane>
+
+</VBox>
