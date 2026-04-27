@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -11,7 +13,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<HBox prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
+<HBox prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #f8fafc; -fx-padding: 10 0 0 0; -fx-font-family: 'Segoe UI', sans-serif;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.ForumFeedController">
     <children>
 
         <VBox prefWidth="280.0" spacing="25.0" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0; -fx-padding: 30 20;">
@@ -21,19 +23,27 @@
                     <Label style="-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: #94a3b8; -fx-letter-spacing: 1px;" text="FEEDS" />
 
                     <HBox fx:id="btnHome" alignment="CENTER_LEFT" onMouseClicked="#handleShowAllPosts" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: #eff6ff;">
-                        <Label style="-fx-font-size: 16px;" text="🏠" />
+                        <ImageView fitWidth="20" fitHeight="20" preserveRatio="true">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f3e0.png" backgroundLoading="true"/></image>
+                        </ImageView>
                         <Label style="-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 14px;" text="Home" />
                     </HBox>
                     <HBox fx:id="btnPopular" alignment="CENTER_LEFT" onMouseClicked="#handleShowPopular" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;">
-                        <Label style="-fx-font-size: 16px;" text="🔥" />
+                        <ImageView fitWidth="20" fitHeight="20" preserveRatio="true">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f525.png" backgroundLoading="true"/></image>
+                        </ImageView>
                         <Label style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" text="Popular" />
                     </HBox>
                     <HBox fx:id="btnSaved" alignment="CENTER_LEFT" onMouseClicked="#handleShowSavedPosts" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;">
-                        <Label style="-fx-font-size: 16px;" text="🔖" />
+                        <ImageView fitWidth="20" fitHeight="20" preserveRatio="true">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f516.png" backgroundLoading="true"/></image>
+                        </ImageView>
                         <Label style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" text="Saved" />
                     </HBox>
                     <HBox fx:id="btnSandbox" alignment="CENTER_LEFT" onMouseClicked="#handleOpenSandbox" spacing="12.0" style="-fx-padding: 10 15; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: transparent;">
-                        <Label style="-fx-font-size: 16px;" text="💻" />
+                        <ImageView fitWidth="20" fitHeight="20" preserveRatio="true">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4bb.png" backgroundLoading="true"/></image>
+                        </ImageView>
                         <Label style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 14px;" text="Code Sandbox" />
                     </HBox>
                 </VBox>
@@ -68,24 +78,44 @@
 
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#handleGoToCreatePost" spacing="15.0" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 30; -fx-background-radius: 30; -fx-padding: 10 20; -fx-cursor: text; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
                         <StackPane style="-fx-background-color: #f1f5f9; -fx-background-radius: 50; -fx-padding: 6;">
-                            <Label text="👤" />
+                            <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
+                                <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f464.png" backgroundLoading="true"/></image>
+                            </ImageView>
                         </StackPane>
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 14px;" text="Create a new discussion..." HBox.hgrow="ALWAYS" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Label style="-fx-font-size: 18px; -fx-text-fill: #64748b; -fx-cursor: hand;" text="📷" />
-                        <Label style="-fx-font-size: 18px; -fx-text-fill: #64748b; -fx-cursor: hand;" text="🔗" />
+                        <ImageView fitWidth="20" fitHeight="20" opacity="0.6" style="-fx-cursor: hand;">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4f7.png" backgroundLoading="true"/></image>
+                        </ImageView>
+                        <ImageView fitWidth="20" fitHeight="20" opacity="0.6" style="-fx-cursor: hand;">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f517.png" backgroundLoading="true"/></image>
+                        </ImageView>
                     </HBox>
 
                     <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 30; -fx-background-radius: 30; -fx-padding: 0 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 10, 0, 0, 2);">
-                        <Label style="-fx-text-fill: #94a3b8;" text="🔍" />
+                        <ImageView fitWidth="16" fitHeight="16" opacity="0.5">
+                            <image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f50d.png" backgroundLoading="true"/></image>
+                        </ImageView>
                         <TextField fx:id="searchField" prefWidth="220.0" promptText="Search discussions..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 10 0; -fx-font-size: 13px;" />
                     </HBox>
                 </HBox>
 
                 <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 0 5;">
-                    <Label fx:id="btnSortHot" onMouseClicked="#handleSortHot" style="-fx-padding: 8 16; -fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text="🔥 Hot" />
-                    <Label fx:id="btnSortNew" onMouseClicked="#handleSortNew" style="-fx-padding: 8 16; -fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text="✨ New" />
-                    <Label fx:id="btnSortTop" onMouseClicked="#handleSortTop" style="-fx-padding: 8 16; -fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text="📈 Top" />
+                    <Label fx:id="btnSortHot" onMouseClicked="#handleSortHot" style="-fx-padding: 8 16; -fx-background-color: #eff6ff; -fx-text-fill: #2563eb; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text=" Hot">
+                        <graphic>
+                            <ImageView fitWidth="16" fitHeight="16"><image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f525.png" backgroundLoading="true"/></image></ImageView>
+                        </graphic>
+                    </Label>
+                    <Label fx:id="btnSortNew" onMouseClicked="#handleSortNew" style="-fx-padding: 8 16; -fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text=" New">
+                        <graphic>
+                            <ImageView fitWidth="16" fitHeight="16"><image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/2728.png" backgroundLoading="true"/></image></ImageView>
+                        </graphic>
+                    </Label>
+                    <Label fx:id="btnSortTop" onMouseClicked="#handleSortTop" style="-fx-padding: 8 16; -fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-font-size: 13px;" text=" Top">
+                        <graphic>
+                            <ImageView fitWidth="16" fitHeight="16"><image><Image url="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f4c8.png" backgroundLoading="true"/></image></ImageView>
+                        </graphic>
+                    </Label>
                 </HBox>
 
                 <ScrollPane fx:id="mainScrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">

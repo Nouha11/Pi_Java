@@ -120,7 +120,6 @@ public class ForumFeedController {
         }
     }
 
-    // 🔥 HELPER METHOD FOR EMOJI API 🔥
     private String getEmojiApiUrl(String emoji) {
         String hex = switch (emoji) {
             case "👍" -> "1f44d";
@@ -248,11 +247,14 @@ public class ForumFeedController {
             final Space currentSpace = space;
             final HBox spaceRow = new HBox(12);
             spaceRow.setAlignment(Pos.CENTER_LEFT);
-            setSidebarStyle(spaceRow, "transparent", "#475569");
+
             String colorHex = spaceColors[currentSpace.getId() % spaceColors.length];
             Circle dot = new Circle(4, Color.web(colorHex));
             Label nameLabel = new Label(currentSpace.getName());
             spaceRow.getChildren().addAll(dot, nameLabel);
+
+            setSidebarStyle(spaceRow, "transparent", "#475569");
+
             spaceRow.setOnMouseClicked(e -> {
                 setActiveSidebarButton(spaceRow);
                 currentSpaceFilterId = currentSpace.getId();
@@ -296,11 +298,14 @@ public class ForumFeedController {
             final String tagName = entry.getKey();
             final HBox tagBox = new HBox(12);
             tagBox.setAlignment(Pos.CENTER_LEFT);
-            setSidebarStyle(tagBox, "transparent", "#475569");
+
             Label hashLbl = new Label("#");
             hashLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #94a3b8; -fx-font-size: 14px;");
             Label lbl = new Label(tagName);
             tagBox.getChildren().addAll(hashLbl, lbl);
+
+            setSidebarStyle(tagBox, "transparent", "#475569");
+
             tagBox.setOnMouseClicked(e -> filterByTag(tagName));
             trendingTagsContainer.getChildren().add(tagBox);
         }
@@ -380,6 +385,55 @@ public class ForumFeedController {
         }
     }
 
+    // 🔥 HELPER TO UPDATE REACTIONS INSTANTLY WITHOUT RELOADING POST
+    private void updateReactionBarUI(HBox reactionBar, Post post, Map<String, Integer> reactionCounts, String myReaction) {
+        reactionBar.getChildren().clear();
+        String[] allowedEmojis = {"👍", "❤️", "😂", "💡"};
+
+        for (String emoji : allowedEmojis) {
+            int count = reactionCounts != null ? reactionCounts.getOrDefault(emoji, 0) : 0;
+            boolean isActive = emoji.equals(myReaction);
+
+            HBox pill = new HBox(4);
+            pill.setAlignment(Pos.CENTER);
+
+            ImageView emojiIcon = new ImageView(new Image(getEmojiApiUrl(emoji), true));
+            emojiIcon.setFitWidth(18);
+            emojiIcon.setFitHeight(18);
+            emojiIcon.setPreserveRatio(true);
+
+            Label countLbl = new Label(count > 0 ? String.valueOf(count) : "");
+            countLbl.setStyle(isActive ? "-fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 12px;" : "-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 12px;");
+
+            pill.getChildren().add(emojiIcon);
+            if (count > 0) pill.getChildren().add(countLbl);
+
+            String baseStyle = isActive ?
+                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+            String hoverStyle = isActive ?
+                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #e2e8f0; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+
+            pill.setStyle(baseStyle);
+            pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
+            pill.setOnMouseExited(e -> pill.setStyle(baseStyle));
+
+            pill.setOnMouseClicked(e -> {
+                e.consume();
+                // Save to DB in background, but immediately fetch updated numbers and refresh just THIS bar!
+                new Thread(() -> {
+                    reactionService.reactToPost(currentUserId, post.getId(), emoji);
+                    Map<String, Integer> updatedCounts = reactionService.getReactionsForPost(post.getId());
+                    String updatedMyReact = reactionService.getUserReactionForPost(currentUserId, post.getId());
+                    Platform.runLater(() -> updateReactionBarUI(reactionBar, post, updatedCounts, updatedMyReact));
+                }).start();
+            });
+
+            reactionBar.getChildren().add(pill);
+        }
+    }
+
     private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount, Map<String, Integer> reactionCounts, String myReaction) {
 
         VBox voteBox = new VBox(4);
@@ -406,8 +460,9 @@ public class ForumFeedController {
         downArrowBtn.setOnMouseEntered(e -> downArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: #e0f2fe;"));
         downArrowBtn.setOnMouseExited(e -> downArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: transparent;"));
 
-        upArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, 1); });
-        downArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, -1); });
+        // 🔥 OPTIMISTIC UI: We pass the specific UI labels to handleVote so they update instantly
+        upArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, 1, upArrow, downArrow, voteCount); });
+        downArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, -1, upArrow, downArrow, voteCount); });
         voteBox.getChildren().addAll(upArrowBtn, voteCount, downArrowBtn);
 
         VBox contentBox = new VBox(8);
@@ -461,50 +516,10 @@ public class ForumFeedController {
         footerRow.setAlignment(Pos.CENTER_LEFT);
         footerRow.setPadding(new Insets(10, 0, 0, 0));
 
+        // 🔥 REACTION BAR using isolated helper method
         HBox reactionBar = new HBox(8);
         reactionBar.setAlignment(Pos.CENTER_LEFT);
-        String[] allowedEmojis = {"👍", "❤️", "😂", "💡"};
-
-        for (String emoji : allowedEmojis) {
-            int count = reactionCounts != null ? reactionCounts.getOrDefault(emoji, 0) : 0;
-            boolean isActive = emoji.equals(myReaction);
-
-            HBox pill = new HBox(4);
-            pill.setAlignment(Pos.CENTER);
-
-            // 🔥 CHANGED TO IMAGEVIEW WITH API URL 🔥
-            ImageView emojiIcon = new ImageView(new Image(getEmojiApiUrl(emoji), true));
-            emojiIcon.setFitWidth(18);
-            emojiIcon.setFitHeight(18);
-            emojiIcon.setPreserveRatio(true);
-
-            Label countLbl = new Label(count > 0 ? String.valueOf(count) : "");
-            countLbl.setStyle(isActive ? "-fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 12px;" : "-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 12px;");
-
-            pill.getChildren().add(emojiIcon);
-            if (count > 0) pill.getChildren().add(countLbl);
-
-            String baseStyle = isActive ?
-                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
-                    "-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
-            String hoverStyle = isActive ?
-                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
-                    "-fx-background-color: #e2e8f0; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
-
-            pill.setStyle(baseStyle);
-            pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
-            pill.setOnMouseExited(e -> pill.setStyle(baseStyle));
-
-            pill.setOnMouseClicked(e -> {
-                e.consume();
-                new Thread(() -> {
-                    reactionService.reactToPost(currentUserId, post.getId(), emoji);
-                    Platform.runLater(this::refreshFeed);
-                }).start();
-            });
-
-            reactionBar.getChildren().add(pill);
-        }
+        updateReactionBarUI(reactionBar, post, reactionCounts, myReaction);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -521,17 +536,29 @@ public class ForumFeedController {
         saveBtn.setAlignment(Pos.CENTER);
         saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: " + (isSaved ? "#eff6ff" : "transparent") + ";");
         Label saveLabel = new Label(isSaved ? "🔖 Saved" : "🔖 Save");
-        saveLabel.setStyle("-fx-text-fill: " + (isSaved ? "#2563eb" : "#64748b") + "-fx-font-size: 12px; -fx-font-weight: bold;");
+        saveLabel.setStyle("-fx-text-fill: " + (isSaved ? "#2563eb;" : "#64748b;") + " -fx-font-size: 12px; -fx-font-weight: bold;");
         saveBtn.getChildren().add(saveLabel);
 
-        saveBtn.setOnMouseEntered(e -> { if (!isSaved) saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #f1f5f9;"); });
-        saveBtn.setOnMouseExited(e -> { saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: " + (isSaved ? "#eff6ff" : "transparent") + ";"); });
+        saveBtn.setOnMouseEntered(e -> { if (!mySavedPosts.contains(post.getId())) saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #f1f5f9;"); });
+        saveBtn.setOnMouseExited(e -> { saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: " + (mySavedPosts.contains(post.getId()) ? "#eff6ff" : "transparent") + ";"); });
 
+        // 🔥 OPTIMISTIC UI: Save button updates instantly without redrawing entire feed
         saveBtn.setOnMouseClicked(e -> {
             e.consume();
-            if (isSaved) { postService.unsavePost(currentUserId, post.getId()); mySavedPosts.remove(post.getId()); }
-            else { postService.savePost(currentUserId, post.getId()); mySavedPosts.add(post.getId()); }
-            refreshFeed();
+            boolean currentlySaved = mySavedPosts.contains(post.getId());
+            if (currentlySaved) {
+                postService.unsavePost(currentUserId, post.getId());
+                mySavedPosts.remove(post.getId());
+                saveLabel.setText("🔖 Save");
+                saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: transparent;");
+                saveLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px; -fx-font-weight: bold;");
+            } else {
+                postService.savePost(currentUserId, post.getId());
+                mySavedPosts.add(post.getId());
+                saveLabel.setText("🔖 Saved");
+                saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #eff6ff;");
+                saveLabel.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 12px; -fx-font-weight: bold;");
+            }
         });
 
         footerRow.getChildren().addAll(reactionBar, spacer, commentsBtn, saveBtn);
@@ -564,20 +591,27 @@ public class ForumFeedController {
         return mainCard;
     }
 
-    private void handleVote(Post post, int type) {
+    // 🔥 OPTIMISTIC UI: Modifies the specific labels instantly instead of redrawing the feed
+    private void handleVote(Post post, int type, Label up, Label down, Label voteCount) {
         if (post.getMyVote() == type) {
             postService.updateUpvotes(post.getId(), -type);
+            post.setUpvotes(post.getUpvotes() - type);
             post.setMyVote(0);
             utils.ForumSession.upvotedPosts.remove(post.getId());
             utils.ForumSession.downvotedPosts.remove(post.getId());
         } else {
             int change = (post.getMyVote() == -type) ? type * 2 : type;
             postService.updateUpvotes(post.getId(), change);
+            post.setUpvotes(post.getUpvotes() + change);
             post.setMyVote(type);
             if(type == 1) { utils.ForumSession.upvotedPosts.add(post.getId()); utils.ForumSession.downvotedPosts.remove(post.getId()); }
             else { utils.ForumSession.downvotedPosts.add(post.getId()); utils.ForumSession.upvotedPosts.remove(post.getId()); }
         }
-        refreshFeed();
+
+        // Instant visual update
+        voteCount.setText(String.valueOf(post.getUpvotes()));
+        up.setStyle(post.getMyVote() == 1 ? "-fx-text-fill: #ef4444; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
+        down.setStyle(post.getMyVote() == -1 ? "-fx-text-fill: #3b82f6; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
     }
 
     @FXML
