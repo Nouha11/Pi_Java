@@ -158,7 +158,7 @@ public class CourseContentController implements Initializable {
             desc = "This is the content of the course. Your instructor will add detailed materials here.";
         }
         if (lblCourseDescription != null) lblCourseDescription.setText(desc);
-        
+
         // Use EmojiUtil for consistent emoji display
         if (lblCategory != null) {
             ImageView categoryIcon = EmojiUtil.getEmojiImage("🏷", 14);
@@ -170,7 +170,6 @@ public class CourseContentController implements Initializable {
             }
         }
         if (lblDifficulty != null) lblDifficulty.setText(course.getDifficulty() != null ? course.getDifficulty() : "—");
-        
         // Use EmojiUtil for duration emoji
         if (lblDuration != null) {
             ImageView durationIcon = EmojiUtil.getEmojiImage("⏱️", 14);

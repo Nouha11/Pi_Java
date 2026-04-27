@@ -28,9 +28,9 @@ public class AdminDashboardController {
     @FXML private VBox      navContainer;
 
     @FXML private Button btnToggleUsers, btnToggleLibrary, btnToggleStudy,
-                         btnToggleGame, btnToggleQuiz, btnToggleForum;
+            btnToggleGame, btnToggleQuiz, btnToggleForum;
     @FXML private VBox   usersGroup, libraryGroup, studyGroup,
-                         gameGroup, quizGroup, forumGroup;
+            gameGroup, quizGroup, forumGroup;
 
     @FXML private HBox navHome;
     @FXML private HBox navUsers;
@@ -38,21 +38,17 @@ public class AdminDashboardController {
     @FXML private HBox navCourses, navPlannings, navSessions, navAnalytics, navCalendar;
     @FXML private HBox navGames, navRewards, navGameStats;
     @FXML private HBox navQuizzes, navQuizStats;
-    @FXML private HBox navForum, navForumStats;
+    @FXML private HBox navForum, navForumReports, navForumStats; // 🔥 Added navForumReports
 
-    // Icon labels injected from FXML — set text in Java to avoid encoding issues
     @FXML private Label iconHome, iconUsers, iconBooks, iconLoans, iconPayments;
     @FXML private Label iconCourses, iconPlannings, iconSessions, iconAnalytics, iconCalendar;
     @FXML private Label iconGames, iconRewards, iconGameStats;
-    @FXML private Label iconQuizzes, iconQuizStats, iconForum, iconForumStats;
+    @FXML private Label iconQuizzes, iconQuizStats, iconForum, iconForumReports, iconForumStats; // 🔥 Added iconForumReports
 
     private List<HBox> allNavItems;
     private String adminUsername = "Admin";
     /** Stored so showCalendar() can pass the user to CalendarPlannerController. */
     private User currentUser;
-
-    // Maps each section button to its group for toggle
-    private Map<Button, VBox> sectionMap;
 
     @FXML
     public void initialize() {
@@ -73,9 +69,9 @@ public class AdminDashboardController {
         iconQuizzes.setText("\uD83D\uDCDD"); // memo
         iconQuizStats.setText("\uD83D\uDCCA"); // bar chart
         iconForum.setText("\uD83D\uDCAC");   // speech bubble
+        iconForumReports.setText("\uD83D\uDEA9"); // 🔥 Red Flag Icon for Reports
         iconForumStats.setText("\uD83D\uDCCA"); // bar chart
 
-        // Set toggle button arrows (plain ASCII)
         setToggleText(btnToggleUsers,   "USERS",         false);
         setToggleText(btnToggleLibrary, "LIBRARY",       false);
         setToggleText(btnToggleStudy,   "STUDY SESSION", false);
@@ -83,19 +79,18 @@ public class AdminDashboardController {
         setToggleText(btnToggleQuiz,    "QUIZ",          false);
         setToggleText(btnToggleForum,   "FORUM",         false);
 
+        // 🔥 Added navForumReports to the list
         allNavItems = List.of(
                 navHome, navUsers,
                 navBooks, navLoans, navPayments,
                 navCourses, navPlannings, navSessions, navAnalytics, navCalendar,
                 navGames, navRewards, navGameStats,
-                navQuizzes, navQuizStats, navForum, navForumStats
+                navQuizzes, navQuizStats, navForum, navForumReports, navForumStats
         );
 
-        // Load overview
         loadView("/views/admin/AdminHome.fxml");
         lblPageTitle.setText("Overview");
 
-        // Fullscreen + entrance animation after scene is ready
         Platform.runLater(() -> {
             if (contentArea.getScene() != null) {
                 Stage stage = (Stage) contentArea.getScene().getWindow();
@@ -114,14 +109,11 @@ public class AdminDashboardController {
 
         FadeTransition fade = new FadeTransition(Duration.millis(500), navContainer);
         fade.setToValue(1);
-
         TranslateTransition slide = new TranslateTransition(Duration.millis(500), navContainer);
         slide.setToX(0);
         slide.setInterpolator(Interpolator.EASE_OUT);
-
         new ParallelTransition(fade, slide).play();
 
-        // Stagger content area
         contentArea.setOpacity(0);
         contentArea.setTranslateY(16);
         PauseTransition delay = new PauseTransition(Duration.millis(200));
@@ -138,22 +130,23 @@ public class AdminDashboardController {
 
     public void setCurrentUser(User user) {
         if (user == null) return;
-        
+
         // Subtask 14.2: Role-based access guard for Admin Dashboard
         if (user.getRole() != User.Role.ROLE_ADMIN) {
             System.err.println("[ACCESS DENIED] Role " + user.getRole() + " attempted to access Admin Dashboard");
             redirectToCorrectDashboard(user);
             return;
         }
-        
+
         this.currentUser = user;
+
         adminUsername = user.getUsername();
         lblCurrentUser.setText(adminUsername);
         lblCurrentRole.setText(user.getRole().name());
         if (lblAvatarInitial != null && !adminUsername.isEmpty())
             lblAvatarInitial.setText(String.valueOf(adminUsername.charAt(0)).toUpperCase());
     }
-    
+
     /**
      * Subtask 14.2: Redirect users to their correct dashboard based on role
      */
@@ -163,7 +156,7 @@ public class AdminDashboardController {
             FXMLLoader loader;
             Parent root;
             javafx.scene.Scene scene;
-            
+
             if (user.getRole() == User.Role.ROLE_TUTOR) {
                 loader = new FXMLLoader(getClass().getResource("/views/studysession/TutorDashboard.fxml"));
                 root = loader.load();
@@ -181,7 +174,7 @@ public class AdminDashboardController {
                 scene = new javafx.scene.Scene(root, 1300, 800);
                 stage.setTitle("NOVA - Student Hub");
             }
-            
+
             stage.setScene(scene);
             stage.centerOnScreen();
         } catch (IOException e) {
@@ -189,8 +182,6 @@ public class AdminDashboardController {
             e.printStackTrace();
         }
     }
-
-    // ── TOGGLES ───────────────────────────────────────────────────────────────
 
     @FXML public void toggleUsers()   { toggle(usersGroup,   btnToggleUsers,   "USERS"); }
     @FXML public void toggleLibrary() { toggle(libraryGroup, btnToggleLibrary, "LIBRARY"); }
@@ -217,8 +208,6 @@ public class AdminDashboardController {
         btn.setText(label + (open ? "  v" : "  >"));
     }
 
-    // ── NAVIGATION ────────────────────────────────────────────────────────────
-
     @FXML public void showHome()       { nav(navHome,       "Overview",         "/views/admin/AdminHome.fxml"); }
     @FXML public void showUsers()      { nav(navUsers,      "Users",            "/views/users/user-list.fxml"); }
     @FXML public void showBooks()      { nav(navBooks,      "Books",            "/views/library/BookView.fxml"); }
@@ -238,10 +227,11 @@ public class AdminDashboardController {
     @FXML public void showGameStats()  { nav(navGameStats,  "Game Stats",       "/views/gamification/stats.fxml"); }
     @FXML public void showQuizzes()    { nav(navQuizzes,    "Quizzes",          "/views/quiz/quiz_list.fxml"); }
     @FXML public void showQuizStats()  { nav(navQuizStats,  "Quiz Statistics",  "/views/quiz/quiz_stats.fxml"); }
-    @FXML public void showForum()      { nav(navForum,      "Forum Management", "/views/forum/admin/admin_forum.fxml"); }
-    @FXML public void showForumStats() { nav(navForumStats, "Forum Statistics", "/views/forum/admin/forum_stats.fxml"); }
 
-    // ── HELPERS ───────────────────────────────────────────────────────────────
+    // 🔥 FORUM ROUTES 🔥
+    @FXML public void showForum()      { nav(navForum,      "Forum Management", "/views/forum/admin/admin_forum.fxml"); }
+    @FXML public void showForumReports(){ nav(navForumReports,"Reported Content", "/views/forum/admin/admin_reports.fxml"); }
+    @FXML public void showForumStats() { nav(navForumStats, "Forum Statistics", "/views/forum/admin/forum_stats.fxml"); }
 
     private void nav(HBox active, String title, String fxmlPath) {
         setActive(active);
@@ -257,10 +247,6 @@ public class AdminDashboardController {
             item.getChildren().forEach(n -> {
                 if (n instanceof Label lbl) {
                     lbl.getStyleClass().removeAll("admin-nav-icon-active", "admin-nav-text-active");
-                    if (!lbl.getStyleClass().contains("admin-nav-icon")
-                            && !lbl.getStyleClass().contains("admin-nav-text")) {
-                        // icon labels have no text styleclass — skip
-                    }
                 }
             });
         }
@@ -339,14 +325,11 @@ public class AdminDashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
             Parent view = loader.load();
-            // Pass username to home controller if applicable
             Object ctrl = loader.getController();
             if (ctrl instanceof AdminHomeController homeCtrl && adminUsername != null)
                 homeCtrl.setAdminUsername(adminUsername);
             contentArea.getChildren().setAll(view);
-        } catch (IOException e) {
-            System.err.println("Admin nav error [" + path + "]: " + e.getMessage());
-        }
+        } catch (IOException e) {}
     }
 
     @FXML
@@ -362,8 +345,6 @@ public class AdminDashboardController {
             stage.setScene(scene);
             stage.setResizable(false);
             stage.centerOnScreen();
-        } catch (IOException e) {
-            System.err.println("Logout error: " + e.getMessage());
-        }
+        } catch (IOException e) {}
     }
 }

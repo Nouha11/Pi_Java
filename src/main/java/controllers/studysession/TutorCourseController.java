@@ -209,7 +209,7 @@ public class TutorCourseController implements Initializable {
         // Category + difficulty badges
         HBox badgeRow = new HBox(6);
         badgeRow.setAlignment(Pos.CENTER_LEFT);
-        
+
         // Use EmojiUtil for consistent emoji display
         ImageView categoryIcon = EmojiUtil.getEmojiImage("🏷", 12);
         Label catBadge = new Label(" " + course.getCategory());

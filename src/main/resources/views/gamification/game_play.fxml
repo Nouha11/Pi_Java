@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.gamification.GamePlayController"
+      stylesheets="@../../css/gamification.css"
+      style="-fx-background-color: #f0f2f8;">
+
+    <!-- TOP BAR -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="14">
+        <padding><Insets top="12" left="16" right="16" bottom="12"/></padding>
+
+        <Button fx:id="btnBack" text="← Back" onAction="#goBack"
+                style="-fx-background-color: transparent; -fx-text-fill: #3b4fd8;
+                       -fx-font-weight: bold; -fx-cursor: hand; -fx-border-color: #3b4fd8;
+                       -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 5 12;"/>
+
+        <VBox spacing="2">
+            <Label fx:id="lblGameTitle" text="Game Title"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;"/>
+            <HBox spacing="8">
+                <Label fx:id="lblGameType" text="TYPE"
+                       style="-fx-background-color: #eef0fd; -fx-text-fill: #3b4fd8;
+                              -fx-background-radius: 20; -fx-padding: 2 8; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                <Label fx:id="lblCategory" text="FULL GAME"
+                       style="-fx-background-color: #e8f5e9; -fx-text-fill: #27ae60;
+                              -fx-background-radius: 20; -fx-padding: 2 8; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+            </HBox>
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Label fx:id="lblRewardInfo" text=""
+               style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+
+        <!-- Timer -->
+        <VBox alignment="CENTER" spacing="2"
+              style="-fx-background-color: white; -fx-background-radius: 10;
+                     -fx-border-color: #e4e8f0; -fx-border-radius: 10; -fx-padding: 6 14;">
+            <Label text="TIME" style="-fx-font-size: 9px; -fx-text-fill: #a0aec0;"/>
+            <Label fx:id="lblTimer" text="2:00"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;"/>
+        </VBox>
+
+        <!-- Score -->
+        <VBox alignment="CENTER" spacing="2"
+              style="-fx-background-color: white; -fx-background-radius: 10;
+                     -fx-border-color: #e4e8f0; -fx-border-radius: 10; -fx-padding: 6 14;">
+            <Label text="SCORE" style="-fx-font-size: 9px; -fx-text-fill: #a0aec0;"/>
+            <Label fx:id="lblScore" text="Score: 0"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;"/>
+        </VBox>
+    </HBox>
+
+    <!-- PROGRESS BAR -->
+    <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="5" progress="1.0"
+                 style="-fx-accent: #3b4fd8; -fx-background-color: #e4e8f0;"/>
+
+    <!-- INSTRUCTIONS STRIP -->
+    <HBox style="-fx-background-color: #eef0fd; -fx-padding: 8 20;" alignment="CENTER_LEFT" spacing="8">
+        <Label text="💡" style="-fx-font-size: 14px;"/>
+        <Label fx:id="lblInstructions" text=""
+               style="-fx-text-fill: #3b4fd8; -fx-font-size: 12px;"/>
+    </HBox>
+
+    <!-- GAME AREA -->
+    <StackPane VBox.vgrow="ALWAYS">
+
+        <!-- Scrollable game content -->
+        <ScrollPane fx:id="gameScrollPane" fitToWidth="true" hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    style="-fx-background-color: transparent; -fx-background: transparent;">
+            <VBox fx:id="gameContentArea" alignment="CENTER" spacing="0"
+                  style="-fx-background-color: #f0f2f8; -fx-min-height: 400;"/>
+        </ScrollPane>
+
+        <!-- Overlay (start / result) -->
+        <StackPane fx:id="gameOverlay"
+                   style="-fx-background-color: rgba(240,242,248,0.93);">
+            <VBox fx:id="overlayContent" alignment="CENTER" spacing="16"
+                  style="-fx-padding: 40; -fx-background-color: white; -fx-background-radius: 16;
+                         -fx-border-color: #e4e8f0; -fx-border-radius: 16; -fx-border-width: 1;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 16, 0, 0, 4);"
+                  maxWidth="460">
+            </VBox>
+        </StackPane>
+
+    </StackPane>
+
+    <!-- BOTTOM ACTION BAR -->
+    <HBox fx:id="bottomBar" style="-fx-background-color: white; -fx-border-color: #e4e8f0; -fx-border-width: 1 0 0 0;
+                 -fx-padding: 12 20;" alignment="CENTER_RIGHT" spacing="12">
+        <Button fx:id="btnStart" text="▶  Start Game" onAction="#startGame"
+                style="-fx-background-color: linear-gradient(to right, #3b4fd8, #5b6ef5);
+                       -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;
+                       -fx-background-radius: 8; -fx-padding: 10 28; -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

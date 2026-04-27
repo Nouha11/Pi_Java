@@ -34,6 +34,11 @@
                                -fx-font-size: 13px; -fx-padding: 10 14;
                                -fx-alignment: CENTER_LEFT; -fx-cursor: hand;
                                -fx-background-radius: 8; -fx-border-color: transparent;"/>
+                <Button text="▶  Play Games" onAction="#showPlayGames" maxWidth="Infinity"
+                        style="-fx-background-color: linear-gradient(to right, #3b4fd8, #5b6ef5);
+                               -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 10 14;
+                               -fx-alignment: CENTER_LEFT; -fx-cursor: hand;
+                               -fx-background-radius: 8; -fx-border-color: transparent; -fx-font-weight: bold;"/>
                 <Button text="🏆  Rewards" onAction="#showRewards" maxWidth="Infinity"
                         style="-fx-background-color: transparent; -fx-text-fill: #4a5568;
                                -fx-font-size: 13px; -fx-padding: 10 14;

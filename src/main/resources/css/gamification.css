@@ -4,6 +4,12 @@
    Accent: #3b4fd8 indigo  |  Background: #f0f2f8
    ============================================================ */
 
+/* ── FontAwesome icon font ───────────────────────────────────── */
+.fa-icon {
+    -fx-font-family: "Font Awesome 6 Free Solid";
+    -fx-font-size: 18px;
+}
+
 .root {
     -fx-font-family: "Segoe UI", Arial, sans-serif;
     -fx-font-size: 13px;

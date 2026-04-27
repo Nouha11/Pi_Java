@@ -42,3 +42,6 @@ build/
 # Ignore real API keys and secrets
 src/main/resources/config.properties
 src/main/resources/config/api.properties
+
+# Ignore Pi_web Symfony reference project
+Pi_web/

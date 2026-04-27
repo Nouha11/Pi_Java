@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.ThemeSettingsController"
+            prefWidth="440" prefHeight="400"
+            style="-fx-background-color:#f8fafc;">
+
+    <stylesheets>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox style="-fx-background-color:#1a1f36;-fx-padding:18 24;" alignment="CENTER_LEFT" spacing="10">
+            <Label text="Theme Settings"
+                   style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="NOVA"
+                   style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.4);-fx-font-weight:bold;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="20">
+            <padding><Insets top="24" right="24" bottom="8" left="24"/></padding>
+
+            <!-- Mode selector (ToggleGroup wired in controller) -->
+            <VBox spacing="8">
+                <Label text="APPEARANCE MODE" styleClass="field-label"/>
+                <HBox spacing="10">
+                    <ToggleButton fx:id="btnLight" text="Light" maxWidth="Infinity"
+                                  HBox.hgrow="ALWAYS"
+                                  style="-fx-background-radius:8;-fx-font-weight:bold;-fx-cursor:hand;-fx-padding:10 0;"/>
+                    <ToggleButton fx:id="btnDark"  text="Dark"  maxWidth="Infinity"
+                                  HBox.hgrow="ALWAYS"
+                                  style="-fx-background-radius:8;-fx-font-weight:bold;-fx-cursor:hand;-fx-padding:10 0;"/>
+                    <ToggleButton fx:id="btnSchedule" text="Schedule" maxWidth="Infinity"
+                                  HBox.hgrow="ALWAYS"
+                                  style="-fx-background-radius:8;-fx-font-weight:bold;-fx-cursor:hand;-fx-padding:10 0;"/>
+                </HBox>
+            </VBox>
+
+            <!-- Schedule pane -->
+            <VBox fx:id="schedulePane" spacing="14"
+                  style="-fx-background-color:white;-fx-background-radius:10;-fx-border-color:#e5e7eb;-fx-border-radius:10;-fx-border-width:1;-fx-padding:16;">
+
+                <VBox spacing="6">
+                    <Label text="QUICK PRESETS" styleClass="field-label"/>
+                    <ComboBox fx:id="cbPresets" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label text="SWITCH TO DARK AT" styleClass="field-label"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Spinner fx:id="spDarkHour"  prefWidth="72" editable="true"
+                                 style="-fx-background-radius:8;-fx-border-color:#e5e7eb;-fx-border-radius:8;"/>
+                        <Label text=":" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#374151;"/>
+                        <Spinner fx:id="spDarkMin"   prefWidth="72" editable="true"
+                                 style="-fx-background-radius:8;-fx-border-color:#e5e7eb;-fx-border-radius:8;"/>
+                        <Label text="(24h)" style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label text="SWITCH TO LIGHT AT" styleClass="field-label"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Spinner fx:id="spLightHour" prefWidth="72" editable="true"
+                                 style="-fx-background-radius:8;-fx-border-color:#e5e7eb;-fx-border-radius:8;"/>
+                        <Label text=":" style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#374151;"/>
+                        <Spinner fx:id="spLightMin"  prefWidth="72" editable="true"
+                                 style="-fx-background-radius:8;-fx-border-color:#e5e7eb;-fx-border-radius:8;"/>
+                        <Label text="(24h)" style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"/>
+                    </HBox>
+                </VBox>
+
+                <Label fx:id="lblPreview" text="Dark at 20:00  •  Light at 07:00"
+                       style="-fx-font-size:12px;-fx-text-fill:#4f8ef7;-fx-font-weight:bold;"/>
+            </VBox>
+
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding><Insets top="12" right="24" bottom="20" left="24"/></padding>
+            <Button fx:id="btnCancel" text="Cancel" onAction="#onCancel" styleClass="btn-cancel"/>
+            <Button fx:id="btnApply"  text="Apply"  onAction="#onApply"  styleClass="btn-save"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

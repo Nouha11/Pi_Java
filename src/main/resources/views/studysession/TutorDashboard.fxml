@@ -40,13 +40,20 @@
         <!-- My Courses Tab — contains nested sub-tabs for Courses, Analytics, Calendar -->
         <!-- Requirements: 8.1, 8.2, 9.2 -->
         <Tab text="My Courses" fx:id="tabMyCourses">
-            <AnchorPane fx:id="tabMyCoursesPane">
+            <AnchorPane>
                 <!-- Nested TabPane is built programmatically by TutorDashboardController -->
             </AnchorPane>
         </Tab>
 
         <!-- Enrollment Requests Tab -->
         <Tab text="Enrollment Requests" fx:id="tabEnrollmentRequests">
+            <AnchorPane>
+                <!-- Content will be loaded dynamically by controller -->
+            </AnchorPane>
+        </Tab>
+
+        <!-- Analytics Tab -->
+        <Tab text="Analytics" fx:id="tabAnalytics">
             <AnchorPane>
                 <!-- Content will be loaded dynamically by controller -->
             </AnchorPane>

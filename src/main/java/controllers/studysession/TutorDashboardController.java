@@ -24,6 +24,9 @@ import java.util.ResourceBundle;
  * Enrollment Requests, Study Sessions, and Student Progress.
  *
  * Requirements: 8.1, 8.2, 9.2, 10.1–10.7, 17.3
+ * Provides access to: My Courses, Enrollment Requests, Analytics, and Study Sessions.
+ *
+ * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7
  */
 public class TutorDashboardController implements Initializable {
 
@@ -33,8 +36,11 @@ public class TutorDashboardController implements Initializable {
     @FXML private Label lblAvatar;
 
     // Top-level tabs
+
+    // Tabs (Subtask 12.1)
     @FXML private Tab tabMyCourses;
     @FXML private Tab tabEnrollmentRequests;
+    @FXML private Tab tabAnalytics;
     // NOTE: tabAnalytics has been removed from the top-level TabPane (Requirement 8.2).
     //       Analytics is now a sub-tab inside tabMyCourses.
     @FXML private Tab tabStudySessions;
@@ -53,15 +59,18 @@ public class TutorDashboardController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Load tab content dynamically
         Platform.runLater(() -> {
             // Build the nested TabPane for "My Courses" (Requirements 8.1, 8.2, 9.2)
             loadMyCoursesNestedTabs();
 
             // Load remaining top-level tabs
             loadTabContent(tabEnrollmentRequests, "/views/studysession/EnrollmentRequestsView.fxml");
-            loadTabContent(tabStudySessions,      "/views/studysession/UserStudyDashboard.fxml");
-            loadTabContent(tabStudentProgress,    "/views/studysession/TutorProgressMonitorView.fxml");
+            loadTabContent(tabAnalytics, "/views/studysession/TutorAnalyticsView.fxml");
+            loadTabContent(tabStudySessions, "/views/studysession/UserStudyDashboard.fxml");
+            loadTabContent(tabStudentProgress, "/views/studysession/TutorProgressMonitorView.fxml");
 
+            // Fullscreen after scene is ready
             if (mainTabPane.getScene() != null) {
                 Stage stage = (Stage) mainTabPane.getScene().getWindow();
                 stage.setMaximized(true);
@@ -165,14 +174,24 @@ public class TutorDashboardController implements Initializable {
 
     /**
      * Loads an FXML into a tab's content directly.
+     * Load content into a tab
      */
     private void loadTabContent(Tab tab, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent content = loader.load();
-            tab.setContent(content);
+
+            // Wrap in AnchorPane for proper sizing
+            AnchorPane wrapper = new AnchorPane(content);
+            AnchorPane.setTopAnchor(content, 0.0);
+            AnchorPane.setBottomAnchor(content, 0.0);
+            AnchorPane.setLeftAnchor(content, 0.0);
+            AnchorPane.setRightAnchor(content, 0.0);
+
+            tab.setContent(wrapper);
         } catch (IOException e) {
             System.err.println("TutorDashboard: cannot load " + fxmlPath + " — " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -205,12 +224,13 @@ public class TutorDashboardController implements Initializable {
     public void setCurrentUser(User user) {
         if (user == null) return;
 
-        // Role-based access guard
+        // Subtask 14.2: Role-based access guard for Tutor Dashboard
         if (user.getRole() != User.Role.ROLE_TUTOR) {
             System.err.println("[ACCESS DENIED] Role " + user.getRole() + " attempted to access Tutor Dashboard");
             redirectToCorrectDashboard(user);
             return;
         }
+
 
         this.currentUser = user;
         tutorUsername = user.getUsername();
@@ -232,7 +252,7 @@ public class TutorDashboardController implements Initializable {
     }
     
     /**
-     * Redirect users to their correct dashboard based on role.
+     * Subtask 14.2: Redirect users to their correct dashboard based on role.
      */
     private void redirectToCorrectDashboard(User user) {
         try {

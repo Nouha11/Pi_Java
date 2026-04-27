@@ -1,0 +1,115 @@
+/* ══════════════════════════════════════════════════════════════
+   dark.css  —  NOVA Dark Theme
+   Applied on top of app.css / users.css when dark mode is active
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Root / backgrounds ── */
+.root {
+    -fx-base: #1e1e2e;
+    -fx-background: #1e1e2e;
+    -fx-control-inner-background: #2a2a3e;
+    -fx-control-inner-background-alt: #252535;
+}
+
+.app-root, .content-area {
+    -fx-background-color: #13131f;
+}
+
+/* ── Topbar ── */
+.topbar {
+    -fx-background-color: #1a1a2e;
+    -fx-border-color: transparent transparent #2d2d4e transparent;
+}
+.topbar-title  { -fx-text-fill: #e2e8f0; }
+.topbar-sub    { -fx-text-fill: #94a3b8; }
+.topbar-sep    { -fx-text-fill: #3d3d5c; }
+
+/* ── Sidebar ── */
+.sidebar       { -fx-background-color: #0d0d1a; }
+.sidebar-logo  { -fx-background-color: #080812; }
+
+/* ── Cards ── */
+.profile-card, .dash-card, .stat-card, .form-root {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: #2d2d4e;
+}
+.profile-card-header, .dash-card-header, .profile-avatar-panel {
+    -fx-background-color: #16162a;
+}
+
+/* ── Stat cards ── */
+.stat-card-blue   { -fx-background-color: #1a2035; }
+.stat-card-green  { -fx-background-color: #162520; }
+.stat-card-red    { -fx-background-color: #251520; }
+.stat-card-purple { -fx-background-color: #1e1530; }
+.stat-card-orange { -fx-background-color: #251e15; }
+.stat-card-teal   { -fx-background-color: #152520; }
+.stat-card-dark   { -fx-background-color: #1a1a2e; }
+
+.stat-label { -fx-text-fill: #64748b; }
+.stat-value { -fx-text-fill: #e2e8f0; }
+.stat-hint  { -fx-text-fill: #475569; }
+
+/* ── Labels ── */
+.topbar-title, .dash-card-title, .profile-name,
+.profile-name-lg, .profile-section-title {
+    -fx-text-fill: #e2e8f0;
+}
+.field-label   { -fx-text-fill: #64748b; }
+.profile-value { -fx-text-fill: #cbd5e1; }
+
+/* ── Form fields ── */
+.form-field, .form-combo {
+    -fx-background-color: #252535;
+    -fx-border-color: #3d3d5c;
+    -fx-text-fill: #e2e8f0;
+}
+.form-field:focused, .form-combo:focused {
+    -fx-border-color: #4f8ef7;
+    -fx-background-color: #2a2a3e;
+}
+
+/* ── Table ── */
+.main-table {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: #2d2d4e;
+}
+.main-table .column-header-background { -fx-background-color: #16162a; }
+.main-table .column-header .label     { -fx-text-fill: #94a3b8; }
+.table-row-cell                        { -fx-background-color: #1e1e2e; -fx-border-color: transparent transparent #252535 transparent; }
+.table-row-cell:odd                    { -fx-background-color: #1a1a2e; }
+.table-row-cell:even                   { -fx-background-color: #1e1e2e; }
+.table-row-cell:selected               { -fx-background-color: #1e2d4e; }
+.table-row-cell:selected .text         { -fx-fill: #93c5fd; }
+.table-row-cell:hover                  { -fx-background-color: #252535; }
+.table-row-cell .text                  { -fx-fill: #cbd5e1; }
+
+/* ── Scroll pane ── */
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: #13131f; }
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb { -fx-background-color: #3d3d5c; }
+
+/* ── Nav buttons (NovaDashboard) ── */
+.nav-btn       { -fx-text-fill: #94a3b8; }
+.nav-btn:hover { -fx-background-color: #252535; -fx-text-fill: #e2e8f0; }
+.nav-btn-active { -fx-background-color: #1e2d4e; -fx-text-fill: #93c5fd; }
+.nav-btn-hub   { -fx-background-color: #4f46e5; }
+
+/* ── Sidebar nav items ── */
+.nav-item:hover      { -fx-background-color: rgba(255,255,255,0.05); }
+.nav-item-active     { -fx-background-color: rgba(79,142,247,0.15); }
+.nav-label           { -fx-text-fill: #94a3b8; }
+.nav-label-active    { -fx-text-fill: #93c5fd; }
+
+/* ── Separators ── */
+.separator .line { -fx-border-color: #2d2d4e; }
+
+/* ── Welcome banner ── */
+.welcome-banner { -fx-background-color: linear-gradient(to right, #0d0d1a, #1a1a3e); }
+.welcome-title  { -fx-text-fill: #e2e8f0; }
+.welcome-sub    { -fx-text-fill: #64748b; }
+
+/* ── XP / availability chips ── */
+.xp-badge          { -fx-background-color: #2a2010; -fx-border-color: #78350f; }
+.xp-badge-text     { -fx-text-fill: #fbbf24; }
+.availability-chip { -fx-background-color: #0f2010; -fx-border-color: #166534; }
+.availability-text { -fx-text-fill: #4ade80; }
