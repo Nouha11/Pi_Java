@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.StackPane;
+import models.users.User;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -19,7 +20,6 @@ public class MainDashboardController implements Initializable {
 
     @FXML private StackPane contentArea;
 
-    // injected sub-controllers via fx:id on fx:include — use Parent to support any root type
     @FXML private Parent courseView;
     @FXML private Parent planningView;
     @FXML private Parent sessionView;
@@ -42,9 +42,12 @@ public class MainDashboardController implements Initializable {
         tabSessions.setOnAction(e -> showView(sessionView, tabSessions));
         tabStats.setOnAction(e -> showView(statsView, tabStats));
 
-        // default: show courses
         showView(courseView, tabCourses);
         tabCourses.setSelected(true);
+    }
+
+    public void setCurrentUser(User user) {
+        // no-op — student uses UserStudyDashboardController
     }
 
     private void showView(Parent target, ToggleButton active) {

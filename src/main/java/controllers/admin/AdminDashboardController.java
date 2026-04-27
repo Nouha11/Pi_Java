@@ -35,38 +35,42 @@ public class AdminDashboardController {
     @FXML private HBox navHome;
     @FXML private HBox navUsers;
     @FXML private HBox navBooks, navLoans, navPayments;
-    @FXML private HBox navCourses, navPlannings, navSessions, navStudyStats;
+    @FXML private HBox navCourses, navPlannings, navSessions, navAnalytics, navCalendar;
     @FXML private HBox navGames, navRewards, navGameStats;
     @FXML private HBox navQuizzes, navQuizStats;
     @FXML private HBox navForum, navForumReports, navForumStats; // 🔥 Added navForumReports
 
     @FXML private Label iconHome, iconUsers, iconBooks, iconLoans, iconPayments;
-    @FXML private Label iconCourses, iconPlannings, iconSessions, iconStudyStats;
+    @FXML private Label iconCourses, iconPlannings, iconSessions, iconAnalytics, iconCalendar;
     @FXML private Label iconGames, iconRewards, iconGameStats;
     @FXML private Label iconQuizzes, iconQuizStats, iconForum, iconForumReports, iconForumStats; // 🔥 Added iconForumReports
 
     private List<HBox> allNavItems;
     private String adminUsername = "Admin";
+    /** Stored so showCalendar() can pass the user to CalendarPlannerController. */
+    private User currentUser;
 
     @FXML
     public void initialize() {
-        iconHome.setText("\u2B21");
-        iconUsers.setText("\uD83D\uDC65");
-        iconBooks.setText("\uD83D\uDCDA");
-        iconLoans.setText("\uD83D\uDCCB");
-        iconPayments.setText("\uD83D\uDCB3");
-        iconCourses.setText("\uD83D\uDCD8");
-        iconPlannings.setText("\uD83D\uDCC5");
-        iconSessions.setText("\u23F1");
-        iconStudyStats.setText("\uD83D\uDCCA");
-        iconGames.setText("\uD83C\uDFAE");
-        iconRewards.setText("\uD83C\uDFC6");
-        iconGameStats.setText("\uD83D\uDCC8");
-        iconQuizzes.setText("\uD83D\uDCDD");
-        iconQuizStats.setText("\uD83D\uDCCA");
-        iconForum.setText("\uD83D\uDCAC");
+        // Set icons from Java — no encoding issues
+        iconHome.setText("\u2B21");          // hexagon
+        iconUsers.setText("\uD83D\uDC65");   // people
+        iconBooks.setText("\uD83D\uDCDA");   // books
+        iconLoans.setText("\uD83D\uDCCB");   // clipboard
+        iconPayments.setText("\uD83D\uDCB3"); // card
+        iconCourses.setText("\uD83D\uDCD8"); // blue book
+        iconPlannings.setText("\uD83D\uDCC5"); // calendar
+        iconSessions.setText("\u23F1");      // stopwatch
+        iconAnalytics.setText("\uD83D\uDCCA"); // bar chart
+        iconCalendar.setText("\uD83D\uDCC5");  // calendar
+        iconGames.setText("\uD83C\uDFAE");   // game controller
+        iconRewards.setText("\uD83C\uDFC6"); // trophy
+        iconGameStats.setText("\uD83D\uDCC8"); // chart up
+        iconQuizzes.setText("\uD83D\uDCDD"); // memo
+        iconQuizStats.setText("\uD83D\uDCCA"); // bar chart
+        iconForum.setText("\uD83D\uDCAC");   // speech bubble
         iconForumReports.setText("\uD83D\uDEA9"); // 🔥 Red Flag Icon for Reports
-        iconForumStats.setText("\uD83D\uDCCA");
+        iconForumStats.setText("\uD83D\uDCCA"); // bar chart
 
         setToggleText(btnToggleUsers,   "USERS",         false);
         setToggleText(btnToggleLibrary, "LIBRARY",       false);
@@ -79,7 +83,7 @@ public class AdminDashboardController {
         allNavItems = List.of(
                 navHome, navUsers,
                 navBooks, navLoans, navPayments,
-                navCourses, navPlannings, navSessions, navStudyStats,
+                navCourses, navPlannings, navSessions, navAnalytics, navCalendar,
                 navGames, navRewards, navGameStats,
                 navQuizzes, navQuizStats, navForum, navForumReports, navForumStats
         );
@@ -127,10 +131,14 @@ public class AdminDashboardController {
     public void setCurrentUser(User user) {
         if (user == null) return;
 
+        // Subtask 14.2: Role-based access guard for Admin Dashboard
         if (user.getRole() != User.Role.ROLE_ADMIN) {
+            System.err.println("[ACCESS DENIED] Role " + user.getRole() + " attempted to access Admin Dashboard");
             redirectToCorrectDashboard(user);
             return;
         }
+
+        this.currentUser = user;
 
         adminUsername = user.getUsername();
         lblCurrentUser.setText(adminUsername);
@@ -139,6 +147,9 @@ public class AdminDashboardController {
             lblAvatarInitial.setText(String.valueOf(adminUsername.charAt(0)).toUpperCase());
     }
 
+    /**
+     * Subtask 14.2: Redirect users to their correct dashboard based on role
+     */
     private void redirectToCorrectDashboard(User user) {
         try {
             Stage stage = (Stage) contentArea.getScene().getWindow();
@@ -155,6 +166,7 @@ public class AdminDashboardController {
                 scene.getStylesheets().add(getClass().getResource("/css/study.css").toExternalForm());
                 stage.setTitle("NOVA - Tutor Dashboard");
             } else {
+                // Default to Student Dashboard
                 loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
                 root = loader.load();
                 controllers.NovaDashboardController dashCtrl = loader.getController();
@@ -165,7 +177,10 @@ public class AdminDashboardController {
 
             stage.setScene(scene);
             stage.centerOnScreen();
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            System.err.println("Redirect error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML public void toggleUsers()   { toggle(usersGroup,   btnToggleUsers,   "USERS"); }
@@ -201,7 +216,12 @@ public class AdminDashboardController {
     @FXML public void showCourses()    { nav(navCourses,    "Courses",          "/views/studysession/CourseView.fxml"); }
     @FXML public void showPlannings()  { nav(navPlannings,  "Plannings",        "/views/studysession/PlanningView.fxml"); }
     @FXML public void showSessions()   { nav(navSessions,   "Study Sessions",   "/views/studysession/StudySessionView.fxml"); }
-    @FXML public void showStudyStats() { nav(navStudyStats, "Study Stats",      "/views/studysession/StatsView.fxml"); }
+    @FXML public void showAnalytics()  { nav(navAnalytics,  "Analytics",        "/views/admin/AdminAnalyticsDashboardView.fxml"); }
+    @FXML public void showCalendar() {
+        setActive(navCalendar);
+        lblPageTitle.setText("Calendar");
+        loadCalendarViewAnimated();
+    }
     @FXML public void showGames()      { nav(navGames,      "Games",            "/views/gamification/game_list.fxml"); }
     @FXML public void showRewards()    { nav(navRewards,    "Rewards",          "/views/gamification/reward_list.fxml"); }
     @FXML public void showGameStats()  { nav(navGameStats,  "Game Stats",       "/views/gamification/stats.fxml"); }
@@ -265,6 +285,39 @@ public class AdminDashboardController {
             new ParallelTransition(ft, tt).play();
         } catch (IOException e) {
             System.err.println("Admin nav error [" + path + "]: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads CalendarPlannerView.fxml and passes the current admin user to
+     * CalendarPlannerController via setCurrentUser() for role-based data scoping.
+     *
+     * Requirements: 13.3, 17.1
+     */
+    private void loadCalendarViewAnimated() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/studysession/CalendarPlannerView.fxml"));
+            Parent view = loader.load();
+
+            // Pass current user so CalendarPlannerController scopes data to ROLE_ADMIN
+            Object ctrl = loader.getController();
+            if (ctrl instanceof controllers.studysession.CalendarPlannerController calendarCtrl
+                    && currentUser != null) {
+                calendarCtrl.setCurrentUser(currentUser);
+            }
+
+            view.setOpacity(0);
+            view.setTranslateY(20);
+            contentArea.getChildren().setAll(view);
+            FadeTransition ft = new FadeTransition(Duration.millis(350), view);
+            ft.setToValue(1);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(350), view);
+            tt.setToY(0);
+            tt.setInterpolator(Interpolator.EASE_OUT);
+            new ParallelTransition(ft, tt).play();
+        } catch (IOException e) {
+            System.err.println("Admin nav error [CalendarPlannerView.fxml]: " + e.getMessage());
         }
     }
 

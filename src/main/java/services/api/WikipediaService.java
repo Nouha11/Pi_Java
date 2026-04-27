@@ -62,6 +62,8 @@ public class WikipediaService {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
+                    .header("User-Agent", "NovaLearningPlatform/1.0 (Educational Application; Java HttpClient)")
+                    .header("Accept", "application/json")
                     .GET()
                     .build();
 

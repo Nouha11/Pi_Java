@@ -37,10 +37,11 @@
     <TabPane fx:id="mainTabPane" styleClass="main-tabs" VBox.vgrow="ALWAYS"
              tabClosingPolicy="UNAVAILABLE">
         
-        <!-- My Courses Tab -->
+        <!-- My Courses Tab — contains nested sub-tabs for Courses, Analytics, Calendar -->
+        <!-- Requirements: 8.1, 8.2, 9.2 -->
         <Tab text="My Courses" fx:id="tabMyCourses">
             <AnchorPane>
-                <!-- Content will be loaded dynamically by controller -->
+                <!-- Nested TabPane is built programmatically by TutorDashboardController -->
             </AnchorPane>
         </Tab>
 

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<!--
+  Admin Analytics Dashboard View
+  Requirements: 1.4, 1.6, 2.1, 3.1, 4.1, 5.1, 6.1, 7.1, 15.1, 15.2
+-->
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background-color: #f8fafc; -fx-background: #f8fafc; -fx-border-color: transparent;"
+            stylesheets="@../../css/study.css"
+            maxHeight="Infinity"
+            xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            fx:controller="controllers.admin.AdminAnalyticsDashboardController">
+
+    <VBox spacing="20">
+        <padding><Insets top="24" right="24" bottom="32" left="24"/></padding>
+
+        <!-- ── PAGE HEADER ── -->
+        <VBox spacing="4">
+            <Label text="📊 Analytics Dashboard"
+                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            <Label text="Platform-wide activity, performance metrics, and trends"
+                   style="-fx-font-size: 13px; -fx-text-fill: #64748b;"/>
+        </VBox>
+
+        <!-- ── ROW 0: SUMMARY STAT CARDS ── -->
+        <!-- Requirements: 1.4, 15.2 -->
+        <HBox spacing="16">
+            <!-- Total Study Sessions -->
+            <VBox fx:id="cardTotalSessions" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 12;
+                         -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.07), 8, 0, 0, 3);
+                         -fx-padding: 16;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane style="-fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-padding: 10;">
+                        <Label text="⏱" style="-fx-font-size: 18px;"/>
+                    </StackPane>
+                    <Label text="Total Study Sessions"
+                           style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <Label fx:id="lblTotalSessions" text="—"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </VBox>
+
+            <!-- Total Students -->
+            <VBox fx:id="cardTotalStudents" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 12;
+                         -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.07), 8, 0, 0, 3);
+                         -fx-padding: 16;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane style="-fx-background-color: #f0fdf4; -fx-background-radius: 8; -fx-padding: 10;">
+                        <Label text="👥" style="-fx-font-size: 18px;"/>
+                    </StackPane>
+                    <Label text="Total Students"
+                           style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <Label fx:id="lblTotalStudents" text="—"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </VBox>
+
+            <!-- Total Courses (Published) -->
+            <VBox fx:id="cardTotalCourses" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 12;
+                         -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.07), 8, 0, 0, 3);
+                         -fx-padding: 16;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane style="-fx-background-color: #fdf4ff; -fx-background-radius: 8; -fx-padding: 10;">
+                        <Label text="📘" style="-fx-font-size: 18px;"/>
+                    </StackPane>
+                    <Label text="Published Courses"
+                           style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <Label fx:id="lblTotalCourses" text="—"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </VBox>
+
+            <!-- Total Planning Events -->
+            <VBox fx:id="cardTotalPlannings" HBox.hgrow="ALWAYS" spacing="8" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 12;
+                         -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.07), 8, 0, 0, 3);
+                         -fx-padding: 16;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane style="-fx-background-color: #fffbeb; -fx-background-radius: 8; -fx-padding: 10;">
+                        <Label text="📅" style="-fx-font-size: 18px;"/>
+                    </StackPane>
+                    <Label text="Total Planning Events"
+                           style="-fx-text-fill: #64748b; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+                </HBox>
+                <Label fx:id="lblTotalPlannings" text="—"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </VBox>
+        </HBox>
+
+        <!-- ── ROW 1: SESSIONS OVER TIME LINE CHART ── -->
+        <!-- Requirements: 2.1, 15.3 -->
+        <VBox styleClass="chart-card" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="📈 Study Sessions Over Time"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"
+                       HBox.hgrow="ALWAYS"/>
+                <!-- Weekly / Monthly toggle -->
+                <ToggleButton fx:id="btnSessionsWeekly" text="Weekly"
+                              selected="true"
+                              style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                                     -fx-font-size: 11px; -fx-border-radius: 8;"/>
+                <ToggleButton fx:id="btnSessionsMonthly" text="Monthly"
+                              style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                                     -fx-font-size: 11px; -fx-border-radius: 8;"/>
+            </HBox>
+            <Separator/>
+            <StackPane minHeight="260">
+                <LineChart fx:id="chartSessionsOverTime" animated="true"
+                           style="-fx-background-color: transparent;">
+                    <xAxis><CategoryAxis label="Period"/></xAxis>
+                    <yAxis><NumberAxis label="Sessions" lowerBound="0" autoRanging="true"/></yAxis>
+                </LineChart>
+                <Label fx:id="lblNoDataSessions" text="No session data available for this period."
+                       visible="false" managed="false"
+                       style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                <ProgressIndicator fx:id="spinnerSessions" maxWidth="48" maxHeight="48"/>
+            </StackPane>
+        </VBox>
+
+        <!-- ── ROW 2: DIFFICULTY PIE CHART ── -->
+        <!-- Requirements: 3.1, 15.3 -->
+        <VBox styleClass="chart-card" spacing="12">
+            <Label text="🥧 Sessions by Difficulty"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            <Separator/>
+            <StackPane minHeight="280">
+                <PieChart fx:id="chartDifficulty" animated="true" legendVisible="true"
+                          legendSide="BOTTOM"
+                          style="-fx-background-color: transparent;"/>
+                <Label fx:id="lblNoDataDifficulty" text="No difficulty data available."
+                       visible="false" managed="false"
+                       style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                <ProgressIndicator fx:id="spinnerDifficulty" maxWidth="48" maxHeight="48"/>
+            </StackPane>
+        </VBox>
+
+        <!-- ── ROW 3: TIME SPENT BY COURSE BAR CHART ── -->
+        <!-- Requirements: 4.1, 15.3 -->
+        <VBox styleClass="chart-card" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="⏱ Time Spent by Course"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"
+                       HBox.hgrow="ALWAYS"/>
+                <Label text="From:" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                <DatePicker fx:id="dpFrom" promptText="Start date"
+                            style="-fx-font-size: 11px;" prefWidth="140"/>
+                <Label text="To:" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                <DatePicker fx:id="dpTo" promptText="End date"
+                            style="-fx-font-size: 11px;" prefWidth="140"/>
+            </HBox>
+            <Separator/>
+            <StackPane minHeight="280">
+                <BarChart fx:id="chartTimeByCourse" animated="true"
+                          style="-fx-background-color: transparent;">
+                    <xAxis><CategoryAxis label="Course"/></xAxis>
+                    <yAxis><NumberAxis label="Minutes" lowerBound="0" autoRanging="true"/></yAxis>
+                </BarChart>
+                <Label fx:id="lblNoDataTimeCourse" text="No data for the selected date range."
+                       visible="false" managed="false"
+                       style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                <ProgressIndicator fx:id="spinnerTimeCourse" maxWidth="48" maxHeight="48"/>
+            </StackPane>
+        </VBox>
+
+        <!-- ── ROW 4: STUDENT PROGRESS LINE CHART ── -->
+        <!-- Requirements: 5.1, 15.3 -->
+        <VBox styleClass="chart-card" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="📊 Student Progress Over Time"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"
+                       HBox.hgrow="ALWAYS"/>
+                <!-- Daily / Weekly / Monthly toggle -->
+                <ToggleButton fx:id="btnProgressDaily" text="Daily"
+                              style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                                     -fx-font-size: 11px; -fx-border-radius: 8;"/>
+                <ToggleButton fx:id="btnProgressWeekly" text="Weekly"
+                              selected="true"
+                              style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                                     -fx-font-size: 11px; -fx-border-radius: 8;"/>
+                <ToggleButton fx:id="btnProgressMonthly" text="Monthly"
+                              style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12;
+                                     -fx-font-size: 11px; -fx-border-radius: 8;"/>
+            </HBox>
+            <Separator/>
+            <StackPane minHeight="260">
+                <LineChart fx:id="chartProgress" animated="true"
+                           style="-fx-background-color: transparent;">
+                    <xAxis><CategoryAxis label="Period"/></xAxis>
+                    <yAxis>
+                        <NumberAxis label="Avg Progress (%)" lowerBound="0" upperBound="100"
+                                    tickUnit="10" autoRanging="false"/>
+                    </yAxis>
+                </LineChart>
+                <Label fx:id="lblNoDataProgress" text="No progress data available."
+                       visible="false" managed="false"
+                       style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                <ProgressIndicator fx:id="spinnerProgress" maxWidth="48" maxHeight="48"/>
+            </StackPane>
+        </VBox>
+
+        <!-- ── ROW 5: TUTOR PERFORMANCE TABLE + COURSE POPULARITY ── -->
+        <!-- Requirements: 6.1, 15.2 -->
+        <HBox spacing="16" alignment="TOP_LEFT">
+
+            <!-- Tutor Performance TableView -->
+            <VBox styleClass="chart-card" spacing="12" HBox.hgrow="ALWAYS">
+                <Label text="👑 Tutor Performance"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Separator/>
+                <StackPane minHeight="220">
+                    <TableView fx:id="tablePerformance" styleClass="data-table"
+                               prefHeight="220" maxHeight="320">
+                        <columns>
+                            <TableColumn fx:id="colTutorName"        text="Tutor Name"              prefWidth="160"/>
+                            <TableColumn fx:id="colEnrolledStudents" text="Enrolled Students"        prefWidth="130"/>
+                            <TableColumn fx:id="colAvgCompletion"    text="Avg. Completion Rate (%)" prefWidth="170"/>
+                            <TableColumn fx:id="colActiveCourses"    text="Active Courses"           prefWidth="120"/>
+                            <TableColumn fx:id="colAvgDuration"      text="Avg. Session (min)"       prefWidth="140"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="No tutor data available."
+                                   style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                        </placeholder>
+                    </TableView>
+                    <ProgressIndicator fx:id="spinnerTutor" maxWidth="48" maxHeight="48"/>
+                </StackPane>
+            </VBox>
+
+            <!-- Course Popularity Ranking -->
+            <VBox styleClass="chart-card" spacing="12" prefWidth="280" minWidth="240">
+                <Label text="🏆 Course Popularity"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+                <Separator/>
+                <VBox fx:id="popularityList" spacing="8"/>
+            </VBox>
+        </HBox>
+
+        <!-- ── FOOTER: EXPORT PDF BUTTON ── -->
+        <!-- Requirements: 7.1 -->
+        <HBox alignment="CENTER_RIGHT">
+            <Button fx:id="btnExportPdf" text="📄 Export PDF"
+                    onAction="#handleExportPdf"
+                    style="-fx-background-color: #3b82f6; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-background-radius: 8;
+                           -fx-border-radius: 8; -fx-cursor: hand;
+                           -fx-padding: 5 12; -fx-font-size: 11px;"/>
+        </HBox>
+
+    </VBox>
+</ScrollPane>

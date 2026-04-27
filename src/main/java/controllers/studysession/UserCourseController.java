@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -15,6 +16,7 @@ import javafx.util.Duration;
 import models.studysession.Course;
 import services.studysession.CourseService;
 import services.studysession.EnrollmentService;
+import utils.EmojiUtil;
 import utils.UserSession;
 
 import java.io.IOException;
@@ -120,10 +122,10 @@ public class UserCourseController implements Initializable {
         boolean empty = courses.isEmpty();
         emptyState.setVisible(empty);
         emptyState.setManaged(empty);
-        
+
         // Batch load enrollment statuses before rendering cards
         loadEnrollmentStatuses(courses);
-        
+
         for (Course c : courses) courseCardsPane.getChildren().add(buildCard(c));
     }
 
@@ -132,17 +134,17 @@ public class UserCourseController implements Initializable {
      */
     private void loadEnrollmentStatuses(List<Course> courses) {
         enrollmentStatusMap.clear();
-        
+
         if (courses.isEmpty()) {
             return;
         }
-        
+
         try {
             int currentUserId = UserSession.getInstance().getUserId();
             List<Integer> courseIds = courses.stream()
                     .map(Course::getId)
                     .collect(Collectors.toList());
-            
+
             enrollmentStatusMap = enrollmentService.getBatchEnrollmentStatuses(courseIds, currentUserId);
         } catch (SQLException e) {
             setStatus("Failed to load enrollment statuses: " + e.getMessage(), true);
@@ -203,7 +205,15 @@ public class UserCourseController implements Initializable {
         // Badges
         HBox badgeRow = new HBox(6);
         badgeRow.setAlignment(Pos.CENTER_LEFT);
-        Label catBadge = new Label("🏷 " + course.getCategory());
+
+        // Use EmojiUtil for consistent emoji display
+        ImageView categoryIcon = EmojiUtil.getEmojiImage("🏷", 12);
+        Label catBadge = new Label(" " + course.getCategory());
+        if (categoryIcon != null) {
+            catBadge.setGraphic(categoryIcon);
+        } else {
+            catBadge.setText("🏷 " + course.getCategory());
+        }
         catBadge.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5;" +
                           "-fx-padding: 2 8; -fx-background-radius: 10; -fx-font-size: 11px;");
         Label diffBadge = new Label(course.getDifficulty());
@@ -261,7 +271,7 @@ public class UserCourseController implements Initializable {
         // Enrollment button logic
         String enrollmentStatus = enrollmentStatusMap.get(course.getId());
         boolean isAdminOwned = "ROLE_ADMIN".equals(course.getCreatorRole());
-        
+
         if (isAdminOwned) {
             // Admin-owned courses: show "Details" + "Start" buttons
             Button detailsBtn = new Button("🔍 Details");

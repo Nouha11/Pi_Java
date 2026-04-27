@@ -7,6 +7,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import models.users.User;
+import utils.UserSession;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,20 +21,51 @@ public class UserStudyDashboardController implements Initializable {
     @FXML private Label lblStats;
 
     @FXML private Button tabCourses;
-    @FXML private Button tabPlannings;
+    @FXML private Button tabPlannings;    // Calendar view
+    @FXML private Button tabMyPlannings;  // Planning list (mark complete / start / cancel)
     @FXML private Button tabSessions;
 
     private List<Button> tabs;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        tabs = List.of(tabCourses, tabPlannings, tabSessions);
+        tabs = List.of(tabCourses, tabPlannings, tabMyPlannings, tabSessions);
         showCourses();
     }
 
-    @FXML private void showCourses()   { loadTab("/views/studysession/UserCourseView.fxml",   tabCourses); }
-    @FXML private void showPlannings() { loadTab("/views/studysession/UserPlanningView.fxml",  tabPlannings); }
-    @FXML private void showSessions()  { loadTab("/views/studysession/UserSessionView.fxml",   tabSessions); }
+    @FXML private void showCourses()     { loadTab("/views/studysession/UserCourseView.fxml",   tabCourses); }
+    @FXML private void showMyPlannings() { loadTab("/views/studysession/UserPlanningView.fxml",  tabMyPlannings); }
+    @FXML private void showSessions()    { loadTab("/views/studysession/UserSessionView.fxml",   tabSessions); }
+
+    /** Loads CalendarPlannerView and passes the logged-in student for role-based scoping. */
+    @FXML
+    private void showPlannings() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/CalendarPlannerView.fxml"));
+            Parent view = loader.load();
+
+            CalendarPlannerController ctrl = loader.getController();
+            if (ctrl != null) {
+                UserSession session = UserSession.getInstance();
+                User user = new User();
+                user.setId(session.getUserId());
+                user.setUsername(session.getUsername());
+                user.setEmail(session.getEmail());
+                try {
+                    user.setRole(User.Role.valueOf(session.getRole()));
+                } catch (IllegalArgumentException ex) {
+                    user.setRole(User.Role.ROLE_STUDENT);
+                }
+                ctrl.setCurrentUser(user);
+            }
+
+            contentArea.getChildren().setAll(view);
+            setActiveTab(tabPlannings);
+        } catch (IOException e) {
+            System.err.println("UserStudyDashboard: cannot load CalendarPlannerView — " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     private void loadTab(String fxmlPath, Button active) {
         try {

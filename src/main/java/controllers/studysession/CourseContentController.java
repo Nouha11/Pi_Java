@@ -24,6 +24,7 @@ import services.api.WikipediaService;
 import services.studysession.EnrollmentService;
 import services.studysession.PdfResourceService;
 import services.studysession.StudentProgressService;
+import utils.EmojiUtil;
 import utils.UserSession;
 
 import java.awt.Desktop;
@@ -77,6 +78,9 @@ public class CourseContentController implements Initializable {
     @FXML private Label lblCategory;
     @FXML private Label lblDifficulty;
     @FXML private Label lblDuration;
+
+    // AI Study Assistant controller (injected via fx:include)
+    @FXML private AiStudyAssistantController aiAssistantController;
 
     // ── Services ──────────────────────────────────────────────────────────────
 
@@ -154,9 +158,28 @@ public class CourseContentController implements Initializable {
             desc = "This is the content of the course. Your instructor will add detailed materials here.";
         }
         if (lblCourseDescription != null) lblCourseDescription.setText(desc);
-        if (lblCategory != null) lblCategory.setText("🏷 " + (course.getCategory() != null ? course.getCategory() : "—"));
+
+        // Use EmojiUtil for consistent emoji display
+        if (lblCategory != null) {
+            ImageView categoryIcon = EmojiUtil.getEmojiImage("🏷", 14);
+            if (categoryIcon != null) {
+                lblCategory.setGraphic(categoryIcon);
+                lblCategory.setText(" " + (course.getCategory() != null ? course.getCategory() : "—"));
+            } else {
+                lblCategory.setText("🏷 " + (course.getCategory() != null ? course.getCategory() : "—"));
+            }
+        }
         if (lblDifficulty != null) lblDifficulty.setText(course.getDifficulty() != null ? course.getDifficulty() : "—");
-        if (lblDuration != null) lblDuration.setText("⏱ " + course.getEstimatedDuration() + " min");
+        // Use EmojiUtil for duration emoji
+        if (lblDuration != null) {
+            ImageView durationIcon = EmojiUtil.getEmojiImage("⏱️", 14);
+            if (durationIcon != null) {
+                lblDuration.setGraphic(durationIcon);
+                lblDuration.setText(" " + course.getEstimatedDuration() + " min");
+            } else {
+                lblDuration.setText("⏱ " + course.getEstimatedDuration() + " min");
+            }
+        }
 
         // Load progress
         try {
@@ -178,6 +201,11 @@ public class CourseContentController implements Initializable {
         loadYouTubeVideos();
         loadWikipediaSummary();
         loadPdfResources();
+
+        // Initialize AI assistant with course context (Requirements 2.1, 15.1, 15.3)
+        if (aiAssistantController != null) {
+            aiAssistantController.initData(course);
+        }
     }
 
     // ── 12.3 — Pomodoro Timer ─────────────────────────────────────────────────

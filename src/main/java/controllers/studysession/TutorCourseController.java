@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -16,6 +17,7 @@ import models.studysession.Course;
 import models.studysession.EnrollmentRequest;
 import services.studysession.CourseService;
 import services.studysession.EnrollmentService;
+import utils.EmojiUtil;
 import utils.UserSession;
 
 import java.io.IOException;
@@ -207,7 +209,15 @@ public class TutorCourseController implements Initializable {
         // Category + difficulty badges
         HBox badgeRow = new HBox(6);
         badgeRow.setAlignment(Pos.CENTER_LEFT);
-        Label catBadge = new Label("🏷 " + course.getCategory());
+
+        // Use EmojiUtil for consistent emoji display
+        ImageView categoryIcon = EmojiUtil.getEmojiImage("🏷", 12);
+        Label catBadge = new Label(" " + course.getCategory());
+        if (categoryIcon != null) {
+            catBadge.setGraphic(categoryIcon);
+        } else {
+            catBadge.setText("🏷 " + course.getCategory());
+        }
         catBadge.setStyle(
                 "-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5;" +
                         "-fx-padding: 2 8; -fx-background-radius: 10; -fx-font-size: 11px;"

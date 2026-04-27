@@ -336,8 +336,11 @@
 }
 .chart-card {
     -fx-background-color: white;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.09), 8, 0, 0, 2);
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.07), 8, 0, 0, 3);
     -fx-padding: 16 20 16 20;
 }
 .chart-title {
@@ -365,3 +368,34 @@
     -fx-font-size: 13px;
     -fx-text-fill: #6c757d;
 }
+
+/* ── ANALYTICS / CALENDAR BUTTON CONVENTION ──────────── */
+/* border-radius: 8, cursor hand, padding 5 12, font-size 11px */
+.btn-analytics {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 5 12;
+    -fx-font-size: 11px;
+}
+.btn-analytics-primary {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 5 12;
+    -fx-font-size: 11px;
+}
+.btn-analytics-primary:hover { -fx-background-color: #2563eb; }
+.btn-analytics-danger {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 5 12;
+    -fx-font-size: 11px;
+}
+.btn-analytics-danger:hover { -fx-background-color: #dc2626; }

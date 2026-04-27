@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<!--
+  Calendar Planner View
+  Requirements: 9.4, 9.5, 9.6, 9.7, 14.1, 14.2, 14.4, 15.1, 15.7
+-->
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="controllers.studysession.CalendarPlannerController"
+      stylesheets="@../../css/study.css"
+      spacing="0"
+      style="-fx-background-color: #f8fafc;"
+      VBox.vgrow="ALWAYS"
+      maxHeight="Infinity"
+      maxWidth="Infinity">
+
+    <!-- ── TOOLBAR ── -->
+    <!-- Requirements: 9.6, 9.7 -->
+    <HBox spacing="10" alignment="CENTER_LEFT"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;
+                 -fx-padding: 12 16;">
+
+        <!-- Navigation buttons -->
+        <Button fx:id="btnPrev" text="◀ Prev"
+                onAction="#handlePrev"
+                style="-fx-background-radius: 8; -fx-border-radius: 8;
+                       -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+        <Button fx:id="btnToday" text="Today"
+                onAction="#handleToday"
+                style="-fx-background-color: #3b82f6; -fx-text-fill: white;
+                       -fx-background-radius: 8; -fx-border-radius: 8;
+                       -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;
+                       -fx-font-weight: bold;"/>
+        <Button fx:id="btnNext" text="Next ▶"
+                onAction="#handleNext"
+                style="-fx-background-radius: 8; -fx-border-radius: 8;
+                       -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+
+        <!-- Period label -->
+        <Label fx:id="lblPeriod" text="Loading..."
+               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #0f172a;"
+               HBox.hgrow="ALWAYS"/>
+
+        <!-- View mode toggle group -->
+        <ToggleButton fx:id="btnMonthly" text="Monthly"
+                      selected="true"
+                      onAction="#handleMonthlyView"
+                      style="-fx-background-radius: 8 0 0 8; -fx-border-radius: 8 0 0 8;
+                             -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+        <ToggleButton fx:id="btnWeekly" text="Weekly"
+                      onAction="#handleWeeklyView"
+                      style="-fx-background-radius: 0 8 8 0; -fx-border-radius: 0 8 8 0;
+                             -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+
+        <!-- Filters toggle button -->
+        <Button fx:id="btnToggleFilters" text="🔽 Filters"
+                onAction="#handleToggleFilters"
+                style="-fx-background-radius: 8; -fx-border-radius: 8;
+                       -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+    </HBox>
+
+    <!-- ── COLLAPSIBLE FILTER PANEL ── -->
+    <!-- Requirements: 14.1, 14.2 — initially hidden -->
+    <VBox fx:id="filterPanel"
+          visible="false" managed="false"
+          spacing="10"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;
+                 -fx-padding: 12 16;">
+
+        <HBox spacing="12" alignment="CENTER_LEFT">
+
+            <!-- Course filter -->
+            <VBox spacing="4">
+                <Label text="Course" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbCourse" promptText="All Courses"
+                          prefWidth="160"
+                          style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Difficulty filter -->
+            <VBox spacing="4">
+                <Label text="Difficulty" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbDifficulty" promptText="All"
+                          prefWidth="140"
+                          style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Status filter -->
+            <VBox spacing="4">
+                <Label text="Status" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbStatus" promptText="All"
+                          prefWidth="140"
+                          style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Date range: From -->
+            <VBox spacing="4">
+                <Label text="From" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <DatePicker fx:id="dpFilterFrom" promptText="Start date"
+                            prefWidth="140"
+                            style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Date range: To -->
+            <VBox spacing="4">
+                <Label text="To" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <DatePicker fx:id="dpFilterTo" promptText="End date"
+                            prefWidth="140"
+                            style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Student filter (Admin/Tutor only — visibility controlled in controller) -->
+            <VBox fx:id="cbStudentBox" spacing="4">
+                <Label text="Student" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbStudent" promptText="All Students"
+                          prefWidth="160"
+                          style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Tutor filter (Admin only — visibility controlled in controller) -->
+            <VBox fx:id="cbTutorBox" spacing="4">
+                <Label text="Tutor" style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="cbTutor" promptText="All Tutors"
+                          prefWidth="160"
+                          style="-fx-font-size: 11px;"/>
+            </VBox>
+
+            <!-- Reset filters button -->
+            <VBox spacing="4" alignment="BOTTOM_LEFT">
+                <Label text=" " style="-fx-font-size: 11px;"/>
+                <Button fx:id="btnResetFilters" text="🔄 Reset Filters"
+                        onAction="#handleResetFilters"
+                        style="-fx-background-radius: 8; -fx-border-radius: 8;
+                               -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;"/>
+            </VBox>
+
+        </HBox>
+    </VBox>
+
+    <!-- ── CALENDAR AREA (with spinner overlay) ── -->
+    <!-- Requirements: 10.1, 15.5 -->
+    <StackPane fx:id="calendarArea" VBox.vgrow="ALWAYS"
+               style="-fx-background-color: #f8fafc; -fx-padding: 16;">
+
+        <!-- Spinner shown while loading -->
+        <ProgressIndicator fx:id="spinnerCalendar"
+                           maxWidth="48" maxHeight="48"
+                           visible="true" managed="true"/>
+
+    </StackPane>
+
+    <!-- ── COLOR LEGEND ── -->
+    <!-- Requirements: 10.4, 15.7 -->
+    <HBox fx:id="colorLegend" spacing="16" alignment="CENTER_LEFT"
+          style="-fx-background-color: white;
+                 -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0;
+                 -fx-padding: 10 16;">
+        <Label text="Legend:"
+               style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b;"/>
+        <!-- Legend chips are built programmatically in the controller -->
+    </HBox>
+
+</VBox>

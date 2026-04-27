@@ -3,11 +3,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefWidth="1280" prefHeight="800"
-            stylesheets="@../../css/study.css"
-            xmlns:fx="http://javafx.com/fxml/1"
-            xmlns="http://javafx.com/javafx/17.0.12"
-            fx:controller="controllers.studysession.CourseContentController">
+<StackPane prefWidth="1280" prefHeight="800"
+           stylesheets="@../../css/study.css"
+           xmlns:fx="http://javafx.com/fxml/1"
+           xmlns="http://javafx.com/javafx/17.0.12"
+           fx:controller="controllers.studysession.CourseContentController">
+
+<BorderPane prefWidth="1280" prefHeight="800">
 
     <!-- ══════════════════════════════════════════════════════════
          TOP BAR — course title heading
@@ -221,3 +223,10 @@
     </center>
 
 </BorderPane>
+
+    <!-- ══════════════════════════════════════════════════════════
+         AI STUDY ASSISTANT OVERLAY — floating chat widget
+         ══════════════════════════════════════════════════════════ -->
+    <fx:include source="AiStudyAssistantView.fxml" fx:id="aiAssistant"/>
+
+</StackPane>
