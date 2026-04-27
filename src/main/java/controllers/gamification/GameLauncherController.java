@@ -10,7 +10,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import models.gamification.Game;
+import services.gamification.FavoriteGameService;
 import services.gamification.GameService;
+import utils.UserSession;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ public class GameLauncherController {
     @FXML private ComboBox<String> filterDifficulty;
 
     private final GameService gameService = new GameService();
+    private final FavoriteGameService favService = new FavoriteGameService();
     private List<Game> allGames;
     private StackPane contentArea;
 
@@ -185,8 +188,32 @@ public class GameLauncherController {
                 btnPlay.getStyle().replace(btnHover, btnBg)));
         btnPlay.setOnAction(e -> launchGame(game));
 
+        // Favorite toggle button
+        int userId = UserSession.getInstance().getUserId();
+        final boolean[] isFav = {false};
+        try { isFav[0] = userId > 0 && favService.isFavorite(userId, game.getId()); } catch (Exception ignored) {}
+        Button btnFav = new Button(isFav[0] ? "\uF004" : "\uF08A");
+        btnFav.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:14px;"
+                + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
+                + "-fx-text-fill:" + (isFav[0] ? "#e53e3e" : "#a0aec0") + ";");
+        btnFav.setOnAction(e -> {
+            if (userId <= 0) return;
+            try {
+                boolean nowFav = favService.toggle(userId, game.getId());
+                isFav[0] = nowFav;
+                btnFav.setText(nowFav ? "\uF004" : "\uF08A");
+                btnFav.setStyle("-fx-font-family:'Font Awesome 6 Free Solid';-fx-font-size:14px;"
+                        + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
+                        + "-fx-text-fill:" + (nowFav ? "#e53e3e" : "#a0aec0") + ";");
+            } catch (Exception ex) { System.err.println("Favorite error: " + ex.getMessage()); }
+        });
+
+        HBox actionRow = new HBox(6, btnPlay, btnFav);
+        actionRow.setAlignment(Pos.CENTER);
+        HBox.setHgrow(btnPlay, Priority.ALWAYS);
+
         // Card
-        VBox card = new VBox(10, iconCircle, title, badges, sep, stats, btnPlay);
+        VBox card = new VBox(10, iconCircle, title, badges, sep, stats, actionRow);
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(18, 14, 18, 14));
         card.setPrefWidth(210);

@@ -71,9 +71,12 @@ public class NovaDashboardController {
     // --- TEAMMATE'S USER SESSION LOGIC ---
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        // Store user ID globally for library module
         if (user != null) {
             utils.SessionManager.setCurrentUserId(user.getId());
+            // Hide games & rewards for tutors
+            boolean isTutor = user.getRole() == User.Role.ROLE_TUTOR;
+            if (btnGames   != null) { btnGames.setVisible(!isTutor);   btnGames.setManaged(!isTutor); }
+            if (btnRewards != null) { btnRewards.setVisible(!isTutor); btnRewards.setManaged(!isTutor); }
         }
     }
 
@@ -204,7 +207,7 @@ public class NovaDashboardController {
             ctrl.setContentArea(contentArea);
             setView(view);
         } catch (Exception e) {
-            System.out.println("💥 Could not load game launcher: " + e.getMessage());
+            System.out.println("Could not load game launcher: " + e.getMessage());
             e.printStackTrace();
         }
     }
