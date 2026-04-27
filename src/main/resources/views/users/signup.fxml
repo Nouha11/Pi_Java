@@ -55,9 +55,6 @@
             <VBox spacing="4">
                 <Label text="Create Account" styleClass="form-title"
                        style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
-                <Label text="Already have an account? "
-                       style="-fx-text-fill: #64748b; -fx-font-size: 14px;">
-                </Label>
                 <HBox spacing="4" alignment="CENTER_LEFT">
                     <Label text="Already have an account?" style="-fx-text-fill: #64748b; -fx-font-size: 14px;"/>
                     <Label text="Sign In" style="-fx-text-fill: #0d6efd; -fx-font-size: 14px; -fx-cursor: hand; -fx-font-weight: bold;" onMouseClicked="#onGoToLogin"/>
