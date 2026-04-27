@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.Insets?>
 <?import java.lang.String?>
 
@@ -24,6 +26,7 @@
         </HBox>
     </top>
 
+    <!-- Content -->
     <center>
         <ScrollPane fitToWidth="true" styleClass="form-scroll">
             <VBox styleClass="content-area" spacing="20">
@@ -31,6 +34,25 @@
 
                 <!-- Profile header card -->
                 <HBox styleClass="profile-card" spacing="0">
+
+                    <!-- Left: avatar + upload controls -->
+                    <VBox styleClass="profile-avatar-panel" alignment="CENTER"
+                          spacing="10" minWidth="220">
+                        <padding><Insets top="28" right="24" bottom="28" left="24"/></padding>
+
+                        <!-- Avatar: uploaded pic OR Gravatar OR initials -->
+                        <StackPane>
+                            <ImageView fx:id="imgAvatar"
+                                       fitWidth="90" fitHeight="90"
+                                       preserveRatio="false" smooth="true"
+                                       visible="false" managed="false">
+                                <clip>
+                                    <Circle centerX="45" centerY="45" radius="45"/>
+                                </clip>
+                            </ImageView>
+                            <StackPane fx:id="paneInitials" styleClass="avatar-circle">
+                                <Label fx:id="lblInitials" text="?" styleClass="avatar-initials"/>
+                            </StackPane>
                     <VBox styleClass="profile-avatar-panel" alignment="CENTER" spacing="10" minWidth="220">
                         <padding><Insets top="32" right="24" bottom="32" left="24"/></padding>
                         <StackPane styleClass="avatar-circle">
@@ -39,6 +61,28 @@
                         <Label fx:id="lblFullName" text="Username" styleClass="profile-name"/>
                         <Label fx:id="lblRoleBadge" text="ROLE" styleClass="profile-role-badge"/>
                         <Region prefHeight="12"/>
+                        <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity"
+                                style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
+
+                        <!-- Gravatar / upload status -->
+                        <Label fx:id="lblGravatarStatus" text=""
+                               style="-fx-font-size:10px; -fx-text-fill:rgba(255,255,255,0.45);"/>
+
+                        <Label fx:id="lblFullName" text="Username" styleClass="profile-name"/>
+                        <Label fx:id="lblRoleBadge" text="ROLE" styleClass="profile-role-badge"/>
+
+                        <Region prefHeight="8"/>
+
+                        <!-- Upload / Remove buttons -->
+                        <Button fx:id="btnUploadPic" text="Upload Photo"
+                                onAction="#onUploadPicture" maxWidth="Infinity"
+                                style="-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
+                        <Button fx:id="btnRemovePic" text="Remove Photo"
+                                onAction="#onRemovePicture" maxWidth="Infinity"
+                                style="-fx-background-color:rgba(239,68,68,0.15);-fx-text-fill:#fca5a5;-fx-font-size:11px;-fx-padding:6 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(239,68,68,0.3);-fx-border-radius:8;-fx-border-width:1;"/>
+
+                        <Region prefHeight="4"/>
+
                         <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity"
                                 style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
                     </VBox>
@@ -61,6 +105,26 @@
                         <Label fx:id="lblXp"       text="0" styleClass="profile-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                         <Label text="MEMBER SINCE" styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                         <Label fx:id="lblCreatedAt" text="-" styleClass="profile-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <Label text="EMAIL"        styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblEmail"    text="-" styleClass="profile-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="STATUS"       styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblStatus"   text="-" styleClass="profile-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="VERIFIED"     styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblVerified" text="-" styleClass="profile-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="XP POINTS"    styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblXp"       text="0" styleClass="profile-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="MEMBER SINCE"   styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblCreatedAt"  text="-" styleClass="profile-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <Label text="AVATAR"          styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <Label fx:id="lblGravatarInfo" text="Checking..." styleClass="profile-value" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <Region prefHeight="14" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
                     </GridPane>
                 </HBox>
 
@@ -128,6 +192,42 @@
                                 <Label text="Add games to your favorites from the Games section"
                                        style="-fx-font-size:13px;-fx-text-fill:#cbd5e0;"/>
                             </VBox>
+                <!-- Change password card -->
+                <VBox styleClass="profile-card" spacing="0">
+                    <HBox styleClass="profile-card-header" alignment="CENTER_LEFT">
+                        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
+                        <Label text="Change Password" styleClass="profile-section-title"/>
+                    </HBox>
+                    <Separator style="-fx-background-color:#e5e7eb;"/>
+                    <VBox spacing="16">
+                        <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+                        <GridPane hgap="20" vgap="0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="34"/>
+                            </columnConstraints>
+                            <VBox spacing="6" GridPane.columnIndex="0">
+                                <Label text="CURRENT PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfCurrent" promptText="Current password" styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="6" GridPane.columnIndex="1">
+                                <Label text="NEW PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfNew" promptText="Min 8 chars" styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="6" GridPane.columnIndex="2">
+                                <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfConfirm" promptText="Repeat new password" styleClass="form-field"/>
+                            </VBox>
+                        </GridPane>
+                        <Label fx:id="lblPwdMsg" text="" wrapText="true"
+                               styleClass="form-errors" maxWidth="Infinity"
+                               visible="false" managed="false"/>
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Update Password" onAction="#onChangePassword" styleClass="btn-save"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
 
                             <!-- Cards grid -->
                             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"

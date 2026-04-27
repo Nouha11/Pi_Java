@@ -193,12 +193,15 @@ public class LoginController implements Initializable {
                 scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
                 stage.setTitle("NOVA - Admin Dashboard");
             } else {
+                // Both ROLE_STUDENT and ROLE_TUTOR use NovaDashboard.
+                // Tutors get a Courses dropdown with "My Courses" and "Enrollment Requests".
                 loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
                 root = loader.load();
                 controllers.NovaDashboardController dashCtrl = loader.getController();
                 dashCtrl.setCurrentUser(loggedInUser);
                 scene = new Scene(root, 1300, 800);
-                stage.setTitle("NOVA - Student Hub");
+                stage.setTitle(loggedInUser.getRole() == User.Role.ROLE_TUTOR
+                        ? "NOVA - Tutor Hub" : "NOVA - Student Hub");
             }
 
             stage.setScene(scene);

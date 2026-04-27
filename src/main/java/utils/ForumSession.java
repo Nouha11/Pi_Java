@@ -10,4 +10,5 @@ public class ForumSession {
 
     public static Set<Integer> upvotedPosts = new HashSet<>();
     public static Set<Integer> downvotedPosts = new HashSet<>();
-}
+    //saved posts
+    public static java.util.Map<Integer, java.util.Set<Integer>> savedPostsPerUser = new java.util.HashMap<>();}

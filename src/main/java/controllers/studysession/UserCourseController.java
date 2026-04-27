@@ -1,5 +1,6 @@
 package controllers.studysession;
 
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -10,14 +11,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import models.studysession.Course;
 import services.studysession.CourseService;
+import services.studysession.EnrollmentService;
+import utils.UserSession;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * User-facing course browser — read-only.
@@ -36,6 +43,8 @@ public class UserCourseController implements Initializable {
     @FXML private Label statsLabel;
 
     private final CourseService courseService = new CourseService();
+    private final EnrollmentService enrollmentService = new EnrollmentService();
+    private Map<Integer, String> enrollmentStatusMap = new HashMap<>();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -111,7 +120,33 @@ public class UserCourseController implements Initializable {
         boolean empty = courses.isEmpty();
         emptyState.setVisible(empty);
         emptyState.setManaged(empty);
+        
+        // Batch load enrollment statuses before rendering cards
+        loadEnrollmentStatuses(courses);
+        
         for (Course c : courses) courseCardsPane.getChildren().add(buildCard(c));
+    }
+
+    /**
+     * Loads enrollment statuses for all courses in a single batch query to avoid N+1 queries.
+     */
+    private void loadEnrollmentStatuses(List<Course> courses) {
+        enrollmentStatusMap.clear();
+        
+        if (courses.isEmpty()) {
+            return;
+        }
+        
+        try {
+            int currentUserId = UserSession.getInstance().getUserId();
+            List<Integer> courseIds = courses.stream()
+                    .map(Course::getId)
+                    .collect(Collectors.toList());
+            
+            enrollmentStatusMap = enrollmentService.getBatchEnrollmentStatuses(courseIds, currentUserId);
+        } catch (SQLException e) {
+            setStatus("Failed to load enrollment statuses: " + e.getMessage(), true);
+        }
     }
 
     private VBox buildCard(Course course) {
@@ -141,11 +176,29 @@ public class UserCourseController implements Initializable {
         VBox body = new VBox(8);
         body.setStyle("-fx-padding: 14 16 12 16;");
 
-        // Title
+        // Title + published badge (matching CourseController pattern)
+        HBox titleRow = new HBox(8);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
         Label nameLabel = new Label(course.getCourseName());
         nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-wrap-text: true;");
-        nameLabel.setMaxWidth(268);
+        nameLabel.setMaxWidth(200);
         nameLabel.setWrapText(true);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label publishedBadge = new Label(course.isPublished() ? "✅" : "📝");
+        publishedBadge.setStyle("-fx-font-size: 13px;");
+        Tooltip.install(publishedBadge, new Tooltip(course.isPublished() ? "Published" : "Draft"));
+        titleRow.getChildren().addAll(nameLabel, spacer, publishedBadge);
+
+        // Provider label
+        String providerText = "Provided by Nova";
+        if (course.getCreatorRole() != null && course.getCreatorRole().equals("ROLE_TUTOR")) {
+            providerText = "Provided by " + (course.getCreatorName() != null ? course.getCreatorName() : "Unknown");
+        }
+        Label providerLabel = new Label(providerText);
+        providerLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
+        providerLabel.setMaxWidth(268);
+        providerLabel.setWrapText(true);
 
         // Badges
         HBox badgeRow = new HBox(6);
@@ -189,7 +242,7 @@ public class UserCourseController implements Initializable {
         Label progressLbl = new Label(course.getProgress() + "% complete");
         progressLbl.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
 
-        body.getChildren().addAll(nameLabel, badgeRow, metaRow, progressBg, progressLbl);
+        body.getChildren().addAll(titleRow, providerLabel, badgeRow, metaRow, progressBg, progressLbl);
 
         // Footer — user actions only
         HBox footer = new HBox(8);
@@ -203,36 +256,212 @@ public class UserCourseController implements Initializable {
         Button detailBtn = new Button("🔍 View Details");
         detailBtn.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5;" +
                            "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
-        detailBtn.setOnAction(e -> openCourseDetail(course));
+        detailBtn.setOnAction(e -> openCourseDetailsPage(course));
 
-        Button planBtn = new Button("📅 Plan Session");
-        planBtn.setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;" +
-                         "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
-        planBtn.setOnAction(e -> openPlanningForm(course));
+        // Enrollment button logic
+        String enrollmentStatus = enrollmentStatusMap.get(course.getId());
+        boolean isAdminOwned = "ROLE_ADMIN".equals(course.getCreatorRole());
+        
+        if (isAdminOwned) {
+            // Admin-owned courses: show "Details" + "Start" buttons
+            Button detailsBtn = new Button("🔍 Details");
+            detailsBtn.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5;" +
+                               "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            detailsBtn.setOnAction(e -> openCourseDetailsPage(course));
+            Button startBtn = new Button("▶ Start");
+            startBtn.setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;" +
+                             "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            startBtn.setOnAction(e -> openCourseContentPage(course));
+            footer.getChildren().addAll(detailsBtn, startBtn);
+        } else if (enrollmentStatus == null) {
+            // No enrollment: show "Enroll Request" button
+            Button enrollBtn = new Button("Enroll Request");
+            enrollBtn.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;" +
+                              "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            enrollBtn.setOnAction(e -> handleEnrollRequest(course));
+            footer.getChildren().addAll(detailBtn, enrollBtn);
+        } else if ("PENDING".equals(enrollmentStatus)) {
+            // Pending enrollment: show "Pending" badge
+            Label pendingBadge = new Label("⏳ Pending");
+            pendingBadge.setStyle("-fx-background-color: #fef3c7; -fx-text-fill: #d97706;" +
+                                 "-fx-padding: 5 12; -fx-background-radius: 8; -fx-font-size: 11px; -fx-font-weight: bold;");
+            footer.getChildren().addAll(detailBtn, pendingBadge);
+        } else if ("ACCEPTED".equals(enrollmentStatus)) {
+            // Accepted enrollment: show "Details" + "Start" buttons
+            Button detailsBtn = new Button("🔍 Details");
+            detailsBtn.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5;" +
+                               "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            detailsBtn.setOnAction(e -> openCourseDetailsPage(course));
+            Button startBtn = new Button("▶ Start");
+            startBtn.setStyle("-fx-background-color: #dcfce7; -fx-text-fill: #16a34a;" +
+                             "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            startBtn.setOnAction(e -> openCourseContentPage(course));
+            footer.getChildren().addAll(detailsBtn, startBtn);
+        } else if ("REJECTED".equals(enrollmentStatus)) {
+            // Rejected enrollment: show "Rejected" badge and "Enroll Request" button
+            Label rejectedBadge = new Label("❌ Rejected");
+            rejectedBadge.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #ef4444;" +
+                                  "-fx-padding: 5 12; -fx-background-radius: 8; -fx-font-size: 11px; -fx-font-weight: bold;");
+            Button enrollBtn = new Button("Enroll Request");
+            enrollBtn.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #2563eb;" +
+                              "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-size: 11px;");
+            enrollBtn.setOnAction(e -> handleEnrollRequest(course));
+            footer.getChildren().addAll(detailBtn, rejectedBadge, enrollBtn);
+        } else {
+            // Fallback: show detail button only
+            footer.getChildren().add(detailBtn);
+        }
 
-        footer.getChildren().addAll(detailBtn, planBtn);
-
-        // Double-click also opens detail
-        card.setOnMouseClicked(e -> { if (e.getClickCount() == 2) openCourseDetail(course); });
+        // Double-click also opens details page
+        card.setOnMouseClicked(e -> { if (e.getClickCount() == 2) openCourseDetailsPage(course); });
         card.getChildren().addAll(strip, body, footer);
         return card;
     }
 
     // ── NAVIGATION ────────────────────────────────────────────────────────────
 
-    private void openCourseDetail(Course course) {
+    /**
+     * Handles the "Enroll Request" button action.
+     * Opens a custom dialog with inline validation to collect an optional message from the student.
+     * Requirements: 12.3, 12.4
+     */
+    private void handleEnrollRequest(Course course) {
+        // ── Build custom dialog ──────────────────────────────────────────────
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Enroll in Course");
+        dialog.setHeaderText("Request enrollment in: " + course.getCourseName());
+
+        // TextArea for optional message
+        TextArea messageArea = new TextArea();
+        messageArea.setPromptText("Optional message (leave blank if none)...");
+        messageArea.setWrapText(true);
+        messageArea.setPrefRowCount(4);
+        messageArea.setPrefWidth(380);
+        messageArea.setStyle("-fx-font-size: 12px;");
+
+        // Inline error label — hidden by default (Requirements 12.3, 12.4)
+        Label errMessage = new Label();
+        errMessage.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 11px;");
+        errMessage.setVisible(false);
+        errMessage.setManaged(false);
+
+        // Field label
+        Label fieldLabel = new Label("Message (optional, max 500 characters):");
+        fieldLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #374151;");
+
+        VBox content = new VBox(6, fieldLabel, messageArea, errMessage);
+        content.setStyle("-fx-padding: 10 0 0 0;");
+        dialog.getDialogPane().setContent(content);
+
+        // Buttons
+        ButtonType submitButtonType = new ButtonType("Submit", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+
+        // Get the actual Submit button node so we can intercept its action
+        Button submitButton = (Button) dialog.getDialogPane().lookupButton(submitButtonType);
+
+        // Override the submit button to perform inline validation before closing
+        submitButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            String msg = messageArea.getText();
+
+            // Validate: message must not exceed 500 characters
+            if (msg != null && msg.length() > 500) {
+                // Show inline error — do NOT close the dialog (Requirements 12.3, 12.4)
+                errMessage.setText("Message must not exceed 500 characters (currently " + msg.length() + ").");
+                errMessage.setVisible(true);
+                errMessage.setManaged(true);
+                messageArea.setStyle("-fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 3; -fx-font-size: 12px;");
+                event.consume(); // prevent dialog from closing
+                return;
+            }
+
+            // Clear any previous error
+            errMessage.setVisible(false);
+            errMessage.setManaged(false);
+            messageArea.setStyle("-fx-font-size: 12px;");
+        });
+
+        // Clear error styling when user edits the field
+        messageArea.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal.length() <= 500) {
+                errMessage.setVisible(false);
+                errMessage.setManaged(false);
+                messageArea.setStyle("-fx-font-size: 12px;");
+            }
+        });
+
+        // Result converter: return the message text when Submit is clicked
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == submitButtonType) {
+                return messageArea.getText();
+            }
+            return null;
+        });
+
+        // Show dialog and process result
+        dialog.showAndWait().ifPresent(message -> {
+            try {
+                int currentUserId = UserSession.getInstance().getUserId();
+                enrollmentService.createRequest(course.getId(), currentUserId, message);
+
+                // Refresh the card to show "Pending" badge
+                applyFilters();
+                setStatus("Enrollment request submitted successfully!", false);
+            } catch (IllegalStateException e) {
+                setStatus("Error: " + e.getMessage(), true);
+            } catch (SQLException e) {
+                setStatus("Failed to submit enrollment request: " + e.getMessage(), true);
+            }
+        });
+    }
+
+    /**
+     * Opens the Course Details Page (planning sessions, analytics, progress overview).
+     * Loads CourseDetail.fxml with CourseDetailController.
+     * Requirement 10, 11.2
+     */
+    private void openCourseDetailsPage(Course course) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/CourseDetail.fxml"));
             Parent root = loader.load();
             CourseDetailController ctrl = loader.getController();
             ctrl.initData(course);
             Stage stage = new Stage();
-            stage.setTitle("Course: " + course.getCourseName());
+            stage.setTitle("Course Details: " + course.getCourseName());
             stage.setScene(new Scene(root, 900, 600));
             stage.show();
         } catch (IOException e) {
-            setStatus("Cannot open detail: " + e.getMessage(), true);
+            setStatus("Cannot open course details: " + e.getMessage(), true);
         }
+    }
+
+    /**
+     * Opens the Course Content Page (Pomodoro timer, videos, Wikipedia, PDF resources).
+     * Loads CourseContentView.fxml with CourseContentController, maximized.
+     * Requirement 1, 11.3
+     */
+    private void openCourseContentPage(Course course) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/CourseContentView.fxml"));
+            Parent root = loader.load();
+            CourseContentController ctrl = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle(course.getCourseName());
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            stage.show();
+            ctrl.initData(course);
+        } catch (IOException e) {
+            setStatus("Cannot open course content: " + e.getMessage(), true);
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #openCourseContentPage(Course)} directly.
+     * Kept for backward compatibility; now delegates to openCourseContentPage.
+     */
+    private void startCourse(Course course) {
+        openCourseContentPage(course);
     }
 
     private void openPlanningForm(Course course) {
@@ -256,5 +485,10 @@ public class UserCourseController implements Initializable {
     private void setStatus(String msg, boolean isError) {
         statusLabel.setText(msg);
         statusLabel.setStyle(isError ? "-fx-text-fill: #ef4444;" : "-fx-text-fill: #22c55e;");
+        if (!isError) {
+            PauseTransition pause = new PauseTransition(Duration.seconds(3));
+            pause.setOnFinished(e -> statusLabel.setText(""));
+            pause.play();
+        }
     }
 }

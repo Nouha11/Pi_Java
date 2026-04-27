@@ -88,8 +88,8 @@ public class CourseService {
 
     public void create(Course c) throws SQLException {
         String sql = "INSERT INTO course (course_name, description, difficulty, estimated_duration, " +
-                "progress, status, created_at, category, max_students, is_published) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?)";
+                "progress, status, created_at, category, max_students, is_published, created_by_id) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?)";
         PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, c.getCourseName().trim());
         ps.setString(2, c.getDescription());
@@ -102,6 +102,8 @@ public class CourseService {
         if (c.getMaxStudents() != null) ps.setInt(9, c.getMaxStudents());
         else ps.setNull(9, Types.INTEGER);
         ps.setBoolean(10, c.isPublished());
+        if (c.getCreatedById() != null) ps.setInt(11, c.getCreatedById());
+        else ps.setNull(11, Types.INTEGER);
         ps.executeUpdate();
 
         ResultSet keys = ps.getGeneratedKeys();
@@ -155,29 +157,37 @@ public class CourseService {
     // ─────────────────────────────────────────────
 
     public List<Course> findAll() throws SQLException {
-        return query("SELECT * FROM course ORDER BY created_at DESC", null, null, null);
+        String sql = "SELECT c.*, u.username AS creatorName, u.role AS creatorRole " +
+                     "FROM course c " +
+                     "LEFT JOIN user u ON c.created_by_id = u.id " +
+                     "ORDER BY c.created_at DESC";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        return mapResultSet(ps.executeQuery());
     }
 
     public List<Course> findByFilters(String difficulty, String category, Boolean isPublished,
                                       String search) throws SQLException {
-        StringBuilder sb = new StringBuilder("SELECT * FROM course WHERE 1=1");
+        StringBuilder sb = new StringBuilder("SELECT c.*, u.username AS creatorName, u.role AS creatorRole " +
+                                             "FROM course c " +
+                                             "LEFT JOIN user u ON c.created_by_id = u.id " +
+                                             "WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (difficulty != null && !difficulty.isEmpty()) {
-            sb.append(" AND difficulty=?"); params.add(difficulty);
+            sb.append(" AND c.difficulty=?"); params.add(difficulty);
         }
         if (category != null && !category.isEmpty()) {
-            sb.append(" AND category=?"); params.add(category);
+            sb.append(" AND c.category=?"); params.add(category);
         }
         if (isPublished != null) {
-            sb.append(" AND is_published=?"); params.add(isPublished);
+            sb.append(" AND c.is_published=?"); params.add(isPublished);
         }
         if (search != null && !search.isEmpty()) {
-            sb.append(" AND (course_name LIKE ? OR description LIKE ? OR category LIKE ?)");
+            sb.append(" AND (c.course_name LIKE ? OR c.description LIKE ? OR c.category LIKE ?)");
             String like = "%" + search + "%";
             params.add(like); params.add(like); params.add(like);
         }
-        sb.append(" ORDER BY created_at DESC");
+        sb.append(" ORDER BY c.created_at DESC");
 
         PreparedStatement ps = cnx.prepareStatement(sb.toString());
         for (int i = 0; i < params.size(); i++)
@@ -187,7 +197,11 @@ public class CourseService {
     }
 
     public Course findById(int id) throws SQLException {
-        PreparedStatement ps = cnx.prepareStatement("SELECT * FROM course WHERE id=?");
+        String sql = "SELECT c.*, u.username AS creatorName, u.role AS creatorRole " +
+                     "FROM course c " +
+                     "LEFT JOIN user u ON c.created_by_id = u.id " +
+                     "WHERE c.id=?";
+        PreparedStatement ps = cnx.prepareStatement(sql);
         ps.setInt(1, id);
         List<Course> list = mapResultSet(ps.executeQuery());
         return list.isEmpty() ? null : list.get(0);
@@ -199,6 +213,17 @@ public class CourseService {
                 "SELECT DISTINCT category FROM course ORDER BY category");
         while (rs.next()) cats.add(rs.getString("category"));
         return cats;
+    }
+
+    public List<Course> findByCreator(int userId) throws SQLException {
+        String sql = "SELECT c.*, u.username AS creatorName, u.role AS creatorRole " +
+                     "FROM course c " +
+                     "LEFT JOIN user u ON c.created_by_id = u.id " +
+                     "WHERE c.created_by_id = ? " +
+                     "ORDER BY c.created_at DESC";
+        PreparedStatement ps = cnx.prepareStatement(sql);
+        ps.setInt(1, userId);
+        return mapResultSet(ps.executeQuery());
     }
 
     /** Statistics: count by difficulty */
@@ -250,6 +275,23 @@ public class CourseService {
             int mx = rs.getInt("max_students");
             c.setMaxStudents(rs.wasNull() ? null : mx);
             c.setPublished(rs.getBoolean("is_published"));
+            
+            // Populate ownership fields
+            int createdById = rs.getInt("created_by_id");
+            c.setCreatedById(rs.wasNull() ? null : createdById);
+            
+            String creatorName = rs.getString("creatorName");
+            String creatorRole = rs.getString("creatorRole");
+            
+            // Handle NULL created_by_id by setting defaults
+            if (creatorName == null || creatorRole == null) {
+                c.setCreatorName("Nova");
+                c.setCreatorRole("ROLE_ADMIN");
+            } else {
+                c.setCreatorName(creatorName);
+                c.setCreatorRole(creatorRole);
+            }
+            
             list.add(c);
         }
         return list;

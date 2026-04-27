@@ -14,6 +14,9 @@ public class Course {
     private String category;
     private Integer maxStudents;
     private boolean isPublished;
+    private Integer createdById;
+    private String creatorName;
+    private String creatorRole;
 
     public Course() {
         this.createdAt = LocalDateTime.now();
@@ -24,7 +27,8 @@ public class Course {
 
     public Course(int id, String courseName, String description, String difficulty,
                   int estimatedDuration, int progress, String status,
-                  LocalDateTime createdAt, String category, Integer maxStudents, boolean isPublished) {
+                  LocalDateTime createdAt, String category, Integer maxStudents, boolean isPublished,
+                  Integer createdById, String creatorName, String creatorRole) {
         this.id = id;
         this.courseName = courseName;
         this.description = description;
@@ -36,6 +40,9 @@ public class Course {
         this.category = category;
         this.maxStudents = maxStudents;
         this.isPublished = isPublished;
+        this.createdById = createdById;
+        this.creatorName = creatorName;
+        this.creatorRole = creatorRole;
     }
 
     // Getters & Setters
@@ -71,6 +78,15 @@ public class Course {
 
     public boolean isPublished() { return isPublished; }
     public void setPublished(boolean published) { isPublished = published; }
+
+    public Integer getCreatedById() { return createdById; }
+    public void setCreatedById(Integer createdById) { this.createdById = createdById; }
+
+    public String getCreatorName() { return creatorName; }
+    public void setCreatorName(String creatorName) { this.creatorName = creatorName; }
+
+    public String getCreatorRole() { return creatorRole; }
+    public void setCreatorRole(String creatorRole) { this.creatorRole = creatorRole; }
 
     @Override
     public String toString() { return courseName; }

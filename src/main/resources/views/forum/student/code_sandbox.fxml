@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #0f172a;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.CodeSandboxController">
+    <children>
+        <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" spacing="0">
+
+            <HBox alignment="CENTER_LEFT" prefHeight="65.0" style="-fx-background-color: #1e293b; -fx-border-color: #334155; -fx-border-width: 0 0 1 0;" spacing="20.0">
+                <padding>
+                    <Insets left="25.0" right="25.0" />
+                </padding>
+                <children>
+                    <Label text="💻 NOVA Playground" style="-fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 20px;" />
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <Label text="Language:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;" />
+                    <ComboBox fx:id="languageCombo" prefWidth="150.0" style="-fx-background-color: #0f172a; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 6; -fx-background-radius: 6;" />
+
+                    <Button fx:id="runButton" mnemonicParsing="false" onAction="#handleRunCode" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;" text="▶ Run Code" />
+                </children>
+            </HBox>
+
+            <SplitPane dividerPositions="0.65" orientation="VERTICAL" style="-fx-background-color: transparent; -fx-padding: 0;" VBox.vgrow="ALWAYS">
+                <items>
+                    <VBox>
+                        <Label text="SOURCE CODE" style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 8 15;" />
+                        <TextArea fx:id="codeArea" style="-fx-control-inner-background: #0f172a; -fx-text-fill: #38bdf8; -fx-font-family: 'Consolas', monospace; -fx-font-size: 15px;" promptText="// Write your code here..." VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <VBox style="-fx-background-color: #000000;">
+                        <Label text="TERMINAL OUTPUT" style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 8 15;" />
+                        <TextArea fx:id="outputArea" editable="false" style="-fx-control-inner-background: #000000; -fx-text-fill: #10b981; -fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;" promptText="> Waiting for execution..." VBox.vgrow="ALWAYS" />
+                    </VBox>
+                </items>
+            </SplitPane>
+
+        </VBox>
+    </children>
+</AnchorPane>

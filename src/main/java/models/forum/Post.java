@@ -1,6 +1,8 @@
 package models.forum;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Post {
     private int id;
@@ -23,8 +25,12 @@ public class Post {
     private String spaceName;
     private String tags;
 
-    // 🔥 NEW: Tracks your local vote: 1 for upvote, -1 for downvote, 0 for neutral
+    // Tracks your local vote: 1 for upvote, -1 for downvote, 0 for neutral
     private int myVote = 0;
+
+    // 🔥 NEW: Tracks Emoji Reactions
+    private Map<String, Integer> reactionCounts = new HashMap<>();
+    private String currentUserReaction = null;
 
     public Post() {}
 
@@ -76,8 +82,12 @@ public class Post {
     public void setSpaceName(String spaceName) { this.spaceName = spaceName; }
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
-
-    // 🔥 NEW GETTERS & SETTERS
     public int getMyVote() { return myVote; }
     public void setMyVote(int myVote) { this.myVote = myVote; }
+
+    // 🔥 NEW GETTERS & SETTERS FOR REACTIONS
+    public Map<String, Integer> getReactionCounts() { return reactionCounts; }
+    public void setReactionCounts(Map<String, Integer> reactionCounts) { this.reactionCounts = reactionCounts; }
+    public String getCurrentUserReaction() { return currentUserReaction; }
+    public void setCurrentUserReaction(String currentUserReaction) { this.currentUserReaction = currentUserReaction; }
 }

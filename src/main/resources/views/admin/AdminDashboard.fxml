@@ -12,7 +12,6 @@
     <left>
         <VBox styleClass="admin-sidebar" spacing="0">
 
-            <!-- Brand -->
             <HBox styleClass="admin-brand" alignment="CENTER_LEFT" spacing="14">
                 <ImageView fitWidth="64" fitHeight="64" preserveRatio="true" smooth="true">
                     <image><Image url="@/images/nova-logo.png"/></image>
@@ -23,11 +22,9 @@
                 </VBox>
             </HBox>
 
-            <!-- Nav -->
             <ScrollPane styleClass="admin-nav-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
                 <VBox fx:id="navContainer" spacing="0" style="-fx-padding: 8 0 12 0;">
 
-                    <!-- Overview -->
                     <VBox style="-fx-padding: 4 8 4 8;">
                         <HBox fx:id="navHome" styleClass="admin-nav-row-active"
                               alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showHome">
@@ -36,118 +33,91 @@
                         </HBox>
                     </VBox>
 
-                    <!-- USERS -->
-                    <Button fx:id="btnToggleUsers" styleClass="admin-group-btn"
-                            text="USERS" onAction="#toggleUsers" maxWidth="Infinity"/>
-                    <VBox fx:id="usersGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navUsers" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showUsers">
+                    <Button fx:id="btnToggleUsers" styleClass="admin-group-btn" text="USERS" onAction="#toggleUsers" maxWidth="Infinity"/>
+                    <VBox fx:id="usersGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navUsers" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showUsers">
                             <Label fx:id="iconUsers" styleClass="admin-nav-icon"/>
                             <Label text="All Users" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 
-                    <!-- LIBRARY -->
-                    <Button fx:id="btnToggleLibrary" styleClass="admin-group-btn"
-                            text="LIBRARY" onAction="#toggleLibrary" maxWidth="Infinity"/>
-                    <VBox fx:id="libraryGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navBooks" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showBooks">
+                    <Button fx:id="btnToggleLibrary" styleClass="admin-group-btn" text="LIBRARY" onAction="#toggleLibrary" maxWidth="Infinity"/>
+                    <VBox fx:id="libraryGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navBooks" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showBooks">
                             <Label fx:id="iconBooks" styleClass="admin-nav-icon"/>
                             <Label text="Books" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navLoans" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showLoans">
+                        <HBox fx:id="navLoans" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showLoans">
                             <Label fx:id="iconLoans" styleClass="admin-nav-icon"/>
                             <Label text="Loans" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navPayments" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showPayments">
+                        <HBox fx:id="navPayments" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showPayments">
                             <Label fx:id="iconPayments" styleClass="admin-nav-icon"/>
                             <Label text="Payments" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 
-                    <!-- STUDY SESSION -->
-                    <Button fx:id="btnToggleStudy" styleClass="admin-group-btn"
-                            text="STUDY SESSION" onAction="#toggleStudy" maxWidth="Infinity"/>
-                    <VBox fx:id="studyGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navCourses" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showCourses">
+                    <Button fx:id="btnToggleStudy" styleClass="admin-group-btn" text="STUDY SESSION" onAction="#toggleStudy" maxWidth="Infinity"/>
+                    <VBox fx:id="studyGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navCourses" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showCourses">
                             <Label fx:id="iconCourses" styleClass="admin-nav-icon"/>
                             <Label text="Courses" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navPlannings" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showPlannings">
+                        <HBox fx:id="navPlannings" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showPlannings">
                             <Label fx:id="iconPlannings" styleClass="admin-nav-icon"/>
                             <Label text="Plannings" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navSessions" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showSessions">
+                        <HBox fx:id="navSessions" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showSessions">
                             <Label fx:id="iconSessions" styleClass="admin-nav-icon"/>
                             <Label text="Study Sessions" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navStudyStats" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showStudyStats">
+                        <HBox fx:id="navStudyStats" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showStudyStats">
                             <Label fx:id="iconStudyStats" styleClass="admin-nav-icon"/>
                             <Label text="Statistics" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 
-                    <!-- GAMIFICATION -->
-                    <Button fx:id="btnToggleGame" styleClass="admin-group-btn"
-                            text="GAMIFICATION" onAction="#toggleGame" maxWidth="Infinity"/>
-                    <VBox fx:id="gameGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navGames" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showGames">
+                    <Button fx:id="btnToggleGame" styleClass="admin-group-btn" text="GAMIFICATION" onAction="#toggleGame" maxWidth="Infinity"/>
+                    <VBox fx:id="gameGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navGames" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showGames">
                             <Label fx:id="iconGames" styleClass="admin-nav-icon"/>
                             <Label text="Games" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navRewards" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showRewards">
+                        <HBox fx:id="navRewards" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showRewards">
                             <Label fx:id="iconRewards" styleClass="admin-nav-icon"/>
                             <Label text="Rewards" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navGameStats" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showGameStats">
+                        <HBox fx:id="navGameStats" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showGameStats">
                             <Label fx:id="iconGameStats" styleClass="admin-nav-icon"/>
                             <Label text="Statistics" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 
-                    <!-- QUIZ -->
-                    <Button fx:id="btnToggleQuiz" styleClass="admin-group-btn"
-                            text="QUIZ" onAction="#toggleQuiz" maxWidth="Infinity"/>
-                    <VBox fx:id="quizGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navQuizzes" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showQuizzes">
+                    <Button fx:id="btnToggleQuiz" styleClass="admin-group-btn" text="QUIZ" onAction="#toggleQuiz" maxWidth="Infinity"/>
+                    <VBox fx:id="quizGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navQuizzes" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showQuizzes">
                             <Label fx:id="iconQuizzes" styleClass="admin-nav-icon"/>
                             <Label text="Quizzes" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navQuizStats" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showQuizStats">
+                        <HBox fx:id="navQuizStats" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showQuizStats">
                             <Label fx:id="iconQuizStats" styleClass="admin-nav-icon"/>
                             <Label text="Statistics" styleClass="admin-nav-text"/>
                         </HBox>
                     </VBox>
 
-                    <!-- FORUM -->
-                    <Button fx:id="btnToggleForum" styleClass="admin-group-btn"
-                            text="FORUM" onAction="#toggleForum" maxWidth="Infinity"/>
-                    <VBox fx:id="forumGroup" spacing="1" style="-fx-padding: 0 8 4 8;"
-                          visible="false" managed="false">
-                        <HBox fx:id="navForum" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForum">
+                    <Button fx:id="btnToggleForum" styleClass="admin-group-btn" text="FORUM" onAction="#toggleForum" maxWidth="Infinity"/>
+                    <VBox fx:id="forumGroup" spacing="1" style="-fx-padding: 0 8 4 8;" visible="false" managed="false">
+                        <HBox fx:id="navForum" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForum">
                             <Label fx:id="iconForum" styleClass="admin-nav-icon"/>
                             <Label text="Manage Forum" styleClass="admin-nav-text"/>
                         </HBox>
-                        <HBox fx:id="navForumStats" styleClass="admin-nav-row"
-                              alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForumStats">
+
+                        <HBox fx:id="navForumReports" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForumReports">
+                            <Label fx:id="iconForumReports" styleClass="admin-nav-icon"/>
+                            <Label text="Reported Content" styleClass="admin-nav-text"/>
+                        </HBox>
+
+                        <HBox fx:id="navForumStats" styleClass="admin-nav-row" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#showForumStats">
                             <Label fx:id="iconForumStats" styleClass="admin-nav-icon"/>
                             <Label text="Forum Statistics" styleClass="admin-nav-text"/>
                         </HBox>
@@ -156,13 +126,9 @@
                 </VBox>
             </ScrollPane>
 
-            <!-- User card -->
             <HBox styleClass="admin-user-card" alignment="CENTER_LEFT" spacing="10">
-                <StackPane style="-fx-background-color: #1e293b; -fx-background-radius: 20;
-                                  -fx-min-width: 34; -fx-min-height: 34;
-                                  -fx-max-width: 34; -fx-max-height: 34;">
-                    <Label fx:id="lblAvatarInitial" text="A"
-                           style="-fx-text-fill: #a5b4fc; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <StackPane style="-fx-background-color: #1e293b; -fx-background-radius: 20; -fx-min-width: 34; -fx-min-height: 34; -fx-max-width: 34; -fx-max-height: 34;">
+                    <Label fx:id="lblAvatarInitial" text="A" style="-fx-text-fill: #a5b4fc; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                 </StackPane>
                 <VBox spacing="1" HBox.hgrow="ALWAYS">
                     <Label fx:id="lblCurrentUser" text="Admin" styleClass="admin-user-name"/>
@@ -170,31 +136,19 @@
                 </VBox>
             </HBox>
 
-            <!-- Sign out -->
-            <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity"
-                    style="-fx-background-color:#ef4444; -fx-text-fill:white;
-                           -fx-font-weight:bold; -fx-font-size:13px; -fx-padding:12 0;
-                           -fx-background-radius:0; -fx-cursor:hand;"/>
+            <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity" style="-fx-background-color:#ef4444; -fx-text-fill:white; -fx-font-weight:bold; -fx-font-size:13px; -fx-padding:12 0; -fx-background-radius:0; -fx-cursor:hand;"/>
         </VBox>
     </left>
 
-    <!-- Top bar -->
     <top>
         <HBox styleClass="admin-topbar" alignment="CENTER_LEFT" spacing="6">
             <Label text="NOVA" styleClass="admin-page-title"/>
             <Label text="›" styleClass="admin-breadcrumb-sep"/>
             <Label fx:id="lblPageTitle" text="Overview" styleClass="admin-breadcrumb-sub"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <HBox alignment="CENTER" spacing="8"
-                  style="-fx-background-color: #f1f5f9; -fx-background-radius: 20;
-                         -fx-padding: 5 14; -fx-border-radius: 20;
-                         -fx-border-color: #e2e8f0; -fx-border-width: 1;">
-                <Label text="Admin Portal" style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
-            </HBox>
         </HBox>
     </top>
 
-    <!-- Content -->
     <center>
         <StackPane fx:id="contentArea" styleClass="admin-content"/>
     </center>

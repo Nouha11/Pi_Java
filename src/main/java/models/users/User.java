@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 /**
  * User model - mirrors the PHP User entity from the Symfony project.
- * Fields: id, email, username, password, role, isActive, isVerified, isBanned, xp, createdAt
  */
 public class User {
 
@@ -22,28 +21,11 @@ public class User {
     private boolean isBanned;
     private String banReason;
     private int xp;
+    private String profilePicture; // local file path stored in DB
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public User() {}
-
-    public User(int id, String email, String username, String password,
-                Role role, boolean isActive, boolean isVerified,
-                boolean isBanned, String banReason, int xp,
-                LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.isActive = isActive;
-        this.isVerified = isVerified;
-        this.isBanned = isBanned;
-        this.banReason = banReason;
-        this.xp = xp;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 
     // ── Getters & Setters ──────────────────────────────────────────────────────
 
@@ -76,6 +58,9 @@ public class User {
 
     public int getXp() { return xp; }
     public void setXp(int xp) { this.xp = xp; }
+
+    public String getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

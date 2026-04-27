@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox prefHeight="800.0" prefWidth="1050.0" spacing="25.0" style="-fx-background-color: #f8fafc; -fx-padding: 35;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.AdminReportsController">
+    <children>
+        <VBox spacing="8">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Reported Content" />
+                    <Label style="-fx-background-color: #ffe4e6; -fx-text-fill: #e11d48; -fx-padding: 4 12; -fx-background-radius: 15; -fx-font-weight: bold; -fx-font-size: 12px;" text="Moderation Queue" />
+                </HBox>
+                <Label style="-fx-text-fill: #64748b; -fx-font-size: 15px;" text="Review posts flagged by the community for violations." />
+            </children>
+        </VBox>
+
+        <VBox style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 15, 0, 0, 5);" VBox.vgrow="ALWAYS">
+
+            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: #f8fafc; -fx-padding: 15 25; -fx-background-radius: 12 12 0 0; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
+                <Label prefWidth="150.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-letter-spacing: 1px;" text="REPORTER" />
+                <Label prefWidth="400.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-letter-spacing: 1px;" text="VIOLATION DETAILS" />
+                <Label prefWidth="100.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-letter-spacing: 1px;" text="STATUS" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label alignment="CENTER_RIGHT" prefWidth="200.0" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-letter-spacing: 1px;" text="ACTIONS" />
+            </HBox>
+
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox fx:id="reportsContainer" spacing="0" style="-fx-background-color: white;" />
+                </content>
+            </ScrollPane>
+        </VBox>
+    </children>
+</VBox>

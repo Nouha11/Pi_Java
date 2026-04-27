@@ -1,0 +1,293 @@
+# Implementation Plan: Analytics Calendar Dashboard
+
+## Overview
+
+Implement the Advanced Analytics Dashboard and Interactive Calendar Planner for the NOVA JavaFX LMS. All work is purely additive — no existing models, schemas, or controller APIs are modified. Implementation proceeds in layers: data/service layer first, then UI wiring, then views, then interaction and polish.
+
+## Tasks
+
+- [x] 1. Add iTextPDF dependency and create service package stubs
+  - Add `itextpdf` 5.5.13.3 dependency to `pom.xml` (groupId `com.itextpdf`, artifactId `itextpdf`)
+  - Verify Maven resolves the dependency without conflicts against existing JavaFX 17 / MySQL 8 deps
+  - _Requirements: 7.4_
+
+- [x] 2. Implement `TutorPerformanceRow` DTO
+  - [x] 2.1 Create `services/studysession/TutorPerformanceRow.java`
+    - Fields: `String tutorName`, `int enrolledStudents`, `double averageCompletionRate`, `int activeCourseCount`, `double averageSessionDuration`
+    - Add all-args constructor, getters, and a no-args constructor
+    - _Requirements: 6.1, 16.1_
+
+- [x] 3. Implement `OverlapException` checked exception
+  - [x] 3.1 Create `services/studysession/OverlapException.java`
+    - Extend `Exception`; constructor `OverlapException(String conflictingEventTitle, LocalDateTime conflictStart, LocalDateTime conflictEnd)`
+    - Store all three fields with getters so callers can build a descriptive message
+    - _Requirements: 12.2, 16.3_
+
+- [ ] 4. Implement `CalendarEvent` model and `CalendarFilter` data class
+  - [ ] 4.1 Create `models/studysession/CalendarEvent.java`
+    - Fields: `int id`, `String type` ("SESSION" or "PLANNING"), `String title`, `LocalDateTime start`, `LocalDateTime end`, `String difficulty`, `String status`, `int userId`, `int courseId`, `String notes`
+    - Add all-args constructor and getters
+    - _Requirements: 10.2, 10.3, 16.2_
+  - [ ] 4.2 Create `services/studysession/CalendarFilter.java`
+    - Fields: `Integer courseId`, `String difficulty`, `String status`, `LocalDate from`, `LocalDate to`, `Integer studentId`, `Integer tutorId` — all nullable, defaulting to null (= no filter)
+    - Add a no-args constructor and setters/getters
+    - _Requirements: 14.1, 14.2, 16.2_
+
+- [ ] 5. Implement `AnalyticsService`
+  - [ ] 5.1 Create `services/studysession/AnalyticsService.java` with `utils.DatabaseConnection` for connections
+    - Declare all methods as `throws SQLException`; use `PreparedStatement` for every query
+    - _Requirements: 16.1, 16.5, 16.6_
+  - [ ] 5.2 Implement `getSessionCountByWeek(int weeks)` and `getSessionCountByMonth(int months)`
+    - `getSessionCountByWeek`: GROUP BY ISO week over the last `weeks` weeks; return `List<Object[]>` rows `[weekLabel: String, count: Integer]`
+    - `getSessionCountByMonth`: GROUP BY year-month over the last `months` months; return `List<Object[]>` rows `[monthLabel: String, count: Integer]`
+    - _Requirements: 2.4_
+  - [ ] 5.3 Implement `getSessionCountByDifficulty()` (admin-wide)
+    - JOIN `study_session → planning → course` on `planning_id` and `course_id`; GROUP BY `difficulty`
+    - Return `Map<String, Integer>` keyed by difficulty value
+    - _Requirements: 3.2_
+  - [ ] 5.4 Implement `getTimeSpentByCourse(LocalDate from, LocalDate to)` (admin-wide)
+    - SUM `actual_duration` from `study_session` WHERE `started_at` BETWEEN from and to, GROUP BY `course_name_cache`, ORDER BY total DESC
+    - Return `List<Object[]>` rows `[courseName: String, totalMinutes: Integer]`
+    - _Requirements: 4.3_
+  - [ ] 5.5 Implement `getAverageProgressByPeriod(String period, int count)`
+    - `period` values: `"DAILY"` (last N days), `"WEEKLY"` (last N weeks), `"MONTHLY"` (last N months)
+    - AVG `progress_percentage` from `student_course_progress` grouped by the appropriate time bucket
+    - Return `List<Object[]>` rows `[periodLabel: String, avgProgress: Double]`
+    - _Requirements: 5.3_
+  - [ ] 5.6 Implement `getTutorPerformanceStats()`
+    - Aggregate from `user`, `course`, `enrollment_request`, `student_course_progress`, `study_session` scoped to `role = 'ROLE_TUTOR'`
+    - Return `List<TutorPerformanceRow>`
+    - _Requirements: 6.2_
+  - [ ] 5.7 Implement `getCoursePopularityRanking(int limit)`
+    - COUNT accepted enrollments per course, ORDER BY count DESC, LIMIT `limit`
+    - Return `List<Object[]>` rows `[courseName: String, enrolledCount: Integer]`
+    - _Requirements: 6.5_
+  - [ ] 5.8 Implement tutor-scoped overloads
+    - `getSessionCountByWeek(int weeks, int tutorId)` — filter sessions to courses where `created_by_id = tutorId`
+    - `getTimeSpentByCourse(LocalDate from, LocalDate to, int tutorId)` — same date filter plus tutor scope
+    - `getSessionCountByDifficulty(int tutorId)` — difficulty distribution scoped to tutor's courses
+    - _Requirements: 8.6_
+
+- [ ] 6. Implement `CalendarService`
+  - [ ] 6.1 Create `services/studysession/CalendarService.java` skeleton with `utils.DatabaseConnection`
+    - All write methods use `connection.setAutoCommit(false)` / `commit()` / `rollback()` transactions
+    - All methods declare `throws SQLException`
+    - _Requirements: 16.2, 16.4, 16.5, 16.6_
+  - [ ] 6.2 Implement `getEventsForPeriod(int userId, String role, LocalDate from, LocalDate to, CalendarFilter filter)`
+    - Build `CalendarEvent` list from `study_session` (start = `started_at`, end = `ended_at`) and `planning` (start = `scheduled_date` + `scheduled_time`, end = start + `planned_duration`)
+    - Apply role scoping: STUDENT → own sessions + enrolled-course plannings; TUTOR → all sessions in tutor's courses + tutor's plannings; ADMIN → all records
+    - Apply `CalendarFilter` predicates (courseId, difficulty, status, dateRange, studentId, tutorId) as additional WHERE clauses
+    - _Requirements: 10.1, 10.3, 13.1, 13.2, 13.3_
+  - [ ] 6.3 Implement `OverlapGuard` logic inside `CalendarService`
+    - Private method `checkOverlap(int userId, LocalDateTime newStart, LocalDateTime newEnd, int excludeId, String excludeType)` — queries both `study_session` and `planning` for the same userId in the time range, excluding the event being moved
+    - Throws `OverlapException` with conflicting event title and time if overlap found
+    - _Requirements: 12.1, 12.2_
+  - [ ] 6.4 Implement `rescheduleEvent(int eventId, String type, LocalDateTime newStart)`
+    - Call `checkOverlap` first; on `OverlapException` propagate to caller
+    - For SESSION: UPDATE `started_at`, shift `ended_at` by same delta; for PLANNING: UPDATE `scheduled_date` and `scheduled_time`
+    - Wrap in transaction
+    - _Requirements: 11.3, 12.2, 16.4_
+  - [ ] 6.5 Implement `resizeEvent(int eventId, String type, LocalDateTime newEnd)`
+    - Validate new duration ≥ 5 min and ≤ 480 min; throw `IllegalArgumentException` with message if violated
+    - Call `checkOverlap` for the extended range; on overlap throw `OverlapException`
+    - For SESSION: UPDATE `ended_at` and recalculate `actual_duration`; for PLANNING: UPDATE `planned_duration`
+    - Wrap in transaction
+    - _Requirements: 11.4, 12.3, 16.4_
+  - [ ] 6.6 Implement `deleteEvent(int eventId, String type)` and `getEventDetail(int eventId, String type)`
+    - `deleteEvent`: DELETE from `study_session` or `planning` by id, wrapped in transaction
+    - `getEventDetail`: SELECT full record and return as `CalendarEvent` with all fields populated
+    - _Requirements: 11.2, 12.4, 16.2_
+
+- [ ] 7. Implement `PdfExportService`
+  - [ ] 7.1 Create `services/studysession/PdfExportService.java`
+    - Method `exportReport(List<Node> chartNodes, Map<String, String> statCards, List<TutorPerformanceRow> tutorRows, File outputFile) throws IOException`
+    - Capture each chart node as `WritableImage` via `node.snapshot(null, null)`, convert to `com.itextpdf.text.Image`
+    - Assemble PDF: branding header, generation timestamp, stat card values, chart images with titles, tutor table as formatted text
+    - Use `com.itextpdf.text.Document` and `PdfWriter`
+    - _Requirements: 7.1, 7.2, 7.3, 7.4_
+
+- [ ] 8. Admin sidebar wiring — repurpose Analytics nav item and add Calendar nav item
+  - [ ] 8.1 Edit `AdminDashboard.fxml`: rename `navStudyStats` → `navAnalytics`, `iconStudyStats` → `iconAnalytics`, label text → "📊 Analytics", `onMouseClicked` → `#showAnalytics`
+    - Append new `HBox` with `fx:id="navCalendar"`, label "📅 Calendar", `onMouseClicked="#showCalendar"` inside `studyGroup` VBox after `navAnalytics`
+    - _Requirements: 1.1, 9.1, 17.4_
+  - [ ] 8.2 Edit `AdminDashboardController.java`
+    - Rename `@FXML HBox navStudyStats` → `navAnalytics`; rename `@FXML Label iconStudyStats` → `iconAnalytics`
+    - Add `@FXML HBox navCalendar` field; add `navCalendar` to `allNavItems` list
+    - Rename `showStudyStats()` → `showAnalytics()`, update it to load `/views/admin/AdminAnalyticsDashboardView.fxml`
+    - Add `showCalendar()` handler loading `/views/studysession/CalendarPlannerView.fxml`
+    - Update `iconAnalytics.setText(...)` in `initialize()`
+    - _Requirements: 1.2, 9.1, 17.3, 17.4_
+
+- [ ] 9. Tutor Dashboard wiring — nested TabPane in tabMyCourses, remove top-level tabAnalytics
+  - [ ] 9.1 Edit `TutorDashboard.fxml`
+    - Replace the `AnchorPane` content of `tabMyCourses` with a nested `TabPane` containing three sub-tabs: "📘 Courses" (loads `TutorCourseView.fxml`), "📊 Analytics" (loads `TutorAnalyticsDashboardView.fxml`), "📅 Calendar" (loads `CalendarPlannerView.fxml`)
+    - Remove the top-level `tabAnalytics` Tab from `mainTabPane`
+    - _Requirements: 8.1, 8.2, 9.2, 17.5_
+  - [ ] 9.2 Edit `TutorDashboardController.java`
+    - Remove `@FXML Tab tabAnalytics` field and its `loadTabContent` call
+    - Change `tabMyCourses` loading: instead of loading `TutorCourseView.fxml` directly, load the nested `TabPane` FXML (or build it programmatically) with the three sub-tabs
+    - _Requirements: 8.1, 8.2, 9.2, 17.3_
+
+- [ ] 10. Student Dashboard wiring — add Calendar toggle and view
+  - [ ] 10.1 Edit `MainDashboard.fxml`
+    - Append `<ToggleButton fx:id="tabCalendar" text="📅  Calendar" .../>` to the sidebar nav VBox after `tabStats`, matching existing toggle button style
+    - Append `<fx:include fx:id="calendarView" source="CalendarPlannerView.fxml"/>` to the `contentArea` StackPane
+    - _Requirements: 9.3, 17.6_
+  - [ ] 10.2 Edit `MainDashboardController.java`
+    - Add `@FXML private ToggleButton tabCalendar`
+    - Add `@FXML private Parent calendarView`
+    - Wire `tabCalendar.setOnAction(e -> showView(calendarView, tabCalendar))` in `initialize()`
+    - Add `tabCalendar` to the toggle button array in `showView()`
+    - _Requirements: 9.3, 17.3, 17.6_
+
+- [ ] 11. Create `AdminAnalyticsDashboardView.fxml` and `AdminAnalyticsDashboardController`
+  - [ ] 11.1 Create `src/main/resources/views/admin/AdminAnalyticsDashboardView.fxml`
+    - Root: `ScrollPane` → `VBox` with `stylesheets="@../../css/study.css"`
+    - Header row: four stat cards (`fx:id`: `cardTotalSessions`, `cardTotalStudents`, `cardTotalCourses`, `cardTotalPlannings`) using card style (white bg, border-radius 12, border #e2e8f0, drop shadow)
+    - Row 1: `LineChart fx:id="chartSessionsOverTime"` with `ToggleButton` group (Weekly/Monthly) + `ProgressIndicator fx:id="spinnerSessions"`
+    - Row 2: `PieChart fx:id="chartDifficulty"` + `ProgressIndicator fx:id="spinnerDifficulty"`
+    - Row 3: `BarChart fx:id="chartTimeByCourse"` + two `DatePicker` controls (`dpFrom`, `dpTo`) + `ProgressIndicator fx:id="spinnerTimeCourse"`
+    - Row 4: `LineChart fx:id="chartProgress"` with `ToggleButton` group (Daily/Weekly/Monthly) + `ProgressIndicator fx:id="spinnerProgress"`
+    - Row 5: `TableView fx:id="tablePerformance"` with five columns + course popularity `VBox fx:id="popularityList"` + `ProgressIndicator fx:id="spinnerTutor"`
+    - Footer: `Button fx:id="btnExportPdf" text="📄 Export PDF"`
+    - _Requirements: 1.4, 1.6, 2.1, 3.1, 4.1, 5.1, 6.1, 7.1, 15.1, 15.2_
+  - [ ] 11.2 Create `controllers/admin/AdminAnalyticsDashboardController.java`
+    - Implement `Initializable`; inject all `@FXML` fields from the view
+    - In `initialize()`: show all `ProgressIndicator`s, then call `loadAllDataAsync()` on a `Task<Void>` background thread
+    - `loadAllDataAsync()`: call each `AnalyticsService` method, then `Platform.runLater()` to populate charts and hide spinners with a 300ms `FadeTransition`
+    - Populate `chartSessionsOverTime` (default Weekly) from `getSessionCountByWeek(12)`; wire toggle buttons to reload
+    - Populate `chartDifficulty` from `getSessionCountByDifficulty()` with DifficultyColor slice fills
+    - Populate `chartTimeByCourse` from `getTimeSpentByCourse(null, null)` (no initial date filter); wire `dpFrom`/`dpTo` listeners to reload within 500ms
+    - Populate `chartProgress` (default Weekly) from `getAverageProgressByPeriod("WEEKLY", 12)`; wire toggle buttons
+    - Populate `tablePerformance` from `getTutorPerformanceStats()`; highlight top row with `#fef9c3` row factory
+    - Populate `popularityList` from `getCoursePopularityRanking(5)` as numbered Labels
+    - Display "No data" messages in chart panels when result lists are empty
+    - Wire `btnExportPdf` to `handleExportPdf()` which calls `PdfExportService`, opens `FileChooser`, shows success/error alert
+    - _Requirements: 1.3, 1.4, 1.5, 2.2, 2.3, 2.5, 2.6, 3.3, 3.4, 3.5, 4.2, 4.4, 4.5, 4.6, 5.2, 5.4, 5.5, 5.6, 6.3, 6.4, 6.6, 7.5, 7.6, 7.7, 15.3, 15.5_
+
+- [ ] 12. Create `TutorAnalyticsDashboardView.fxml` and `TutorAnalyticsDashboardController`
+  - [ ] 12.1 Create `src/main/resources/views/studysession/TutorAnalyticsDashboardView.fxml`
+    - Root: `ScrollPane` → `VBox` with `stylesheets="@../../css/study.css"`
+    - Stat card row: `cardMyStudents`, `cardMyCourses`, `cardMyCompletionRate`, `cardMySessions`
+    - `LineChart fx:id="chartMySessionsWeekly"` (sessions per week, last 8 weeks)
+    - `BarChart fx:id="chartMyTimeByCourse"` (time spent per course)
+    - `PieChart fx:id="chartMyDifficulty"` (session distribution by difficulty)
+    - Each chart panel includes a `ProgressIndicator`
+    - _Requirements: 8.4, 8.5, 15.1, 15.2_
+  - [ ] 12.2 Create `controllers/studysession/TutorAnalyticsDashboardController.java`
+    - Implement `Initializable`; expose `setTutorId(int tutorId)` for the parent controller to call
+    - Load all data asynchronously via `Task<Void>` using tutor-scoped `AnalyticsService` overloads
+    - Scope all queries to `tutorId`; assert no other tutor's data appears
+    - Populate stat cards, charts, and handle empty-data messages
+    - _Requirements: 8.3, 8.4, 8.5, 8.6, 8.7, 15.3, 15.5_
+
+- [ ] 13. Create `CalendarPlannerView.fxml` and `CalendarPlannerController` skeleton
+  - [ ] 13.1 Create `src/main/resources/views/studysession/CalendarPlannerView.fxml`
+    - Root: `VBox` with `stylesheets="@../../css/study.css"`
+    - Toolbar `HBox`: "◀ Prev" button, "Today" button, "Next ▶" button, `Label fx:id="lblPeriod"`, `ToggleButton` group (Monthly / Weekly), `Button fx:id="btnToggleFilters" text="🔽 Filters"`
+    - Collapsible filter panel `VBox fx:id="filterPanel"`: `ComboBox fx:id="cbCourse"`, `ComboBox fx:id="cbDifficulty"`, `ComboBox fx:id="cbStatus"`, `DatePicker fx:id="dpFilterFrom"`, `DatePicker fx:id="dpFilterTo"`, `ComboBox fx:id="cbStudent"` (Admin/Tutor only), `ComboBox fx:id="cbTutor"` (Admin only), `Button fx:id="btnResetFilters" text="🔄 Reset Filters"`
+    - `StackPane fx:id="calendarArea"` (holds the monthly or weekly grid, swapped on mode change)
+    - `ProgressIndicator fx:id="spinnerCalendar"` overlaid on `calendarArea`
+    - Color legend `HBox fx:id="colorLegend"` below `calendarArea`
+    - _Requirements: 9.4, 9.5, 9.6, 9.7, 14.1, 14.2, 14.4, 15.1, 15.7_
+  - [ ] 13.2 Create `controllers/studysession/CalendarPlannerController.java` skeleton
+    - Implement `Initializable`; inject all `@FXML` fields
+    - Expose `setCurrentUser(User user)` to receive role and userId from parent controllers
+    - Initialize `CalendarFilter` state; wire Prev/Next/Today buttons to update `currentPeriodStart` and call `loadCalendar()`
+    - Wire view-mode toggle buttons to switch between monthly and weekly grid builders
+    - Wire filter controls: each `ComboBox`/`DatePicker` `onChange` calls `loadCalendar()` within 500ms (use `PauseTransition` debounce)
+    - Wire `btnResetFilters` to clear all filter controls and reload
+    - Preserve filter state across period navigation
+    - Build color legend from `DifficultyColor` and `StatusColor` constants
+    - _Requirements: 9.4, 9.5, 9.6, 9.7, 14.3, 14.4, 14.5, 15.4, 15.7_
+
+- [ ] 14. Implement Monthly view grid rendering
+  - [ ] 14.1 Add `buildMonthlyGrid(YearMonth month, List<CalendarEvent> events)` to `CalendarPlannerController`
+    - Build a `GridPane` (7 columns × 6 rows) with day-of-week headers
+    - Each day cell: `VBox` with date label; highlight today's cell with `#eff6ff` background; alternate row shading (white / `#f8fafc`)
+    - For each event on a day: add a compact chip `Label` (course name truncated to 15 chars, background = DifficultyColor)
+    - If more than 3 events in a cell: show "+N more" label; clicking it expands to show all events in a popup
+    - _Requirements: 10.2, 10.5, 15.4_
+  - [ ] 14.2 Add `buildWeeklyGrid(LocalDate weekStart, List<CalendarEvent> events)` to `CalendarPlannerController`
+    - Build a `GridPane` (8 columns: time labels + 7 day columns) with hourly time slot rows (00:00–23:00)
+    - Position each event block by calculating row offset from `event.start` time and row span from duration
+    - Event block: `VBox` with course name, start–end time label, background = DifficultyColor
+    - Alternate time-slot row shading; highlight current day column
+    - _Requirements: 10.6, 15.4_
+
+- [ ] 15. Implement calendar event interaction — click details popup, Edit, Delete
+  - [ ] 15.1 Add click handler to each event chip/block in `CalendarPlannerController`
+    - On click: call `CalendarService.getEventDetail(id, type)` and open a details popup `Stage` (undecorated, modal)
+    - Popup content: course name, start/end time, duration (min), difficulty, status, notes/mood, XP earned (SESSION only)
+    - Show "✏ Edit" button always; show "🗑 Delete" button only if current user has permission (Student → own events; Tutor → own-course events; Admin → all)
+    - _Requirements: 11.1, 11.2, 13.4_
+  - [ ] 15.2 Wire "✏ Edit" button in popup
+    - For SESSION type: load `StudySessionForm.fxml` via `FXMLLoader`, get `StudySessionFormController`, call its pre-populate method with event data
+    - For PLANNING type: load `PlanningForm.fxml`, pre-populate `PlanningFormController`
+    - On form save: close popup and call `loadCalendar()` to refresh
+    - _Requirements: 11.2_
+  - [ ] 15.3 Wire "🗑 Delete" button in popup
+    - Show `Alert.AlertType.CONFIRMATION` "Are you sure you want to delete this session?"
+    - On confirm: call `CalendarService.deleteEvent(id, type)` on background task; on success refresh calendar; on `SQLException` show error alert
+    - If user lacks permission: show "🚫 You do not have permission to modify this event." alert and cancel
+    - _Requirements: 12.4, 13.4, 13.5_
+
+- [ ] 16. Implement drag-and-drop reschedule and resize in Weekly view
+  - [ ] 16.1 Add drag-and-drop handlers to weekly event blocks
+    - `setOnDragDetected`: start drag with `Dragboard`, store `eventId` and `type` in clipboard
+    - Day column cells `setOnDragOver` / `setOnDragDropped`: calculate new `LocalDateTime` from drop target row/column
+    - On drop: call `CalendarService.rescheduleEvent(id, type, newStart)` on background task
+    - On `OverlapException`: restore event to original position, show tooltip "⚠ Time slot conflicts with an existing session."
+    - On success: refresh affected day cells within 1 second
+    - _Requirements: 11.3, 11.5, 11.6, 12.2_
+  - [ ] 16.2 Add resize handle to bottom edge of weekly event blocks
+    - Add a drag-handle `Region` (height 6px, cursor `S_RESIZE`) at the bottom of each event block `VBox`
+    - `setOnMouseDragged` on handle: calculate new `LocalDateTime newEnd` from mouse Y position
+    - On mouse release: validate duration ≥ 5 min; call `CalendarService.resizeEvent(id, type, newEnd)` on background task
+    - On `OverlapException` or `IllegalArgumentException`: restore original size, show validation error alert
+    - _Requirements: 11.4, 11.5, 11.6, 12.3_
+
+- [ ] 17. Checkpoint — wire CalendarPlannerController to parent dashboards and verify data scoping
+  - [ ] 17.1 Update `AdminDashboardController.showCalendar()` to pass current user to `CalendarPlannerController` via `setCurrentUser()`
+  - [ ] 17.2 Update `TutorDashboardController` nested tab loading to pass current user to `CalendarPlannerController`
+  - [ ] 17.3 Update `MainDashboardController` to pass current user to `CalendarPlannerController` after `fx:include` injection
+  - Verify STUDENT sees only own sessions + enrolled-course plannings; TUTOR sees all students in their courses; ADMIN sees all
+  - _Requirements: 13.1, 13.2, 13.3_
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 18. CSS and UI polish
+  - [ ] 18.1 Apply card styles to all new stat cards in `AdminAnalyticsDashboardView.fxml` and `TutorAnalyticsDashboardView.fxml`
+    - White background, `border-radius: 12`, `border-color: #e2e8f0`, drop shadow `rgba(0,0,0,0.07)`, padding 16px
+    - _Requirements: 15.2_
+  - [ ] 18.2 Enable chart animations and tooltips
+    - Call `chart.setAnimated(true)` on all `LineChart`, `PieChart`, and `BarChart` instances
+    - Install `Tooltip` on each data point node showing the exact value
+    - _Requirements: 15.3_
+  - [ ] 18.3 Apply `ProgressIndicator` + `FadeTransition` loading pattern to all chart panels and calendar area
+    - Show spinner on data fetch start; on data ready, set content opacity to 0, add to scene, play 300ms `FadeTransition` to opacity 1
+    - _Requirements: 15.5_
+  - [ ] 18.4 Apply button style conventions to all new buttons
+    - `border-radius: 8`, cursor hand, padding `5 12`, font size 11px — consistent with existing `study.css` button rules
+    - _Requirements: 15.6_
+  - [ ] 18.5 Add bar value labels above each bar in `chartTimeByCourse`
+    - After chart renders, iterate `BarChart` data and add `Label` nodes positioned above each bar showing exact minute value
+    - _Requirements: 4.5_
+
+- [ ] 19. Final checkpoint — full integration verification
+  - Confirm Admin sidebar shows "📊 Analytics" and "📅 Calendar" under STUDY SESSION group
+  - Confirm Tutor "My Courses" tab has three sub-tabs: Courses, Analytics, Calendar
+  - Confirm Student sidebar has "📅 Calendar" toggle
+  - Confirm no existing FXML bindings are broken (existing `@FXML` field names unchanged except the renamed `navStudyStats` → `navAnalytics`)
+  - Confirm PDF export produces a valid file with charts and tutor table
+  - Confirm drag-and-drop overlap detection throws `OverlapException` and shows tooltip
+  - Ensure all tests pass, ask the user if questions arise.
+  - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6_
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP. No optional sub-tasks are present in this plan because there is no design document with Correctness Properties — unit/integration testing is left to the implementer's discretion.
+- Each task references specific requirement acceptance criteria for traceability.
+- Checkpoints (tasks 17 and 19) ensure incremental validation before moving to the next layer.
+- All new service classes must use `utils.DatabaseConnection` — no new connection pools.
+- The `OverlapException` is a checked exception; all callers must handle it explicitly.
+- iTextPDF chart snapshot capture must run on the JavaFX Application Thread; schedule via `Platform.runLater` before handing the `WritableImage` bytes to the PDF writer on a background thread.

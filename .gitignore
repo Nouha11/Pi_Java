@@ -44,3 +44,4 @@ src/main/resources/config.properties
 
 # Ignore Pi_web Symfony reference project
 Pi_web/
+src/main/resources/config/api.properties
