@@ -193,12 +193,7 @@ public class UserRewardsController {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
-        Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
-        StackPane sp = new StackPane(ico);
-        sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
-        sp.setStyle("-fx-background-color: " + bgGradient + "; -fx-background-radius: 50;");
-        return sp;
+        return utils.TwemojiUtil.circle(unicode, iconSize * 2.5, bgGradient, iconSize * 1.5);
     }
 
     private ImageView loadIcon(String path, double size) {
@@ -226,11 +221,11 @@ public class UserRewardsController {
 
     private String rewardTypeIcon(String type) {
         return switch (type) {
-            case "BADGE"        -> "\uF5A2";
-            case "ACHIEVEMENT"  -> "\uF091";
-            case "BONUS_XP"     -> "\uF005";
-            case "BONUS_TOKENS" -> "\uF51E";
-            default             -> "\uF06B";
+            case "BADGE"        -> utils.TwemojiUtil.MEDAL;
+            case "ACHIEVEMENT"  -> utils.TwemojiUtil.TROPHY;
+            case "BONUS_XP"     -> utils.TwemojiUtil.STAR;
+            case "BONUS_TOKENS" -> utils.TwemojiUtil.COIN;
+            default             -> utils.TwemojiUtil.GIFT;
         };
     }
 
@@ -246,9 +241,11 @@ public class UserRewardsController {
 
     private String typeIcon(String type) {
         return switch (type) {
-            case "PUZZLE" -> "\uF12E"; case "MEMORY" -> "\uF5DC";
-            case "TRIVIA" -> "\uF059"; case "ARCADE" -> "\uF11B";
-            default       -> "\uF11B";
+            case "PUZZLE" -> utils.TwemojiUtil.PUZZLE;
+            case "MEMORY" -> utils.TwemojiUtil.MEMORY;
+            case "TRIVIA" -> utils.TwemojiUtil.TRIVIA;
+            case "ARCADE" -> utils.TwemojiUtil.ARCADE;
+            default       -> utils.TwemojiUtil.GAMEPAD;
         };
     }
 

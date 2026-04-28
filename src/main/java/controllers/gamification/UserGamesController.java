@@ -80,9 +80,9 @@ public class UserGamesController {
         HBox badges = new HBox(6, typeBadge, diffBadge);
         badges.setAlignment(Pos.CENTER);
 
-        VBox tokens = miniStat("\uF51E", game.getTokenCost() + "", "Cost");
-        VBox xp     = miniStat("\uF005", game.getRewardXP() + "", "XP");
-        VBox rTok   = miniStat("\uF06B", game.getRewardTokens() + "", "Reward");
+        VBox tokens = miniStat(utils.TwemojiUtil.COIN, game.getTokenCost() + "", "Cost");
+        VBox xp     = miniStat(utils.TwemojiUtil.STAR, game.getRewardXP() + "", "XP");
+        VBox rTok   = miniStat(utils.TwemojiUtil.GIFT, game.getRewardTokens() + "", "Reward");
         HBox stats = new HBox(10, tokens, xp, rTok);
         stats.setAlignment(Pos.CENTER);
         stats.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 8 12;");
@@ -191,12 +191,8 @@ public class UserGamesController {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
-        Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: " + iconSize + "px; -fx-text-fill: " + iconColor + ";");
-        StackPane sp = new StackPane(ico);
-        sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
-        sp.setStyle("-fx-background-color: " + bgGradient + "; -fx-background-radius: 50;");
-        return sp;
+        // unicode is now an emoji char — delegate to TwemojiUtil
+        return utils.TwemojiUtil.circle(unicode, iconSize * 2.5, bgGradient, iconSize * 1.5);
     }
 
     private ImageView loadRewardIcon(String path, double size) {
@@ -223,10 +219,10 @@ public class UserGamesController {
         b.getChildren().addAll(lbl, val); return b;
     }
 
-    private VBox miniStat(String faCode, String value, String label) {
+    private VBox miniStat(String emojiCode, String value, String label) {
         VBox b = new VBox(1); b.setAlignment(Pos.CENTER);
-        Label ico = new Label(faCode);
-        ico.setStyle("-fx-font-family: 'Font Awesome 5 Free'; -fx-font-weight: 900; -fx-font-size: 11px; -fx-text-fill: #3b4fd8;");
+        Label ico = new Label(emojiCode);
+        ico.setStyle("-fx-font-size: 11px;");
         Label v = new Label(value); v.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2d3748;");
         HBox top = new HBox(3, ico, v); top.setAlignment(Pos.CENTER);
         Label l = new Label(label); l.setStyle("-fx-font-size: 10px; -fx-text-fill: #a0aec0;");
@@ -241,11 +237,11 @@ public class UserGamesController {
 
     private String typeIcon(String type) {
         return switch (type) {
-            case "PUZZLE" -> "\uF12E";
-            case "MEMORY" -> "\uF5DC";
-            case "TRIVIA" -> "\uF059";
-            case "ARCADE" -> "\uF11B";
-            default       -> "\uF11B";
+            case "PUZZLE" -> utils.TwemojiUtil.PUZZLE;
+            case "MEMORY" -> utils.TwemojiUtil.MEMORY;
+            case "TRIVIA" -> utils.TwemojiUtil.TRIVIA;
+            case "ARCADE" -> utils.TwemojiUtil.ARCADE;
+            default       -> utils.TwemojiUtil.GAMEPAD;
         };
     }
 

@@ -11,7 +11,9 @@ import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import models.gamification.Game;
 import services.gamification.FavoriteGameService;
+import services.gamification.GameRatingService;
 import services.gamification.GameService;
+import utils.TwemojiUtil;
 import utils.UserSession;
 
 import java.util.List;
@@ -45,6 +47,7 @@ public class GameLauncherController {
 
     private final GameService gameService = new GameService();
     private final FavoriteGameService favService = new FavoriteGameService();
+    private final GameRatingService ratingService = new GameRatingService();
     private List<Game> allGames;
     private StackPane contentArea;
 
@@ -127,14 +130,9 @@ public class GameLauncherController {
     // ── Card ──────────────────────────────────────────────────────────────────
     private VBox buildCard(Game game, boolean isMini) {
 
-        // Icon circle using FontAwesome
-        Label iconLbl = faIcon(typeIcon(game.getType()), 22);
-        iconLbl.setStyle(iconLbl.getStyle() + "-fx-text-fill: " + typeFg(game.getType()) + ";");
-        StackPane iconCircle = new StackPane(iconLbl);
-        iconCircle.setPrefSize(60, 60);
+        // Icon circle using Twemoji
+        StackPane iconCircle = TwemojiUtil.circle(typeEmoji(game.getType()), 60, typeColor(game.getType()), 34);
         iconCircle.setMaxSize(60, 60);
-        iconCircle.setStyle("-fx-background-color: " + typeColor(game.getType())
-                + "; -fx-background-radius: 50;");
 
         // Title
         Label title = new Label(game.getName());
@@ -188,32 +186,41 @@ public class GameLauncherController {
                 btnPlay.getStyle().replace(btnHover, btnBg)));
         btnPlay.setOnAction(e -> launchGame(game));
 
-        // Favorite toggle button
+        // userId needed for favorites and rating
         int userId = UserSession.getInstance().getUserId();
+
+        // Favorite toggle button using Twemoji heart
         final boolean[] isFav = {false};
         try { isFav[0] = userId > 0 && favService.isFavorite(userId, game.getId()); } catch (Exception ignored) {}
-        Button btnFav = new Button(isFav[0] ? "\uF004" : "\uF08A");
-        btnFav.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:14px;"
-                + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
-                + "-fx-text-fill:" + (isFav[0] ? "#e53e3e" : "#a0aec0") + ";");
+        Label heartLbl = new Label(isFav[0] ? TwemojiUtil.HEART : TwemojiUtil.HEART_EMPTY);
+        heartLbl.setStyle("-fx-font-size:16px;-fx-cursor:hand;");
+        Button btnFav = new Button();
+        btnFav.setGraphic(heartLbl);
+        btnFav.setStyle("-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;");
         btnFav.setOnAction(e -> {
             if (userId <= 0) return;
             try {
                 boolean nowFav = favService.toggle(userId, game.getId());
                 isFav[0] = nowFav;
-                btnFav.setText(nowFav ? "\uF004" : "\uF08A");
-                btnFav.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:14px;"
-                        + "-fx-background-color:transparent;-fx-cursor:hand;-fx-padding:4 8;"
-                        + "-fx-text-fill:" + (nowFav ? "#e53e3e" : "#a0aec0") + ";");
+                heartLbl.setText(nowFav ? TwemojiUtil.HEART : TwemojiUtil.HEART_EMPTY);
             } catch (Exception ex) { System.err.println("Favorite error: " + ex.getMessage()); }
         });
+
+        // Average rating row + rate button
+        HBox ratingRow = buildRatingDisplay(game.getId());
+        if (userId > 0) {
+            Button btnRate = new Button("Rate");
+            btnRate.setStyle("-fx-background-color:transparent;-fx-text-fill:#3b4fd8;-fx-font-size:11px;-fx-cursor:hand;-fx-underline:true;-fx-padding:0 4;");
+            btnRate.setOnAction(e -> showRatingDialog(game, ratingRow));
+            ratingRow.getChildren().add(btnRate);
+        }
 
         HBox actionRow = new HBox(6, btnPlay, btnFav);
         actionRow.setAlignment(Pos.CENTER);
         HBox.setHgrow(btnPlay, Priority.ALWAYS);
 
         // Card
-        VBox card = new VBox(10, iconCircle, title, badges, sep, stats, actionRow);
+        VBox card = new VBox(10, iconCircle, title, badges, sep, stats, ratingRow, actionRow);
         card.setAlignment(Pos.TOP_CENTER);
         card.setPadding(new Insets(18, 14, 18, 14));
         card.setPrefWidth(210);
@@ -235,6 +242,103 @@ public class GameLauncherController {
         return card;
     }
 
+    // ── Rating display ────────────────────────────────────────────────────────
+    private void showRatingDialog(Game game, HBox ratingRowToRefresh) {
+        int userId = UserSession.getInstance().getUserId();
+        if (userId <= 0) return;
+
+        Dialog<Void> dlg = new Dialog<>();
+        dlg.setTitle("Rate: " + game.getName());
+
+        VBox content = new VBox(14);
+        content.setAlignment(Pos.CENTER);
+        content.setPadding(new Insets(24));
+        content.setMinWidth(300);
+
+        Label title = new Label("How would you rate this game?");
+        title.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
+
+        // Load existing rating
+        final int[] selected = {0};
+        try { selected[0] = ratingService.getUserRating(userId, game.getId()); } catch (Exception ignored) {}
+
+        Label[] starLabels = new Label[5];
+        HBox stars = new HBox(10); stars.setAlignment(Pos.CENTER);
+        for (int i = 1; i <= 5; i++) {
+            final int n = i;
+            Label star = new Label(i <= selected[0] ? "\u2605" : "\u2606");
+            star.setStyle("-fx-font-size:36px;-fx-cursor:hand;-fx-text-fill:" + (i <= selected[0] ? "#f6d365" : "#cbd5e0") + ";");
+            starLabels[i - 1] = star;
+            star.setOnMouseEntered(e -> {
+                for (int j = 0; j < 5; j++) { boolean f = j < n; starLabels[j].setText(f ? "\u2605" : "\u2606"); starLabels[j].setStyle("-fx-font-size:36px;-fx-cursor:hand;-fx-text-fill:" + (f ? "#f6d365" : "#cbd5e0") + ";"); }
+            });
+            star.setOnMouseExited(e -> {
+                for (int j = 0; j < 5; j++) { boolean f = j < selected[0]; starLabels[j].setText(f ? "\u2605" : "\u2606"); starLabels[j].setStyle("-fx-font-size:36px;-fx-cursor:hand;-fx-text-fill:" + (f ? "#f6d365" : "#cbd5e0") + ";"); }
+            });
+            star.setOnMouseClicked(e -> {
+                selected[0] = n;
+                for (int j = 0; j < 5; j++) { boolean f = j < selected[0]; starLabels[j].setText(f ? "\u2605" : "\u2606"); starLabels[j].setStyle("-fx-font-size:36px;-fx-cursor:hand;-fx-text-fill:" + (f ? "#f6d365" : "#cbd5e0") + ";"); }
+            });
+            stars.getChildren().add(star);
+        }
+
+        Label hint = new Label("Click a star to select your rating");
+        hint.setStyle("-fx-font-size:11px;-fx-text-fill:#a0aec0;");
+
+        content.getChildren().addAll(title, stars, hint);
+        dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dlg.getDialogPane().lookupButton(ButtonType.OK)
+           .setStyle("-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:7 18;");
+
+        dlg.setResultConverter(bt -> {
+            if (bt == ButtonType.OK && selected[0] > 0) {
+                try {
+                    ratingService.rate(userId, game.getId(), selected[0]);
+                    // Refresh the rating row on the card
+                    HBox fresh = buildRatingDisplay(game.getId());
+                    ratingRowToRefresh.getChildren().setAll(fresh.getChildren());
+                    // Re-add rate button
+                    Button btnRate = new Button("Rate");
+                    btnRate.setStyle("-fx-background-color:transparent;-fx-text-fill:#3b4fd8;-fx-font-size:11px;-fx-cursor:hand;-fx-underline:true;-fx-padding:0 4;");
+                    btnRate.setOnAction(ev -> showRatingDialog(game, ratingRowToRefresh));
+                    ratingRowToRefresh.getChildren().add(btnRate);
+                } catch (Exception ex) { System.err.println("Rating save: " + ex.getMessage()); }
+            }
+            return null;
+        });
+        dlg.showAndWait();
+    }
+
+    private HBox buildRatingDisplay(int gameId) {
+        HBox row = new HBox(4);
+        row.setAlignment(Pos.CENTER);
+        try {
+            double avg = ratingService.getAverageRating(gameId);
+            int count  = ratingService.getRatingCount(gameId);
+            if (count == 0) {
+                Label none = new Label("No ratings yet");
+                none.setStyle("-fx-text-fill:#cbd5e0;-fx-font-size:11px;");
+                row.getChildren().add(none);
+            } else {
+                // Filled/half/empty stars
+                for (int i = 1; i <= 5; i++) {
+                    Label star = new Label(i <= Math.round(avg) ? "\u2605" : "\u2606");
+                    star.setStyle("-fx-font-size:14px;-fx-text-fill:" + (i <= Math.round(avg) ? "#f6d365" : "#cbd5e0") + ";");
+                    row.getChildren().add(star);
+                }
+                Label avgLbl = new Label(String.format(" %.1f (%d)", avg, count));
+                avgLbl.setStyle("-fx-font-size:11px;-fx-text-fill:#718096;");
+                row.getChildren().add(avgLbl);
+            }
+        } catch (Exception e) {
+            Label err = new Label("—");
+            err.setStyle("-fx-text-fill:#cbd5e0;-fx-font-size:11px;");
+            row.getChildren().add(err);
+        }
+        return row;
+    }
+
     // ── Stats row ─────────────────────────────────────────────────────────────
     private HBox statsRow(String icon1, String val1, String lbl1,
                           String icon2, String val2, String lbl2) {
@@ -246,8 +350,9 @@ public class GameLauncherController {
     }
 
     private VBox statCell(String faCode, String value, String label) {
-        Label ico = faIcon(faCode, 12);
-        ico.setStyle(ico.getStyle() + "-fx-text-fill: #3b4fd8;");
+        // Use plain text for stat icons (coins, star, bolt) — small inline
+        Label ico = new Label(statEmoji(faCode));
+        ico.setStyle("-fx-font-size: 13px;");
         Label val = new Label(" " + value);
         val.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;");
         HBox top = new HBox(2, ico, val);
@@ -258,6 +363,16 @@ public class GameLauncherController {
         b.setAlignment(Pos.CENTER);
         b.setMaxWidth(Double.MAX_VALUE);
         return b;
+    }
+
+    /** Map FA unicode constants to plain emoji for inline stat display */
+    private String statEmoji(String faCode) {
+        return switch (faCode) {
+            case FA_COINS -> TwemojiUtil.COIN;
+            case FA_STAR  -> TwemojiUtil.STAR;
+            case FA_BOLT  -> TwemojiUtil.BOLT;
+            default       -> "\u2022";
+        };
     }
 
     // ── Launch ────────────────────────────────────────────────────────────────
@@ -292,13 +407,13 @@ public class GameLauncherController {
     }
 
     // ── Type mappings ─────────────────────────────────────────────────────────
-    private String typeIcon(String type) {
+    private String typeEmoji(String type) {
         return switch (type) {
-            case "PUZZLE" -> FA_PUZZLE;
-            case "MEMORY" -> FA_BRAIN;
-            case "TRIVIA" -> FA_QUESTION;
-            case "ARCADE" -> FA_GAMEPAD;
-            default       -> FA_GAMEPAD;
+            case "PUZZLE" -> TwemojiUtil.PUZZLE;
+            case "MEMORY" -> TwemojiUtil.MEMORY;
+            case "TRIVIA" -> TwemojiUtil.TRIVIA;
+            case "ARCADE" -> TwemojiUtil.ARCADE;
+            default       -> TwemojiUtil.GAMEPAD;
         };
     }
 

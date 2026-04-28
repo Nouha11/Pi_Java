@@ -251,10 +251,9 @@ public class ProfileController implements Initializable {
         boolean isMini = "MINI_GAME".equals(game.getCategory());
 
         Label iconLbl = new Label(typeIcon(game.getType()));
-        iconLbl.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:22px;-fx-text-fill:white;");
-        StackPane iconCircle = new StackPane(iconLbl);
-        iconCircle.setPrefSize(56, 56); iconCircle.setMaxSize(56, 56);
-        iconCircle.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-background-radius:50;");
+        iconLbl.setStyle("-fx-font-size:22px;");
+        StackPane iconCircle = utils.TwemojiUtil.circle(typeIcon(game.getType()), 56, typeGradient(game.getType()), 32);
+        iconCircle.setMaxSize(56, 56);
 
         Label title = new Label(game.getName());
         title.setStyle("-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");

@@ -16,6 +16,8 @@ import javafx.util.Duration;
 import models.gamification.Game;
 import services.gamification.GameRewardService;
 import services.gamification.GameContentService;
+import services.gamification.GameRatingService;
+import utils.TwemojiUtil;
 import utils.UserSession;
 import java.util.*;
 
@@ -104,8 +106,8 @@ public class GamePlayController {
         gameOverlay.setVisible(true);
         overlayContent.getChildren().clear();
         StackPane resultIcon = passed
-            ? faCircle("\uF091", 32, "linear-gradient(to bottom right,#f6d365,#fda085)", "white")
-            : faCircle("\uF00D", 32, "linear-gradient(to bottom right,#fc5c7d,#6a3093)", "white");
+            ? faCircle(TwemojiUtil.TROPHY, 32, "linear-gradient(to bottom right,#f6d365,#fda085)", "white")
+            : faCircle(TwemojiUtil.LOSE,   32, "linear-gradient(to bottom right,#fc5c7d,#6a3093)", "white");
         resultIcon.setPrefSize(80, 80); resultIcon.setMaxSize(80, 80);
         Label result = new Label(passed ? "Well Done!" : "Time's Up!");
         result.setStyle("-fx-font-size:22px;-fx-font-weight:bold;-fx-text-fill:" + (passed ? "#27ae60" : "#e53e3e") + ";");
@@ -119,6 +121,19 @@ public class GamePlayController {
             Label rl = new Label(rw);
             rl.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#3b4fd8;");
             overlayContent.getChildren().add(rl);
+
+            // ── Star rating widget ────────────────────────────────────────────
+            int userId = UserSession.getInstance().getUserId();
+            if (userId > 0) {
+                Separator rateSep = new Separator();
+                rateSep.setStyle("-fx-background-color:#e4e8f0;");
+                Label rateTitle = new Label("Rate this game");
+                rateTitle.setStyle("-fx-font-size:13px;-fx-text-fill:#718096;-fx-font-weight:bold;");
+                int existing = 0;
+                try { existing = new GameRatingService().getUserRating(userId, game.getId()); } catch (Exception ignored) {}
+                HBox stars = buildStarWidget(existing, userId, game.getId());
+                overlayContent.getChildren().addAll(rateSep, rateTitle, stars);
+            }
         }
         Button playAgain = new Button(isMiniGame ? "Try Again" : "Play Again");
         playAgain.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:14px;-fx-background-radius:10;-fx-padding:10 30;-fx-cursor:hand;");
@@ -761,6 +776,48 @@ public class GamePlayController {
         gameContentArea.getChildren().add(l);
     }
 
+    /** Interactive 5-star rating widget. Saves to DB on click. */
+    private HBox buildStarWidget(int initialRating, int userId, int gameId) {
+        HBox stars = new HBox(8);
+        stars.setAlignment(Pos.CENTER);
+        Label[] starLabels = new Label[5];
+        final int[] selected = {initialRating};
+        GameRatingService svc = new GameRatingService();
+
+        for (int i = 1; i <= 5; i++) {
+            final int n = i;
+            Label star = new Label(i <= initialRating ? "\u2605" : "\u2606");
+            star.setStyle("-fx-font-size:30px;-fx-cursor:hand;-fx-text-fill:" + (i <= initialRating ? "#f6d365" : "#cbd5e0") + ";");
+            starLabels[i - 1] = star;
+
+            star.setOnMouseEntered(e -> {
+                for (int j = 0; j < 5; j++) {
+                    boolean fill = j < n;
+                    starLabels[j].setText(fill ? "\u2605" : "\u2606");
+                    starLabels[j].setStyle("-fx-font-size:30px;-fx-cursor:hand;-fx-text-fill:" + (fill ? "#f6d365" : "#cbd5e0") + ";");
+                }
+            });
+            star.setOnMouseExited(e -> {
+                for (int j = 0; j < 5; j++) {
+                    boolean fill = j < selected[0];
+                    starLabels[j].setText(fill ? "\u2605" : "\u2606");
+                    starLabels[j].setStyle("-fx-font-size:30px;-fx-cursor:hand;-fx-text-fill:" + (fill ? "#f6d365" : "#cbd5e0") + ";");
+                }
+            });
+            star.setOnMouseClicked(e -> {
+                selected[0] = n;
+                try { svc.rate(userId, gameId, n); } catch (Exception ex) { System.err.println("Rating: " + ex.getMessage()); }
+                for (int j = 0; j < 5; j++) {
+                    boolean fill = j < selected[0];
+                    starLabels[j].setText(fill ? "\u2605" : "\u2606");
+                    starLabels[j].setStyle("-fx-font-size:30px;-fx-cursor:hand;-fx-text-fill:" + (fill ? "#f6d365" : "#cbd5e0") + ";");
+                }
+            });
+            stars.getChildren().add(star);
+        }
+        return stars;
+    }
+
     @FXML private void goBack() {
         running = false; if (gameTimer != null) gameTimer.stop(); if (targetSpawner != null) targetSpawner.stop();
         try {
@@ -794,15 +851,12 @@ public class GamePlayController {
     private String formatTime(int s) { return String.format("%d:%02d", s / 60, s % 60); }
 
     private StackPane faCircle(String unicode, double iconSize, String bgGradient, String iconColor) {
-        Label ico = new Label(unicode);
-        ico.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:" + iconSize + "px;-fx-text-fill:" + iconColor + ";");
-        StackPane sp = new StackPane(ico); sp.setPrefSize(56, 56); sp.setMaxSize(56, 56);
-        sp.setStyle("-fx-background-color:" + bgGradient + ";-fx-background-radius:50;");
-        return sp;
+        // Delegate to TwemojiUtil — unicode here is an emoji char, not FA code
+        return TwemojiUtil.circle(unicode, iconSize * 2.5, bgGradient, iconSize * 1.5);
     }
 
     private String typeIcon(String type) {
-        return switch (type) { case "PUZZLE" -> "\uF12E"; case "MEMORY" -> "\uF5DC"; case "TRIVIA" -> "\uF059"; case "ARCADE" -> "\uF11B"; default -> "\uF11B"; };
+        return switch (type) { case "PUZZLE" -> TwemojiUtil.PUZZLE; case "MEMORY" -> TwemojiUtil.MEMORY; case "TRIVIA" -> TwemojiUtil.TRIVIA; case "ARCADE" -> TwemojiUtil.ARCADE; default -> TwemojiUtil.GAMEPAD; };
     }
 
     private String typeGradient(String type) {
