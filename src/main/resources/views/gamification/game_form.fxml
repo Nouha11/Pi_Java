@@ -2,7 +2,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
-
+<?import javafx.scene.paint.Color?>
 <AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.gamification.GameFormController"
             stylesheets="@/css/gamification.css"
@@ -117,60 +117,156 @@
                            style="-fx-text-fill: #718096; -fx-font-size: 12px;"/>
 
                     <!-- PUZZLE content -->
-                    <VBox fx:id="puzzleContent" spacing="10" visible="false" managed="false">
-                        <Label text="Word Scramble Content"
-                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #b7791f;"/>
-                        <VBox spacing="3">
-                            <Label text="Word to Scramble" styleClass="field-label"/>
-                            <TextField fx:id="puzzleWordField" promptText="e.g., SYMFONY (will be scrambled for players)"/>
-                        </VBox>
-                        <VBox spacing="3">
-                            <Label text="Hint" styleClass="field-label"/>
-                            <TextField fx:id="puzzleHintField" promptText="e.g., A PHP framework"/>
+                    <VBox fx:id="puzzleContent" spacing="12" visible="false" managed="false">
+                        <Label text="Word Scramble"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#b7791f;"/>
+                        <Label text="Players must unscramble the word. Leave blank to use random words from the built-in list."
+                               style="-fx-text-fill:#718096;-fx-font-size:11px;" wrapText="true"/>
+
+                        <HBox spacing="12">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Custom Word (optional)" styleClass="field-label"/>
+                                <TextField fx:id="puzzleWordField" promptText="e.g., JAVASCRIPT"/>
+                                <Label text="Will be scrambled for the player to guess"
+                                       style="-fx-text-fill:#a0aec0;-fx-font-size:11px;"/>
+                            </VBox>
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Hint (optional)" styleClass="field-label"/>
+                                <TextField fx:id="puzzleHintField" promptText="e.g., A programming language"/>
+                                <Label text="Shown to the player as a clue"
+                                       style="-fx-text-fill:#a0aec0;-fx-font-size:11px;"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Live scramble preview -->
+                        <VBox fx:id="puzzlePreview" spacing="6"
+                              style="-fx-background-color:#fff8e1;-fx-background-radius:8;-fx-padding:12;-fx-border-color:#f6d365;-fx-border-radius:8;-fx-border-width:1;"
+                              visible="false" managed="false">
+                            <Label text="Preview" style="-fx-font-size:11px;-fx-text-fill:#b7791f;-fx-font-weight:bold;"/>
+                            <HBox spacing="6" fx:id="puzzleTilesBox" alignment="CENTER_LEFT"/>
+                            <Label fx:id="puzzleHintPreview" text=""
+                                   style="-fx-font-size:12px;-fx-text-fill:#718096;-fx-font-style:italic;"/>
                         </VBox>
                     </VBox>
 
                     <!-- MEMORY content -->
-                    <VBox fx:id="memoryContent" spacing="10" visible="false" managed="false">
-                        <Label text="Memory Match Content"
-                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #805ad5;"/>
-                        <VBox spacing="3">
-                            <Label text="Words / Symbols (one per line, exactly 6)" styleClass="field-label"/>
-                            <TextArea fx:id="memoryWordsArea" prefRowCount="7" wrapText="true"
-                                      promptText="Apple&#10;Banana&#10;Cherry&#10;Date&#10;Elderberry&#10;Fig"/>
-                            <Label text="Each word appears twice as a card pair"
-                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
-                        </VBox>
+                    <VBox fx:id="memoryContent" spacing="12" visible="false" managed="false">
+                        <Label text="Memory Match"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#805ad5;"/>
+                        <Label text="Type words (even misspelled) — AI will find the best matching emoji for each card."
+                               style="-fx-text-fill:#718096;-fx-font-size:11px;" wrapText="true"/>
+
+                        <!-- Add word row -->
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <TextField fx:id="memoryNewWordField" promptText="e.g., binana, dag, appel..."
+                                       HBox.hgrow="ALWAYS"
+                                       style="-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;"/>
+                            <Button text="+ Add" onAction="#handleAddMemoryWord"
+                                    style="-fx-background-color:#805ad5;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:8 16;-fx-cursor:hand;"/>
+                        </HBox>
+
+                        <!-- Word chips grid -->
+                        <FlowPane fx:id="memoryChipsPane" hgap="8" vgap="8"
+                                  style="-fx-padding:8;-fx-background-color:#f8f9ff;-fx-background-radius:8;-fx-border-color:#e4e8f0;-fx-border-radius:8;-fx-min-height:48;"/>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label fx:id="memoryCountLabel" text="0 / 8 words added"
+                                   style="-fx-font-size:11px;-fx-text-fill:#718096;" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnResolveEmojis" text="Resolve with AI"
+                                    onAction="#handleResolveMemoryEmojis"
+                                    style="-fx-background-color:linear-gradient(to right,#805ad5,#a18cd1);-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:7 14;-fx-cursor:hand;-fx-font-size:12px;"/>
+                        </HBox>
+                        <Label fx:id="lblMemoryAIStatus" text="" wrapText="true"
+                               style="-fx-font-size:11px;" maxWidth="Infinity"/>
+
+                        <!-- Hidden raw storage -->
+                        <TextArea fx:id="memoryWordsArea" visible="false" managed="false" prefRowCount="1"/>
                     </VBox>
 
                     <!-- TRIVIA content -->
-                    <VBox fx:id="triviaContent" spacing="10" visible="false" managed="false">
+                    <VBox fx:id="triviaContent" spacing="12" visible="false" managed="false">
                         <Label text="Trivia Questions Content"
                                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2b6cb0;"/>
-                        <VBox spacing="3">
-                            <Label text="Topic" styleClass="field-label"/>
-                            <TextField fx:id="triviaTopicField" promptText="e.g., World History"/>
+
+                        <!-- AI Generator section -->
+                        <VBox spacing="10"
+                              style="-fx-background-color:#eef0fd;-fx-background-radius:10;-fx-padding:14;-fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-border-width:1;">
+                            <Label text="AI Question Generator"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#3b4fd8;"/>
+                            <Label text="Generates questions using the Difficulty field above. Topic and count are customizable."
+                                   style="-fx-text-fill:#718096;-fx-font-size:11px;" wrapText="true"/>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                                    <Label text="Topic" styleClass="field-label"/>
+                                    <TextField fx:id="triviaTopicField" promptText="e.g., World History, Food, Science"/>
+                                </VBox>
+                                <VBox spacing="3">
+                                    <Label text="Count" styleClass="field-label"/>
+                                    <Spinner fx:id="triviaCountSpinner" min="1" max="15" initialValue="5" prefWidth="80"
+                                             editable="true"/>
+                                </VBox>
+                                <VBox spacing="3" alignment="BOTTOM_LEFT">
+                                    <Label text=" "/>
+                                    <Button fx:id="btnGenerateAI" text="Generate with AI"
+                                            onAction="#handleGenerateAI"
+                                            style="-fx-background-color:linear-gradient(to right,#3b4fd8,#5b6ef5);-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:8 16;-fx-cursor:hand;"/>
+                                </VBox>
+                            </HBox>
+                            <Label fx:id="lblAIStatus" text="" wrapText="true"
+                                   style="-fx-font-size:12px;" maxWidth="Infinity"/>
                         </VBox>
-                        <VBox spacing="3">
-                            <Label text="Questions (one block per question, separated by ---)" styleClass="field-label"/>
-                            <TextArea fx:id="triviaQuestionsArea" prefRowCount="12" wrapText="true"
-                                      promptText="Q: What year did WWII end?&#10;A: 1943&#10;B: 1944&#10;C: 1945&#10;D: 1946&#10;ANS: C&#10;---&#10;Q: Capital of France?&#10;A: London&#10;B: Berlin&#10;C: Madrid&#10;D: Paris&#10;ANS: D"/>
-                            <Label text="Format: Q: question  A/B/C/D: options  ANS: correct letter  --- to separate"
-                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
-                        </VBox>
+
+                        <!-- Questions preview + manual add -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Questions"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnAddManual" text="+ Add Manually"
+                                    onAction="#handleAddManual"
+                                    style="-fx-background-color:#f0f2f8;-fx-text-fill:#3b4fd8;-fx-font-size:12px;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:5 12;-fx-cursor:hand;-fx-border-color:#c3c9f5;-fx-border-radius:6;"/>
+                        </HBox>
+
+                        <!-- Visual question cards -->
+                        <ScrollPane fitToWidth="true" prefHeight="320" hbarPolicy="NEVER"
+                                    style="-fx-background-color:transparent;-fx-background:transparent;">
+                            <VBox fx:id="triviaPreviewPane" spacing="10"
+                                  style="-fx-padding:4 2;-fx-background-color:transparent;"/>
+                        </ScrollPane>
+
+                        <!-- Hidden raw storage (used for save/load) -->
+                        <TextArea fx:id="triviaQuestionsArea" visible="false" managed="false"
+                                  prefRowCount="1"/>
                     </VBox>
 
                     <!-- ARCADE content -->
-                    <VBox fx:id="arcadeContent" spacing="10" visible="false" managed="false">
-                        <Label text="Reaction Clicker Content"
-                               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #276749;"/>
-                        <VBox spacing="3">
-                            <Label text="Sentences for typing challenge (one per line, 3-5)" styleClass="field-label"/>
-                            <TextArea fx:id="arcadeSentencesArea" prefRowCount="6" wrapText="true"
-                                      promptText="The quick brown fox jumps over the lazy dog.&#10;Practice makes perfect.&#10;Typing speed improves with time."/>
-                            <Label text="Players must type these sentences accurately under time pressure"
-                                   style="-fx-text-fill: #a0aec0; -fx-font-size: 11px;"/>
+                    <VBox fx:id="arcadeContent" spacing="12" visible="false" managed="false">
+                        <Label text="Reaction Clicker"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#276749;"/>
+
+                        <VBox spacing="8"
+                              style="-fx-background-color:#f0fff4;-fx-background-radius:8;-fx-padding:14;-fx-border-color:#9ae6b4;-fx-border-radius:8;-fx-border-width:1;">
+                            <Label text="How it works"
+                                   style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#276749;"/>
+                            <Label text="Colored targets appear on screen. Players must click them before they disappear. Speed and target count are set automatically based on the Difficulty field above."
+                                   style="-fx-text-fill:#2d6a4f;-fx-font-size:12px;" wrapText="true"/>
+                            <HBox spacing="20" style="-fx-padding:8 0 0 0;">
+                                <VBox spacing="2">
+                                    <Label text="EASY" style="-fx-font-weight:bold;-fx-text-fill:#27ae60;-fx-font-size:12px;"/>
+                                    <Label text="6 targets · 2.2s each" style="-fx-text-fill:#718096;-fx-font-size:11px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="MEDIUM" style="-fx-font-weight:bold;-fx-text-fill:#d97706;-fx-font-size:12px;"/>
+                                    <Label text="10 targets · 1.6s each" style="-fx-text-fill:#718096;-fx-font-size:11px;"/>
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label text="HARD" style="-fx-font-weight:bold;-fx-text-fill:#e53e3e;-fx-font-size:12px;"/>
+                                    <Label text="16 targets · 1.0s each" style="-fx-text-fill:#718096;-fx-font-size:11px;"/>
+                                </VBox>
+                            </HBox>
                         </VBox>
+
+                        <Label text="No additional configuration needed — just set the Difficulty above."
+                               style="-fx-text-fill:#a0aec0;-fx-font-size:11px;-fx-font-style:italic;"/>
                     </VBox>
                 </VBox>
 

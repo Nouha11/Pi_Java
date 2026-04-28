@@ -153,7 +153,7 @@ public class HomeController {
     }
 
     @FXML void handleViewLeaderboard(ActionEvent event) {
-        NovaDashboardController.loadPage("/views/gamification/user_games.fxml");
+        NovaDashboardController.loadPage("/views/gamification/leaderboard.fxml");
     }
 
     // --- Card Navigation Handlers ---

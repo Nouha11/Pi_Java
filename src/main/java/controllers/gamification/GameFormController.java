@@ -3,12 +3,16 @@ package controllers.gamification;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import models.gamification.Game;
 import models.gamification.Reward;
 import services.gamification.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameFormController {
@@ -39,21 +43,34 @@ public class GameFormController {
     @FXML private javafx.scene.layout.VBox puzzleContent;
     @FXML private TextField puzzleWordField;
     @FXML private TextField puzzleHintField;
+    @FXML private javafx.scene.layout.VBox puzzlePreview;
+    @FXML private javafx.scene.layout.HBox puzzleTilesBox;
+    @FXML private Label puzzleHintPreview;
     // MEMORY
     @FXML private javafx.scene.layout.VBox memoryContent;
-    @FXML private TextArea memoryWordsArea;
+    @FXML private TextField memoryNewWordField;
+    @FXML private javafx.scene.layout.FlowPane memoryChipsPane;
+    @FXML private Label memoryCountLabel;
+    @FXML private Label lblMemoryAIStatus;
+    @FXML private Button btnResolveEmojis;
+    @FXML private TextArea memoryWordsArea;      // hidden raw storage
     // TRIVIA
     @FXML private javafx.scene.layout.VBox triviaContent;
     @FXML private TextField triviaTopicField;
-    @FXML private TextArea triviaQuestionsArea;
+    @FXML private Spinner<Integer> triviaCountSpinner;
+    @FXML private TextArea triviaQuestionsArea;      // hidden raw storage
+    @FXML private javafx.scene.layout.VBox triviaPreviewPane; // visual cards
+    @FXML private Button btnGenerateAI;
+    @FXML private Label lblAIStatus;
+    @FXML private Button btnAddManual;
     // ARCADE
     @FXML private javafx.scene.layout.VBox arcadeContent;
-    @FXML private TextArea arcadeSentencesArea;
 
     // ── Services ──────────────────────────────────────────────────────────────
     private final GameService        gameService        = new GameService();
     private final RewardService      rewardService      = new RewardService();
     private final GameContentService contentService     = new GameContentService();
+    private final HuggingFaceService hfService          = new HuggingFaceService();
 
     private Game editingGame = null;
 
@@ -72,6 +89,12 @@ public class GameFormController {
 
         // Show/hide content panels based on type
         typeCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateContentSection(newVal));
+
+        // Puzzle: live scramble preview
+        if (puzzleWordField != null) {
+            puzzleWordField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
+            puzzleHintField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
+        }
 
         rewardsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         loadRewardsList();
@@ -144,25 +167,367 @@ public class GameFormController {
             }
             case "MEMORY" -> {
                 String arr = GameContentService.extractArray(json, "words");
-                if (memoryWordsArea != null && arr != null) {
+                if (arr != null) {
                     String[] words = GameContentService.parseStringArray(arr);
-                    memoryWordsArea.setText(String.join("\n", words));
+                    memoryWords.clear();
+                    for (String w : words) if (!w.isBlank()) memoryWords.add(w);
+                    if (memoryWordsArea != null) memoryWordsArea.setText(String.join("\n", memoryWords));
+                    javafx.application.Platform.runLater(this::refreshMemoryChips);
                 }
             }
             case "TRIVIA" -> {
                 String topic = GameContentService.extractString(json, "topic");
                 if (triviaTopicField != null && topic != null) triviaTopicField.setText(topic);
-                // Show raw JSON in the questions area for editing
                 if (triviaQuestionsArea != null) triviaQuestionsArea.setText(json);
+                // Render visual cards from stored JSON
+                javafx.application.Platform.runLater(() -> {
+                    List<HuggingFaceService.TriviaQuestion> qs = parseRawToQuestions(
+                        triviaQuestionsArea != null ? triviaQuestionsArea.getText() : "");
+                    renderQuestionCards(qs, null);
+                });
             }
             case "ARCADE" -> {
-                String arr = GameContentService.extractArray(json, "sentences");
-                if (arcadeSentencesArea != null && arr != null) {
-                    String[] sentences = GameContentService.parseStringArray(arr);
-                    arcadeSentencesArea.setText(String.join("\n", sentences));
-                }
+                // Arcade no longer has custom content — nothing to load
             }
         }
+    }
+
+    // ── PUZZLE preview ────────────────────────────────────────────────────────
+    private void updatePuzzlePreview() {
+        if (puzzlePreview == null) return;
+        String word = puzzleWordField != null ? puzzleWordField.getText().trim().toUpperCase() : "";
+        if (word.isEmpty()) {
+            puzzlePreview.setVisible(false); puzzlePreview.setManaged(false); return;
+        }
+        puzzlePreview.setVisible(true); puzzlePreview.setManaged(true);
+        // Show scrambled tiles
+        if (puzzleTilesBox != null) {
+            puzzleTilesBox.getChildren().clear();
+            String scrambled = scrambleWord(word);
+            for (char c : scrambled.toCharArray()) {
+                Label tile = new Label(String.valueOf(c));
+                tile.setPrefSize(36, 36); tile.setAlignment(Pos.CENTER);
+                tile.setStyle("-fx-background-color:linear-gradient(to bottom,#f6d365,#fda085);" +
+                              "-fx-text-fill:white;-fx-font-size:16px;-fx-font-weight:bold;" +
+                              "-fx-background-radius:6;");
+                puzzleTilesBox.getChildren().add(tile);
+            }
+        }
+        // Show hint
+        String hint = puzzleHintField != null ? puzzleHintField.getText().trim() : "";
+        if (puzzleHintPreview != null) {
+            puzzleHintPreview.setText(hint.isEmpty() ? "" : "Hint: " + hint);
+        }
+    }
+
+    private String scrambleWord(String w) {
+        char[] a = w.toCharArray();
+        java.util.Random r = new java.util.Random(42); // fixed seed for consistent preview
+        for (int i = a.length - 1; i > 0; i--) { int j = r.nextInt(i + 1); char t = a[i]; a[i] = a[j]; a[j] = t; }
+        return new String(a);
+    }
+
+    // ── MEMORY word management ────────────────────────────────────────────────
+    private final List<String> memoryWords = new ArrayList<>();
+
+    @FXML
+    private void handleAddMemoryWord() {
+        if (memoryNewWordField == null) return;
+        String word = memoryNewWordField.getText().trim();
+        if (word.isEmpty()) return;
+        if (memoryWords.size() >= 8) {
+            memoryNewWordField.setStyle("-fx-border-color:#e53e3e;-fx-border-radius:6;-fx-background-radius:6;-fx-font-size:13px;-fx-padding:8;");
+            return;
+        }
+        memoryWords.add(word);
+        memoryNewWordField.clear();
+        memoryNewWordField.setStyle("-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;");
+        refreshMemoryChips();
+        syncMemoryRaw();
+    }
+
+    private void refreshMemoryChips() {
+        if (memoryChipsPane == null) return;
+        memoryChipsPane.getChildren().clear();
+        for (int i = 0; i < memoryWords.size(); i++) {
+            final int idx = i;
+            String word = memoryWords.get(i);
+            // Show emoji if resolved, else show the raw word
+            boolean isEmoji = word.codePoints().anyMatch(cp ->
+                (cp >= 0x1F300 && cp <= 0x1FAFF) || (cp >= 0x2600 && cp <= 0x27BF));
+            Label chip = new Label(word);
+            chip.setStyle(isEmoji
+                ? "-fx-font-size:22px;-fx-background-color:#f3e5f5;-fx-background-radius:20;-fx-padding:4 10;"
+                : "-fx-background-color:#f3e5f5;-fx-text-fill:#805ad5;-fx-font-size:12px;-fx-font-weight:bold;-fx-background-radius:20;-fx-padding:4 10;");
+            Button del = new Button("×");
+            del.setStyle("-fx-background-color:#e9d8fd;-fx-text-fill:#805ad5;-fx-font-size:12px;" +
+                         "-fx-font-weight:bold;-fx-background-radius:50;-fx-padding:2 6;-fx-cursor:hand;");
+            del.setOnAction(e -> { memoryWords.remove(idx); refreshMemoryChips(); syncMemoryRaw(); });
+            HBox chipBox = new HBox(4, chip, del); chipBox.setAlignment(Pos.CENTER);
+            chipBox.setStyle("-fx-background-color:#f3e5f5;-fx-background-radius:20;-fx-padding:2 4;");
+            memoryChipsPane.getChildren().add(chipBox);
+        }
+        if (memoryCountLabel != null) {
+            int count = memoryWords.size();
+            String color = count < 4 ? "#e53e3e" : count <= 8 ? "#27ae60" : "#d97706";
+            memoryCountLabel.setText(count + " / 8 words added" + (count < 4 ? " (minimum 4)" : ""));
+            memoryCountLabel.setStyle("-fx-font-size:11px;-fx-text-fill:" + color + ";");
+        }
+    }
+
+    private void syncMemoryRaw() {
+        if (memoryWordsArea != null) memoryWordsArea.setText(String.join("\n", memoryWords));
+    }
+
+    /** AI resolves typed words (even misspelled) into matching emojis. */
+    @FXML
+    private void handleResolveMemoryEmojis() {
+        if (memoryWords.isEmpty()) {
+            setMemoryAIStatus("Add some words first.", true); return;
+        }
+        if (btnResolveEmojis != null) { btnResolveEmojis.setDisable(true); btnResolveEmojis.setText("Resolving..."); }
+        setMemoryAIStatus("AI is finding emojis... this may take 10-20 seconds.", false);
+
+        Thread t = new Thread(() -> {
+            try {
+                List<String> emojis = hfService.resolveMemoryEmojis(new ArrayList<>(memoryWords));
+                javafx.application.Platform.runLater(() -> {
+                    // Replace words with resolved emojis
+                    for (int i = 0; i < emojis.size() && i < memoryWords.size(); i++) {
+                        memoryWords.set(i, emojis.get(i));
+                    }
+                    refreshMemoryChips();
+                    syncMemoryRaw();
+                    setMemoryAIStatus("Emojis resolved! Cards will show these icons.", false);
+                    if (btnResolveEmojis != null) { btnResolveEmojis.setDisable(false); btnResolveEmojis.setText("Resolve with AI"); }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    setMemoryAIStatus("Error: " + e.getMessage(), true);
+                    if (btnResolveEmojis != null) { btnResolveEmojis.setDisable(false); btnResolveEmojis.setText("Resolve with AI"); }
+                });
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void setMemoryAIStatus(String msg, boolean isError) {
+        if (lblMemoryAIStatus == null) return;
+        lblMemoryAIStatus.setText(msg);
+        lblMemoryAIStatus.setStyle(isError
+            ? "-fx-font-size:11px;-fx-text-fill:#e53e3e;"
+            : "-fx-font-size:11px;-fx-text-fill:#3b4fd8;");
+    }
+
+    @FXML
+    private void handleGenerateAI() {
+        String topic = triviaTopicField != null ? triviaTopicField.getText().trim() : "";
+        if (topic.isEmpty()) {
+            setAIStatus("Please enter a topic first.", true); return;
+        }
+
+        String difficulty = difficultyCombo.getValue() != null ? difficultyCombo.getValue() : "MEDIUM";
+        int count = triviaCountSpinner != null ? triviaCountSpinner.getValue() : 5;
+
+        if (btnGenerateAI != null) { btnGenerateAI.setDisable(true); btnGenerateAI.setText("Generating..."); }
+        setAIStatus("Calling Hugging Face AI... this may take 10-30 seconds.", false);
+
+        Thread thread = new Thread(() -> {
+            try {
+                List<HuggingFaceService.TriviaQuestion> questions =
+                    hfService.generateTriviaQuestions(topic, count, difficulty);
+
+                // Build raw text for storage
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < questions.size(); i++) {
+                    if (i > 0) sb.append("\n---\n");
+                    sb.append(questions.get(i).toFormFormat());
+                }
+                String raw = sb.toString();
+
+                javafx.application.Platform.runLater(() -> {
+                    if (triviaQuestionsArea != null) triviaQuestionsArea.setText(raw);
+                    renderQuestionCards(questions, null);
+                    setAIStatus("Generated " + questions.size() + " questions successfully!", false);
+                    if (btnGenerateAI != null) { btnGenerateAI.setDisable(false); btnGenerateAI.setText("Generate with AI"); }
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    setAIStatus("Error: " + e.getMessage(), true);
+                    if (btnGenerateAI != null) { btnGenerateAI.setDisable(false); btnGenerateAI.setText("Generate with AI"); }
+                });
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void setAIStatus(String msg, boolean isError) {
+        if (lblAIStatus == null) return;
+        lblAIStatus.setText(msg);
+        lblAIStatus.setStyle(isError
+            ? "-fx-font-size:12px;-fx-text-fill:#e53e3e;"
+            : "-fx-font-size:12px;-fx-text-fill:#3b4fd8;");
+    }
+
+    /** Render parsed questions as visual cards in triviaPreviewPane. */
+    private void renderQuestionCards(List<HuggingFaceService.TriviaQuestion> questions, String source) {
+        if (triviaPreviewPane == null) return;
+        triviaPreviewPane.getChildren().clear();
+
+        if (questions == null || questions.isEmpty()) {
+            Label empty = new Label("No questions yet. Generate with AI or add manually.");
+            empty.setStyle("-fx-text-fill:#a0aec0;-fx-font-size:12px;-fx-padding:12 0;");
+            triviaPreviewPane.getChildren().add(empty);
+            return;
+        }
+
+        String[] letters = {"A", "B", "C", "D"};
+        for (int qi = 0; qi < questions.size(); qi++) {
+            HuggingFaceService.TriviaQuestion q = questions.get(qi);
+
+            // Question header
+            Label qNum = new Label("Q" + (qi + 1));
+            qNum.setStyle("-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-size:11px;-fx-font-weight:bold;-fx-background-radius:4;-fx-padding:2 8;");
+            Label qText = new Label(q.question);
+            qText.setWrapText(true); qText.setMaxWidth(460);
+            qText.setStyle("-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
+            HBox qHeader = new HBox(8, qNum, qText);
+            qHeader.setAlignment(Pos.TOP_LEFT);
+
+            // Answer options
+            VBox options = new VBox(4);
+            for (int i = 0; i < q.choices.size() && i < 4; i++) {
+                boolean isCorrect = i == q.correct;
+                Label opt = new Label(letters[i] + ".  " + q.choices.get(i));
+                opt.setMaxWidth(Double.MAX_VALUE);
+                opt.setWrapText(true);
+                if (isCorrect) {
+                    opt.setStyle("-fx-background-color:#f0fff4;-fx-text-fill:#27ae60;-fx-font-weight:bold;" +
+                                 "-fx-font-size:12px;-fx-padding:6 12;-fx-background-radius:6;" +
+                                 "-fx-border-color:#27ae60;-fx-border-radius:6;-fx-border-width:1;");
+                } else {
+                    opt.setStyle("-fx-background-color:#f8f9ff;-fx-text-fill:#4a5568;" +
+                                 "-fx-font-size:12px;-fx-padding:6 12;-fx-background-radius:6;" +
+                                 "-fx-border-color:#e4e8f0;-fx-border-radius:6;-fx-border-width:1;");
+                }
+                options.getChildren().add(opt);
+            }
+
+            // Correct answer badge
+            Label correctBadge = new Label("Correct: " + letters[q.correct]);
+            correctBadge.setStyle("-fx-background-color:#27ae60;-fx-text-fill:white;-fx-font-size:11px;" +
+                                  "-fx-font-weight:bold;-fx-background-radius:4;-fx-padding:2 8;");
+
+            // Delete button
+            final int idx = qi;
+            Button btnDel = new Button("Remove");
+            btnDel.setStyle("-fx-background-color:transparent;-fx-text-fill:#e53e3e;-fx-font-size:11px;" +
+                            "-fx-cursor:hand;-fx-border-color:#fed7d7;-fx-border-radius:4;-fx-padding:2 8;");
+            btnDel.setOnAction(e -> removeQuestion(idx));
+
+            HBox footer = new HBox(8, correctBadge, new Region(), btnDel);
+            HBox.setHgrow(footer.getChildren().get(1), Priority.ALWAYS);
+            footer.setAlignment(Pos.CENTER_LEFT);
+
+            VBox card = new VBox(8, qHeader, options, footer);
+            card.setPadding(new Insets(12));
+            card.setStyle("-fx-background-color:white;-fx-background-radius:10;" +
+                          "-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-border-width:1;" +
+                          "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.05),6,0,0,2);");
+            triviaPreviewPane.getChildren().add(card);
+        }
+    }
+
+    /** Remove a question by index and re-render. */
+    private void removeQuestion(int index) {
+        String raw = triviaQuestionsArea != null ? triviaQuestionsArea.getText().trim() : "";
+        if (raw.isEmpty()) return;
+        String[] blocks = raw.split("\\n---\\n");
+        List<String> kept = new ArrayList<>();
+        for (int i = 0; i < blocks.length; i++) {
+            if (i != index && !blocks[i].trim().isEmpty()) kept.add(blocks[i].trim());
+        }
+        String newRaw = String.join("\n---\n", kept);
+        if (triviaQuestionsArea != null) triviaQuestionsArea.setText(newRaw);
+        // Re-parse and re-render
+        List<HuggingFaceService.TriviaQuestion> parsed = parseRawToQuestions(newRaw);
+        renderQuestionCards(parsed, null);
+    }
+
+    /** Parse raw Q:/A:/B:/C:/D:/ANS: text back into TriviaQuestion objects for display. */
+    private List<HuggingFaceService.TriviaQuestion> parseRawToQuestions(String raw) {
+        List<HuggingFaceService.TriviaQuestion> result = new ArrayList<>();
+        if (raw == null || raw.isBlank()) return result;
+        String[] blocks = raw.split("\\n---\\n");
+        for (String block : blocks) {
+            String q = null; List<String> choices = new ArrayList<>(); int correct = 0;
+            for (String line : block.split("\\n")) {
+                line = line.trim();
+                if (line.startsWith("Q:"))   q = line.substring(2).trim();
+                else if (line.startsWith("A:")) choices.add(line.substring(2).trim());
+                else if (line.startsWith("B:")) choices.add(line.substring(2).trim());
+                else if (line.startsWith("C:")) choices.add(line.substring(2).trim());
+                else if (line.startsWith("D:")) choices.add(line.substring(2).trim());
+                else if (line.startsWith("ANS:")) {
+                    String letter = line.substring(4).trim().toUpperCase();
+                    correct = switch (letter) { case "B" -> 1; case "C" -> 2; case "D" -> 3; default -> 0; };
+                }
+            }
+            if (q != null && choices.size() == 4) result.add(new HuggingFaceService.TriviaQuestion(q, choices, correct));
+        }
+        return result;
+    }
+
+    /** Show a dialog to add a question manually. */
+    @FXML
+    private void handleAddManual() {
+        Dialog<HuggingFaceService.TriviaQuestion> dlg = new Dialog<>();
+        dlg.setTitle("Add Question Manually");
+
+        VBox content = new VBox(10); content.setPadding(new Insets(20)); content.setMinWidth(460);
+        TextField qField = new TextField(); qField.setPromptText("Question text");
+        qField.setStyle("-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;");
+        content.getChildren().add(new Label("Question:"));
+        content.getChildren().add(qField);
+
+        String[] letters = {"A", "B", "C", "D"};
+        TextField[] optFields = new TextField[4];
+        ToggleGroup tg = new ToggleGroup();
+        for (int i = 0; i < 4; i++) {
+            optFields[i] = new TextField(); optFields[i].setPromptText("Option " + letters[i]);
+            optFields[i].setStyle("-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;");
+            RadioButton rb = new RadioButton(letters[i] + " (correct)"); rb.setToggleGroup(tg); rb.setUserData(i);
+            HBox row = new HBox(8, optFields[i], rb); row.setAlignment(Pos.CENTER_LEFT);
+            HBox.setHgrow(optFields[i], Priority.ALWAYS);
+            content.getChildren().addAll(row);
+        }
+        if (!tg.getToggles().isEmpty()) tg.getToggles().get(0).setSelected(true);
+
+        dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dlg.getDialogPane().lookupButton(ButtonType.OK)
+           .setStyle("-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:7 18;");
+
+        dlg.setResultConverter(bt -> {
+            if (bt != ButtonType.OK) return null;
+            String question = qField.getText().trim();
+            if (question.isEmpty()) return null;
+            List<String> choices = new ArrayList<>();
+            for (TextField f : optFields) choices.add(f.getText().trim());
+            int correct = tg.getSelectedToggle() != null ? (int) tg.getSelectedToggle().getUserData() : 0;
+            return new HuggingFaceService.TriviaQuestion(question, choices, correct);
+        });
+
+        dlg.showAndWait().ifPresent(q -> {
+            // Append to raw text
+            String existing = triviaQuestionsArea != null ? triviaQuestionsArea.getText().trim() : "";
+            String newEntry = q.toFormFormat();
+            String newRaw = existing.isEmpty() ? newEntry : existing + "\n---\n" + newEntry;
+            if (triviaQuestionsArea != null) triviaQuestionsArea.setText(newRaw);
+            renderQuestionCards(parseRawToQuestions(newRaw), null);
+        });
     }
 
     @FXML
@@ -245,10 +610,7 @@ public class GameFormController {
                 String questions = triviaQuestionsArea != null ? triviaQuestionsArea.getText().trim() : "";
                 yield questions.isEmpty() ? null : GameContentService.buildTriviaJson(topic, questions);
             }
-            case "ARCADE" -> {
-                String sentences = arcadeSentencesArea != null ? arcadeSentencesArea.getText().trim() : "";
-                yield sentences.isEmpty() ? null : GameContentService.buildArcadeJson(sentences);
-            }
+            case "ARCADE" -> null; // Arcade is auto-configured by difficulty, no custom content needed
             default -> null;
         };
         if (json != null) contentService.saveContent(gameId, json);

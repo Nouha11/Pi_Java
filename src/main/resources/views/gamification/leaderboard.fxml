@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.gamification.LeaderboardController"
+      stylesheets="@../../css/gamification.css"
+      style="-fx-background-color:#f0f2f8;">
+
+    <!-- ── TOOLBAR ── -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="12">
+        <padding><Insets top="14" left="20" right="20" bottom="14"/></padding>
+        <Label text="Leaderboard"
+               style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+        <Label text="Compete with other players and climb to the top!"
+               style="-fx-text-fill:#718096;-fx-font-size:12px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblTotal" text=""
+               style="-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-background-radius:20;-fx-padding:3 12;-fx-font-size:12px;-fx-font-weight:bold;"/>
+    </HBox>
+
+    <!-- ── FILTER BAR ── -->
+    <HBox style="-fx-background-color:white;-fx-border-color:transparent transparent #e4e8f0 transparent;-fx-border-width:0 0 1 0;-fx-padding:10 20;"
+          alignment="CENTER_LEFT" spacing="12">
+        <TextField fx:id="searchField" promptText="Search by username..."
+                   styleClass="search-field" prefWidth="240" onKeyReleased="#handleSearch"/>
+        <ComboBox fx:id="sortCombo" prefWidth="160" styleClass="combo-box"/>
+        <Button text="Clear" onAction="#handleClearSearch"
+                style="-fx-background-color:#f0f2f8;-fx-text-fill:#718096;-fx-border-color:#dde2f5;-fx-border-radius:6;-fx-background-radius:6;-fx-font-size:12px;-fx-padding:5 12;-fx-cursor:hand;"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color:transparent;-fx-background:#f0f2f8;">
+        <VBox spacing="16" style="-fx-padding:20;">
+
+            <!-- ── MY RANK CARD ── -->
+            <VBox fx:id="myRankSection" visible="false" managed="false"
+                  style="-fx-background-color:linear-gradient(to right,#667eea,#764ba2);-fx-background-radius:14;-fx-padding:20;-fx-effect:dropshadow(gaussian,rgba(102,126,234,0.4),16,0,0,6);"/>
+
+            <!-- ── LEADERBOARD TABLE ── -->
+            <VBox style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+
+                <!-- Table header -->
+                <HBox style="-fx-background-color:linear-gradient(to right,#667eea,#764ba2);-fx-background-radius:14 14 0 0;-fx-padding:14 16;">
+                    <Label text="Rank" style="-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-min-width:60;"/>
+                    <Label text="Player" style="-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;" HBox.hgrow="ALWAYS"/>
+                    <Label text="XP" style="-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-min-width:80;-fx-alignment:CENTER;"/>
+                    <Label text="Tokens" style="-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-min-width:80;-fx-alignment:CENTER;"/>
+                </HBox>
+
+                <!-- Rows populated by controller -->
+                <VBox fx:id="leaderboardList"/>
+            </VBox>
+
+            <!-- ── LEVEL LEGEND ── -->
+            <VBox style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-padding:16;">
+                <Label text="Level System"
+                       style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;-fx-padding:0 0 10 0;"/>
+                <HBox spacing="10">
+                    <VBox fx:id="l1" alignment="CENTER" spacing="4" style="-fx-background-color:#f8f9ff;-fx-background-radius:10;-fx-padding:10 14;-fx-border-color:#e4e8f0;-fx-border-radius:10;" HBox.hgrow="ALWAYS">
+                        <Label text="Novice"     style="-fx-font-weight:bold;-fx-text-fill:#a0aec0;-fx-font-size:12px;"/>
+                        <Label text="Lv. 1-2"    style="-fx-text-fill:#a0aec0;-fx-font-size:11px;"/>
+                        <Label text="0-99 XP"    style="-fx-text-fill:#a0aec0;-fx-font-size:10px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="4" style="-fx-background-color:#f0fff4;-fx-background-radius:10;-fx-padding:10 14;-fx-border-color:#9ae6b4;-fx-border-radius:10;" HBox.hgrow="ALWAYS">
+                        <Label text="Apprentice" style="-fx-font-weight:bold;-fx-text-fill:#27ae60;-fx-font-size:12px;"/>
+                        <Label text="Lv. 3-4"    style="-fx-text-fill:#27ae60;-fx-font-size:11px;"/>
+                        <Label text="100-249 XP" style="-fx-text-fill:#718096;-fx-font-size:10px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="4" style="-fx-background-color:#eef0fd;-fx-background-radius:10;-fx-padding:10 14;-fx-border-color:#c3c9f5;-fx-border-radius:10;" HBox.hgrow="ALWAYS">
+                        <Label text="Adept"      style="-fx-font-weight:bold;-fx-text-fill:#3b4fd8;-fx-font-size:12px;"/>
+                        <Label text="Lv. 5-9"    style="-fx-text-fill:#3b4fd8;-fx-font-size:11px;"/>
+                        <Label text="250-999 XP" style="-fx-text-fill:#718096;-fx-font-size:10px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="4" style="-fx-background-color:#fffbeb;-fx-background-radius:10;-fx-padding:10 14;-fx-border-color:#f6d365;-fx-border-radius:10;" HBox.hgrow="ALWAYS">
+                        <Label text="Expert"     style="-fx-font-weight:bold;-fx-text-fill:#d97706;-fx-font-size:12px;"/>
+                        <Label text="Lv. 10-14"  style="-fx-text-fill:#d97706;-fx-font-size:11px;"/>
+                        <Label text="1000+ XP"   style="-fx-text-fill:#718096;-fx-font-size:10px;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="4" style="-fx-background-color:#fff8e1;-fx-background-radius:10;-fx-padding:10 14;-fx-border-color:#fda085;-fx-border-radius:10;" HBox.hgrow="ALWAYS">
+                        <Label text="Master"     style="-fx-font-weight:bold;-fx-text-fill:#b7791f;-fx-font-size:12px;"/>
+                        <Label text="Lv. 15+"    style="-fx-text-fill:#b7791f;-fx-font-size:11px;"/>
+                        <Label text="5000+ XP"   style="-fx-text-fill:#718096;-fx-font-size:10px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+</VBox>

@@ -54,28 +54,40 @@ public class TwemojiUtil {
         pane.setMaxSize(size, size);
         pane.setStyle("-fx-background-color:" + bgColor + ";-fx-background-radius:50;");
 
+        // Show emoji as text immediately (instant, no network needed)
+        javafx.scene.control.Label fallback = new javafx.scene.control.Label(emoji);
+        fallback.setStyle("-fx-font-size:" + (int)(imageSize * 0.75) + "px;");
+        pane.getChildren().add(fallback);
+
+        // Try to load Twemoji image — replace text if successful
         String url = toUrl(emoji);
-        if (url == null) return pane;
+        if (url != null) {
+            ImageView iv = new ImageView();
+            iv.setFitWidth(imageSize);
+            iv.setFitHeight(imageSize);
+            iv.setPreserveRatio(true);
+            iv.setSmooth(true);
 
-        ImageView iv = new ImageView();
-        iv.setFitWidth(imageSize);
-        iv.setFitHeight(imageSize);
-        iv.setPreserveRatio(true);
-        iv.setSmooth(true);
-        pane.getChildren().add(iv);
-
-        // Load asynchronously so UI doesn't block
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                return new Image(url, imageSize, imageSize, true, true, false);
-            } catch (Exception e) {
-                return null;
-            }
-        }).thenAccept(img -> Platform.runLater(() -> {
-            if (img != null && !img.isError()) {
-                iv.setImage(img);
-            }
-        }));
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    Image img = new Image(url, imageSize, imageSize, true, true, false);
+                    // Wait for image to finish loading
+                    long start = System.currentTimeMillis();
+                    while (img.getProgress() < 1.0 && !img.isError() && System.currentTimeMillis() - start < 5000) {
+                        Thread.sleep(50);
+                    }
+                    return img.isError() ? null : img;
+                } catch (Exception e) {
+                    return null;
+                }
+            }).thenAccept(img -> Platform.runLater(() -> {
+                if (img != null && !img.isError()) {
+                    iv.setImage(img);
+                    pane.getChildren().setAll(iv); // replace text with image
+                }
+                // else: keep the text fallback
+            }));
+        }
 
         return pane;
     }

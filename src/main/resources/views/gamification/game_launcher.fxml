@@ -5,77 +5,111 @@
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="controllers.gamification.GameLauncherController"
+      fx:id="mainContainer"
       stylesheets="@../../css/gamification.css"
-      style="-fx-background-color: #f0f2f8;">
+      style="-fx-background-color:#f0f2f8;">
 
     <!-- ── TOP TOOLBAR ── -->
     <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="12">
         <padding><Insets top="14" left="20" right="20" bottom="14"/></padding>
-        <Label text="🎮  Play Games" styleClass="toolbar-title"/>
+        <Label text="Play Games"
+               style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="searchField" promptText="🔍  Search games…"
-                   styleClass="search-field" prefWidth="200" onKeyReleased="#handleSearch"/>
+        <TextField fx:id="searchField" promptText="Search games..."
+                   styleClass="search-field" prefWidth="220" onKeyReleased="#handleSearch"/>
     </HBox>
 
     <!-- ── FILTER BAR ── -->
-    <HBox style="-fx-background-color: white; -fx-border-color: transparent transparent #e4e8f0 transparent;
-                 -fx-border-width: 0 0 1 0; -fx-padding: 10 20;"
+    <HBox style="-fx-background-color:white;-fx-border-color:transparent transparent #e4e8f0 transparent;-fx-border-width:0 0 1 0;-fx-padding:10 20;"
           alignment="CENTER_LEFT" spacing="12">
-        <Label text="Filter:" style="-fx-text-fill: #718096; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+        <Label text="Filter:" style="-fx-text-fill:#718096;-fx-font-size:12px;-fx-font-weight:bold;"/>
         <ComboBox fx:id="filterType"      prefWidth="150" styleClass="combo-box"/>
         <ComboBox fx:id="filterDifficulty" prefWidth="140" styleClass="combo-box"/>
-        <Button text="✕  Clear" onAction="#handleClearFilters"
-                style="-fx-background-color: #f0f2f8; -fx-text-fill: #718096;
-                       -fx-border-color: #dde2f5; -fx-border-radius: 6; -fx-background-radius: 6;
-                       -fx-font-size: 12px; -fx-padding: 5 12; -fx-cursor: hand;"/>
+        <Button text="Clear" onAction="#handleClearFilters"
+                style="-fx-background-color:#f0f2f8;-fx-text-fill:#718096;-fx-border-color:#dde2f5;-fx-border-radius:6;-fx-background-radius:6;-fx-font-size:12px;-fx-padding:5 12;-fx-cursor:hand;"/>
     </HBox>
 
-    <!-- ── TABS ── -->
-    <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"
-             style="-fx-background-color: transparent; -fx-tab-min-width: 160px;">
+    <!-- ── CUSTOM TAB BAR ── -->
+    <HBox style="-fx-background-color:white;-fx-border-color:transparent transparent #e4e8f0 transparent;-fx-border-width:0 0 1 0;-fx-padding:0 20;">
+        <Button fx:id="btnTabFull" text="Full Games" onAction="#handleShowFull"
+                style="-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;-fx-background-radius:8 8 0 0;-fx-padding:10 24;-fx-cursor:hand;-fx-border-color:transparent;"/>
+        <Button fx:id="btnTabMini" text="Mini Games" onAction="#handleShowMini"
+                style="-fx-background-color:#f0f2f8;-fx-text-fill:#718096;-fx-font-size:13px;-fx-background-radius:8 8 0 0;-fx-padding:10 24;-fx-cursor:hand;-fx-border-color:transparent;"/>
+    </HBox>
 
-        <!-- FULL GAMES -->
-        <Tab text="🕹  Full Games">
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                        style="-fx-background-color: transparent; -fx-background: transparent;">
-                <VBox>
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 6 0;">
+    <!-- ── CONTENT AREA ── -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                VBox.vgrow="ALWAYS"
+                style="-fx-background-color:transparent;-fx-background:#f0f2f8;">
+
+        <VBox spacing="0">
+
+            <!-- FULL GAMES SECTION -->
+            <VBox fx:id="sectionFull" spacing="0">
+                <!-- Section header -->
+                <VBox style="-fx-padding:20 20 12 20;-fx-background-color:#f0f2f8;">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
                         <Label text="Full Games"
-                               style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;"/>
+                               style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
                         <Label fx:id="lblFullCount" text="0 games"
-                               style="-fx-background-color: #3b4fd8; -fx-text-fill: white;
-                                      -fx-background-radius: 20; -fx-padding: 2 10;
-                                      -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                               style="-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-background-radius:20;-fx-padding:2 10;-fx-font-size:11px;-fx-font-weight:bold;"/>
                     </HBox>
                     <Label text="Complete full games to earn tokens and XP rewards"
-                           style="-fx-text-fill: #718096; -fx-font-size: 12px; -fx-padding: 0 0 16 0;"/>
-                    <FlowPane fx:id="fullGamesPane" hgap="16" vgap="16"/>
-                </VBox>
-            </ScrollPane>
-        </Tab>
-
-        <!-- MINI GAMES -->
-        <Tab text="⚡  Mini Games">
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                        style="-fx-background-color: transparent; -fx-background: transparent;">
-                <VBox>
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 6 0;">
-                        <Label text="Mini Games"
-                               style="-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1e2a5e;"/>
-                        <Label fx:id="lblMiniCount" text="0 mini-games"
-                               style="-fx-background-color: #27ae60; -fx-text-fill: white;
-                                      -fx-background-radius: 20; -fx-padding: 2 10;
-                                      -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                           style="-fx-text-fill:#718096;-fx-font-size:12px;-fx-padding:4 0 0 0;"/>
+                    <!-- Rewards explanation -->
+                    <HBox spacing="20" style="-fx-padding:10 0 0 0;">
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <Label text="Tokens" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#b7791f;"/>
+                            <Label text="Earned on completion, used to unlock paid games"
+                                   style="-fx-font-size:11px;-fx-text-fill:#718096;"/>
+                        </HBox>
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <Label text="XP" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#2b6cb0;"/>
+                            <Label text="Increases your level and unlocks achievements"
+                                   style="-fx-font-size:11px;-fx-text-fill:#718096;"/>
+                        </HBox>
                     </HBox>
-                    <Label text="Quick wellness breaks — restore energy and refocus"
-                           style="-fx-text-fill: #718096; -fx-font-size: 12px; -fx-padding: 0 0 16 0;"/>
-                    <FlowPane fx:id="miniGamesPane" hgap="16" vgap="16"/>
                 </VBox>
-            </ScrollPane>
-        </Tab>
+                <FlowPane fx:id="fullGamesPane" hgap="16" vgap="16"
+                          style="-fx-padding:0 20 24 20;-fx-background-color:#f0f2f8;"/>
+            </VBox>
 
-    </TabPane>
+            <!-- MINI GAMES SECTION -->
+            <VBox fx:id="sectionMini" spacing="0" visible="false" managed="false">
+                <!-- Purple gradient banner like Symfony -->
+                <VBox style="-fx-background-color:linear-gradient(to bottom right,#667eea,#764ba2);-fx-padding:20 24 20 24;">
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Energy Regeneration Mini Games"
+                                   style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                            <Label text="Quick wellness breaks to boost your energy and keep you focused!"
+                                   style="-fx-text-fill:rgba(255,255,255,0.75);-fx-font-size:12px;"/>
+                        </VBox>
+                        <Label fx:id="lblMiniCount" text="0 mini-games"
+                               style="-fx-background-color:rgba(255,255,255,0.2);-fx-text-fill:white;-fx-background-radius:20;-fx-padding:4 14;-fx-font-size:12px;-fx-font-weight:bold;"/>
+                    </HBox>
+                    <!-- Energy explanation -->
+                    <HBox spacing="24" style="-fx-padding:12 0 0 0;">
+                        <VBox spacing="2">
+                            <Label text="Energy" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                            <Label text="Restored on completion" style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.65);"/>
+                        </VBox>
+                        <VBox spacing="2">
+                            <Label text="Free to Play" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                            <Label text="No tokens required" style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.65);"/>
+                        </VBox>
+                        <VBox spacing="2">
+                            <Label text="Breathing / Stretch / Eye Rest / Hydration"
+                                   style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                            <Label text="Wellness exercises for students" style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.65);"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                <FlowPane fx:id="miniGamesPane" hgap="16" vgap="16"
+                          style="-fx-padding:20;-fx-background-color:#f0f2f8;"/>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
 
 </VBox>

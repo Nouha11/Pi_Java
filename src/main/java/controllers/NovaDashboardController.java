@@ -536,6 +536,11 @@ setActiveButton(btnForum);
         loadPage("/views/gamification/user_rewards.fxml");
     }
 
+    @FXML void handleShowLeaderboard(ActionEvent event) {
+        setActiveButton(btnLeaderboard);
+        loadPage("/views/gamification/leaderboard.fxml");
+    }
+
     // --- THE ANIMATION ENGINE & ERROR HANDLER ---
     private void loadPageSilently(String fxmlPath) {
         try {
@@ -552,10 +557,16 @@ setActiveButton(btnForum);
     public static void loadPage(String fxmlPath) {
         try {
             URL resource = NovaDashboardController.class.getResource(fxmlPath);
-            if (resource == null) return;
+            if (resource == null) {
+                System.err.println("[NAV] FXML not found: " + fxmlPath);
+                return;
+            }
             Parent view = FXMLLoader.load(resource);
             setView(view);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.err.println("[NAV] Failed to load " + fxmlPath + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void setView(Parent view) {
