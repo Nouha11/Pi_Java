@@ -579,35 +579,46 @@ public class GamePlayController {
 
     // ── WORD SCRAMBLE ─────────────────────────────────────────────────────────
     private void buildWordScramble() {
-        // Try to load custom word from game_content
-        String customWord = null;
-        String customHint = null;
+        // Try to load custom words from game_content (multi-word format)
+        List<String> customWords = null;
+        List<String> customHints = null;
         try {
             String json = new GameContentService().loadContent(game.getId());
             if (json != null) {
-                customWord = GameContentService.extractString(json, "word");
-                customHint = GameContentService.extractString(json, "hint");
+                List<String[]> entries = GameContentService.parsePuzzleWords(json);
+                if (!entries.isEmpty()) {
+                    customWords = new ArrayList<>();
+                    customHints = new ArrayList<>();
+                    for (String[] e : entries) {
+                        customWords.add(e[0].toUpperCase());
+                        customHints.add(e.length > 1 ? e[1] : "");
+                    }
+                }
             }
         } catch (Exception ignored) {}
 
-        if (customWord != null && !customWord.isBlank()) {
-            // Single custom word mode
-            wordList = new java.util.ArrayList<>(List.of(customWord.toUpperCase()));
+        if (customWords != null && !customWords.isEmpty()) {
+            wordList = new ArrayList<>(customWords);
         } else {
             wordList = new ArrayList<>(Arrays.asList("STUDY","LEARN","BRAIN","FOCUS","THINK","SMART","GRADE","TEACH","WRITE","SOLVE","MEMORY","SKILL","SCIENCE","HISTORY","PHYSICS"));
             Collections.shuffle(wordList);
             int count = "HARD".equals(game.getDifficulty()) ? 8 : "MEDIUM".equals(game.getDifficulty()) ? 5 : 3;
             wordList = new ArrayList<>(wordList.subList(0, Math.min(count, wordList.size())));
+            customHints = null;
         }
-        final String hint = customHint;
-        wordIndex = 0; wordScore = 0; showNextWord(hint);
+
+        final List<String> finalHints = customHints;
+        wordIndex = 0; wordScore = 0;
+        showNextWord(finalHints);
     }
 
-    private void showNextWord(String globalHint) {
+    private void showNextWord(List<String> hints) {
         gameContentArea.getChildren().clear();
         if (wordIndex >= wordList.size()) { endGame(wordScore >= wordList.size() * 0.6); return; }
         String word = wordList.get(wordIndex);
         String scrambled = scramble(word);
+        // Per-word hint (if available), else no hint
+        String hint = (hints != null && wordIndex < hints.size()) ? hints.get(wordIndex) : null;
 
         HBox dots = new HBox(6); dots.setAlignment(Pos.CENTER);
         for (int i = 0; i < wordList.size(); i++) {
@@ -618,10 +629,11 @@ public class GamePlayController {
         Label progressLbl = new Label("Word " + (wordIndex + 1) + " of " + wordList.size());
         progressLbl.setStyle("-fx-text-fill:#718096;-fx-font-size:12px;");
 
-        // Hint label (shown if custom hint exists)
-        Label hintLbl = new Label(globalHint != null && !globalHint.isBlank() ? "Hint: " + globalHint : "");
+        // Hint label (shown if per-word hint exists)
+        Label hintLbl = new Label(hint != null && !hint.isBlank() ? "Hint: " + hint : "");
         hintLbl.setStyle("-fx-text-fill:#d97706;-fx-font-size:13px;-fx-font-style:italic;");
-        hintLbl.setVisible(globalHint != null && !globalHint.isBlank());
+        hintLbl.setVisible(hint != null && !hint.isBlank());
+        hintLbl.setManaged(hint != null && !hint.isBlank());
 
         HBox tiles = new HBox(8); tiles.setAlignment(Pos.CENTER);
         for (char c : scrambled.toCharArray()) {
@@ -650,7 +662,7 @@ public class GamePlayController {
                 wordScore++; score += 100; lblScore.setText("Score: " + score);
                 feedback.setText("Correct!"); feedback.setStyle("-fx-text-fill:#27ae60;-fx-font-size:15px;-fx-font-weight:bold;");
                 PauseTransition pt = new PauseTransition(Duration.millis(700));
-                pt.setOnFinished(ev -> { wordIndex++; showNextWord(globalHint); }); pt.play();
+                pt.setOnFinished(ev -> { wordIndex++; showNextWord(hints); }); pt.play();
             } else {
                 feedback.setText("Not quite — try again!"); feedback.setStyle("-fx-text-fill:#e53e3e;-fx-font-size:14px;");
                 input.clear();
@@ -661,7 +673,7 @@ public class GamePlayController {
         skip.setOnAction(e -> {
             feedback.setText("Answer: " + word); feedback.setStyle("-fx-text-fill:#d97706;-fx-font-size:14px;");
             PauseTransition pt = new PauseTransition(Duration.millis(1000));
-            pt.setOnFinished(ev -> { wordIndex++; showNextWord(globalHint); }); pt.play();
+            pt.setOnFinished(ev -> { wordIndex++; showNextWord(hints); }); pt.play();
         });
         input.setOnAction(e -> submit.fire());
         HBox btns = new HBox(12, submit, skip); btns.setAlignment(Pos.CENTER);
@@ -759,26 +771,41 @@ public class GamePlayController {
         Label qNum = new Label("Question " + (triviaIndex + 1) + " / " + triviaQuestions.size() + "   Score: " + triviaScore + "/" + triviaIndex);
         qNum.setStyle("-fx-text-fill:#718096;-fx-font-size:12px;");
 
-        Label qLabel = new Label(q[0]);
-        qLabel.setWrapText(true); qLabel.setMaxWidth(580);
-        qLabel.setStyle("-fx-font-size:17px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;-fx-padding:20 24;-fx-background-color:#eef0fd;-fx-background-radius:12;");
+        // Question — cleaned text, full wrap
+        Label qLabel = new Label(cleanText(q[0]));
+        qLabel.setWrapText(true);
+        qLabel.setMaxWidth(Double.MAX_VALUE);
+        qLabel.setStyle("-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;-fx-padding:14 18;-fx-background-color:#eef0fd;-fx-background-radius:12;");
 
-        VBox opts = new VBox(10); opts.setMaxWidth(600);
+        VBox opts = new VBox(10);
+        opts.setFillWidth(true);
+        opts.setMaxWidth(Double.MAX_VALUE);
         for (int i = 1; i <= 4; i++) {
             final int oi = i - 1;
-            Button ob = new Button(String.valueOf((char)(64 + i)) + ".  " + q[i]);
-            ob.setMaxWidth(Double.MAX_VALUE); ob.setAlignment(Pos.CENTER_LEFT);
-            ob.setStyle("-fx-background-color:white;-fx-text-fill:#2d3748;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-cursor:hand;");
-            ob.setOnMouseEntered(e -> ob.setStyle("-fx-background-color:#f5f7ff;-fx-text-fill:#1e2a5e;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;-fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-cursor:hand;"));
-            ob.setOnMouseExited(e -> { if (!ob.isDisabled()) ob.setStyle("-fx-background-color:white;-fx-text-fill:#2d3748;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-cursor:hand;"); });
-            ob.setOnAction(e -> {
-                opts.getChildren().forEach(n -> ((Button) n).setDisable(true));
+            String optText = String.valueOf((char)(64 + i)) + ".  " + cleanText(q[i]);
+            // Use Label instead of Button so text wraps properly
+            Label ob = new Label(optText);
+            ob.setWrapText(true);
+            ob.setMaxWidth(Double.MAX_VALUE);
+            VBox.setVgrow(ob, Priority.NEVER);
+            ob.setStyle("-fx-background-color:white;-fx-text-fill:#2d3748;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-cursor:hand;");
+            ob.setOnMouseEntered(e -> ob.setStyle("-fx-background-color:#f5f7ff;-fx-text-fill:#1e2a5e;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;-fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-cursor:hand;"));
+            ob.setOnMouseExited(e -> ob.setStyle("-fx-background-color:white;-fx-text-fill:#2d3748;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-cursor:hand;"));
+            ob.setOnMouseClicked(e -> {
+                // Disable all options
+                opts.getChildren().forEach(n -> {
+                    ((Label)n).setOnMouseEntered(null);
+                    ((Label)n).setOnMouseExited(null);
+                    ((Label)n).setOnMouseClicked(null);
+                });
                 if (oi == correct) {
                     triviaScore++; score += 100; lblScore.setText("Score: " + score);
-                    ob.setStyle("-fx-background-color:linear-gradient(to right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;");
+                    ob.setStyle("-fx-background-color:linear-gradient(to right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;");
                 } else {
-                    ob.setStyle("-fx-background-color:linear-gradient(to right,#e53e3e,#fc5c7d);-fx-text-fill:white;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;");
-                    ((Button) opts.getChildren().get(correct)).setStyle("-fx-background-color:linear-gradient(to right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-size:14px;-fx-padding:13 18;-fx-background-radius:10;");
+                    ob.setStyle("-fx-background-color:linear-gradient(to right,#e53e3e,#fc5c7d);-fx-text-fill:white;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;");
+                    // Highlight correct answer
+                    Label correctOpt = (Label) opts.getChildren().get(correct);
+                    correctOpt.setStyle("-fx-background-color:linear-gradient(to right,#27ae60,#2ecc71);-fx-text-fill:white;-fx-font-size:13px;-fx-padding:12 16;-fx-background-radius:10;");
                 }
                 PauseTransition pt = new PauseTransition(Duration.millis(1200));
                 pt.setOnFinished(ev -> { triviaIndex++; showNextQuestion(); }); pt.play();
@@ -786,10 +813,16 @@ public class GamePlayController {
             opts.getChildren().add(ob);
         }
 
-        VBox card = new VBox(16, qProgress, qNum, qLabel, opts);
-        card.setAlignment(Pos.TOP_CENTER); card.setPadding(new Insets(28)); card.setMaxWidth(640);
+        VBox card = new VBox(14, qProgress, qNum, qLabel, opts);
+        card.setFillWidth(true);
+        card.setAlignment(Pos.TOP_LEFT);
+        card.setPadding(new Insets(24));
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle("-fx-background-color:white;-fx-background-radius:16;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.08),12,0,0,4);");
-        VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(20));
+        VBox wrapper = new VBox(card);
+        wrapper.setFillWidth(true);
+        wrapper.setAlignment(Pos.TOP_CENTER);
+        wrapper.setPadding(new Insets(16));
         gameContentArea.getChildren().add(wrapper);
     }
 

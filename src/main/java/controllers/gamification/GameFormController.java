@@ -41,8 +41,10 @@ public class GameFormController {
     @FXML private javafx.scene.layout.VBox contentSection;
     // PUZZLE
     @FXML private javafx.scene.layout.VBox puzzleContent;
-    @FXML private TextField puzzleWordField;
-    @FXML private TextField puzzleHintField;
+    @FXML private TextField puzzleNewWordField;
+    @FXML private TextField puzzleNewHintField;
+    @FXML private javafx.scene.layout.VBox puzzleWordsContainer; // chip list
+    @FXML private Label puzzleCountLabel;
     @FXML private javafx.scene.layout.VBox puzzlePreview;
     @FXML private javafx.scene.layout.HBox puzzleTilesBox;
     @FXML private Label puzzleHintPreview;
@@ -74,6 +76,9 @@ public class GameFormController {
 
     private Game editingGame = null;
 
+    // Puzzle word list: each entry is [word, hint]
+    private final List<String[]> puzzleWords = new ArrayList<>();
+
     @FXML
     public void initialize() {
         typeCombo.setItems(FXCollections.observableArrayList("PUZZLE", "MEMORY", "TRIVIA", "ARCADE"));
@@ -90,10 +95,10 @@ public class GameFormController {
         // Show/hide content panels based on type
         typeCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateContentSection(newVal));
 
-        // Puzzle: live scramble preview
-        if (puzzleWordField != null) {
-            puzzleWordField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
-            puzzleHintField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
+        // Puzzle: live scramble preview on new-word field
+        if (puzzleNewWordField != null) {
+            puzzleNewWordField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
+            puzzleNewHintField.textProperty().addListener((obs, o, n) -> updatePuzzlePreview());
         }
 
         rewardsList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -160,10 +165,10 @@ public class GameFormController {
     private void populateContentFields(String type, String json) {
         switch (type) {
             case "PUZZLE" -> {
-                String word = GameContentService.extractString(json, "word");
-                String hint = GameContentService.extractString(json, "hint");
-                if (puzzleWordField != null && word != null) puzzleWordField.setText(word);
-                if (puzzleHintField != null && hint != null) puzzleHintField.setText(hint);
+                List<String[]> loaded = GameContentService.parsePuzzleWords(json);
+                puzzleWords.clear();
+                puzzleWords.addAll(loaded);
+                javafx.application.Platform.runLater(this::refreshPuzzleChips);
             }
             case "MEMORY" -> {
                 String arr = GameContentService.extractArray(json, "words");
@@ -178,13 +183,27 @@ public class GameFormController {
             case "TRIVIA" -> {
                 String topic = GameContentService.extractString(json, "topic");
                 if (triviaTopicField != null && topic != null) triviaTopicField.setText(topic);
-                if (triviaQuestionsArea != null) triviaQuestionsArea.setText(json);
-                // Render visual cards from stored JSON
-                javafx.application.Platform.runLater(() -> {
-                    List<HuggingFaceService.TriviaQuestion> qs = parseRawToQuestions(
-                        triviaQuestionsArea != null ? triviaQuestionsArea.getText() : "");
-                    renderQuestionCards(qs, null);
-                });
+                // Parse questions from stored JSON format and convert to form format for editing
+                List<HuggingFaceService.TriviaQuestion> loadedQs = parseJsonToQuestions(json);
+                if (!loadedQs.isEmpty()) {
+                    // Rebuild the raw form text from parsed questions
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < loadedQs.size(); i++) {
+                        if (i > 0) sb.append("\n---\n");
+                        sb.append(loadedQs.get(i).toFormFormat());
+                    }
+                    if (triviaQuestionsArea != null) triviaQuestionsArea.setText(sb.toString());
+                    // Render visual cards
+                    javafx.application.Platform.runLater(() -> renderQuestionCards(loadedQs, null));
+                } else {
+                    // Fallback: try to parse as form format directly
+                    if (triviaQuestionsArea != null) triviaQuestionsArea.setText(json);
+                    javafx.application.Platform.runLater(() -> {
+                        List<HuggingFaceService.TriviaQuestion> qs = parseRawToQuestions(
+                            triviaQuestionsArea != null ? triviaQuestionsArea.getText() : "");
+                        renderQuestionCards(qs, null);
+                    });
+                }
             }
             case "ARCADE" -> {
                 // Arcade no longer has custom content — nothing to load
@@ -192,15 +211,91 @@ public class GameFormController {
         }
     }
 
-    // ── PUZZLE preview ────────────────────────────────────────────────────────
+    // ── PUZZLE multi-word management ──────────────────────────────────────────
+
+    @FXML
+    private void handleAddPuzzleWord() {
+        if (puzzleNewWordField == null) return;
+        String word = puzzleNewWordField.getText().trim().toUpperCase();
+        if (word.isEmpty()) return;
+        if (puzzleWords.size() >= 15) {
+            puzzleNewWordField.setStyle("-fx-border-color:#e53e3e;-fx-border-radius:6;-fx-background-radius:6;-fx-font-size:13px;-fx-padding:8;");
+            return;
+        }
+        String hint = puzzleNewHintField != null ? puzzleNewHintField.getText().trim() : "";
+        puzzleWords.add(new String[]{word, hint});
+        puzzleNewWordField.clear();
+        if (puzzleNewHintField != null) puzzleNewHintField.clear();
+        puzzleNewWordField.setStyle("-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;");
+        refreshPuzzleChips();
+        updatePuzzlePreview();
+    }
+
+    private void refreshPuzzleChips() {
+        if (puzzleWordsContainer == null) return;
+        puzzleWordsContainer.getChildren().clear();
+        for (int i = 0; i < puzzleWords.size(); i++) {
+            final int idx = i;
+            String[] entry = puzzleWords.get(i);
+            String word = entry[0];
+            String hint = entry.length > 1 ? entry[1] : "";
+
+            // Word badge
+            Label wordLbl = new Label(word);
+            wordLbl.setStyle("-fx-background-color:#fef3c7;-fx-text-fill:#d97706;-fx-font-size:13px;" +
+                             "-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:4 10;");
+
+            // Hint label
+            Label hintLbl = new Label(hint.isEmpty() ? "no hint" : hint);
+            hintLbl.setStyle("-fx-text-fill:" + (hint.isEmpty() ? "#a0aec0" : "#718096") + ";" +
+                             "-fx-font-size:11px;-fx-font-style:" + (hint.isEmpty() ? "italic" : "normal") + ";");
+            hintLbl.setMaxWidth(200);
+
+            // Number badge
+            Label numLbl = new Label(String.valueOf(i + 1));
+            numLbl.setStyle("-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-size:10px;" +
+                            "-fx-font-weight:bold;-fx-background-radius:50;-fx-padding:2 6;-fx-min-width:20;-fx-alignment:center;");
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            // Remove button
+            Button del = new Button("×");
+            del.setStyle("-fx-background-color:#fee2e2;-fx-text-fill:#dc2626;-fx-font-size:13px;" +
+                         "-fx-font-weight:bold;-fx-background-radius:50;-fx-padding:2 7;-fx-cursor:hand;");
+            del.setOnAction(e -> {
+                puzzleWords.remove(idx);
+                refreshPuzzleChips();
+                updatePuzzlePreview();
+            });
+
+            HBox row = new HBox(10, numLbl, wordLbl, hintLbl, spacer, del);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setPadding(new Insets(8, 12, 8, 12));
+            row.setStyle("-fx-background-color:white;-fx-background-radius:8;" +
+                         "-fx-border-color:#e4e8f0;-fx-border-radius:8;-fx-border-width:1;");
+            puzzleWordsContainer.getChildren().add(row);
+        }
+
+        if (puzzleCountLabel != null) {
+            int count = puzzleWords.size();
+            String color = count == 0 ? "#e53e3e" : "#27ae60";
+            puzzleCountLabel.setText(count + " word" + (count == 1 ? "" : "s") + " added" +
+                                     (count == 0 ? " (add at least 1)" : ""));
+            puzzleCountLabel.setStyle("-fx-font-size:11px;-fx-text-fill:" + color + ";");
+        }
+    }
+
     private void updatePuzzlePreview() {
         if (puzzlePreview == null) return;
-        String word = puzzleWordField != null ? puzzleWordField.getText().trim().toUpperCase() : "";
+        // Preview the word currently typed in the input field (before adding)
+        String word = puzzleNewWordField != null ? puzzleNewWordField.getText().trim().toUpperCase() : "";
+        // If input is empty but we have saved words, preview the first one
+        if (word.isEmpty() && !puzzleWords.isEmpty()) word = puzzleWords.get(0)[0];
         if (word.isEmpty()) {
             puzzlePreview.setVisible(false); puzzlePreview.setManaged(false); return;
         }
         puzzlePreview.setVisible(true); puzzlePreview.setManaged(true);
-        // Show scrambled tiles
         if (puzzleTilesBox != null) {
             puzzleTilesBox.getChildren().clear();
             String scrambled = scrambleWord(word);
@@ -213,8 +308,9 @@ public class GameFormController {
                 puzzleTilesBox.getChildren().add(tile);
             }
         }
-        // Show hint
-        String hint = puzzleHintField != null ? puzzleHintField.getText().trim() : "";
+        String hint = (puzzleNewHintField != null && !puzzleNewHintField.getText().isBlank())
+            ? puzzleNewHintField.getText().trim()
+            : (!puzzleWords.isEmpty() && !puzzleWords.get(0)[1].isEmpty() ? puzzleWords.get(0)[1] : "");
         if (puzzleHintPreview != null) {
             puzzleHintPreview.setText(hint.isEmpty() ? "" : "Hint: " + hint);
         }
@@ -462,6 +558,47 @@ public class GameFormController {
         renderQuestionCards(parsed, null);
     }
 
+    /**
+     * Parse questions from the stored JSON format (buildTriviaJson output):
+     * {"topic":"...","questions":[{"question":"...","choices":["a","b","c","d"],"correct":N},...]}
+     */
+    private List<HuggingFaceService.TriviaQuestion> parseJsonToQuestions(String json) {
+        List<HuggingFaceService.TriviaQuestion> result = new ArrayList<>();
+        if (json == null || json.isBlank()) return result;
+        String arr = GameContentService.extractArray(json, "questions");
+        if (arr == null) return result;
+        int pos = 0;
+        while (pos < arr.length()) {
+            int objStart = arr.indexOf("{", pos);
+            if (objStart == -1) break;
+            int depth = 0, objEnd = objStart;
+            for (; objEnd < arr.length(); objEnd++) {
+                if (arr.charAt(objEnd) == '{') depth++;
+                else if (arr.charAt(objEnd) == '}') { depth--; if (depth == 0) { objEnd++; break; } }
+            }
+            String obj = arr.substring(objStart, objEnd);
+            String q = GameContentService.extractString(obj, "question");
+            String choicesArr = GameContentService.extractArray(obj, "choices");
+            int correct = 0;
+            int ci = obj.indexOf("\"correct\":");
+            if (ci != -1) {
+                int ns = ci + 10, ne = ns;
+                while (ne < obj.length() && Character.isDigit(obj.charAt(ne))) ne++;
+                try { correct = Integer.parseInt(obj.substring(ns, ne)); } catch (Exception ignored) {}
+            }
+            if (q != null && choicesArr != null) {
+                String[] rawChoices = GameContentService.parseStringArray(choicesArr);
+                if (rawChoices.length >= 4) {
+                    List<String> choices = new ArrayList<>();
+                    for (String c : rawChoices) choices.add(cleanAiText(c));
+                    result.add(new HuggingFaceService.TriviaQuestion(cleanAiText(q), choices, correct));
+                }
+            }
+            pos = objEnd;
+        }
+        return result;
+    }
+
     /** Parse raw Q:/A:/B:/C:/D:/ANS: text back into TriviaQuestion objects for display. */
     private List<HuggingFaceService.TriviaQuestion> parseRawToQuestions(String raw) {
         List<HuggingFaceService.TriviaQuestion> result = new ArrayList<>();
@@ -612,9 +749,8 @@ public class GameFormController {
     private void saveGameContent(int gameId, String type) throws Exception {
         String json = switch (type) {
             case "PUZZLE" -> {
-                String word = puzzleWordField != null ? puzzleWordField.getText().trim() : "";
-                String hint = puzzleHintField != null ? puzzleHintField.getText().trim() : "";
-                yield word.isEmpty() ? null : GameContentService.buildPuzzleJson(word, hint);
+                yield puzzleWords.isEmpty() ? null
+                    : GameContentService.buildPuzzleJsonMulti(puzzleWords);
             }
             case "MEMORY" -> {
                 String words = memoryWordsArea != null ? memoryWordsArea.getText().trim() : "";

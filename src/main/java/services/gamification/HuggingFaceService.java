@@ -11,25 +11,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Generates trivia questions using Hugging Face API (Novita router).
- * Mirrors the Symfony HuggingFaceService.php logic exactly.
+ * Generates trivia questions using Hugging Face Inference Router.
+ * Optimized for speed: fast providers (Cerebras, Novita) first, big models as fallback.
  *
- * API: https://router.huggingface.co/novita/v3/openai/chat/completions
- * Model: qwen/qwen2.5-7b-instruct
- *
+ * API: https://router.huggingface.co/v1/chat/completions
  * Config key: HUGGING_FACE_API_KEY in config.properties
+ *
+ * Model priority (fastest → most accurate):
+ *   1. meta-llama/Llama-3.3-70B-Instruct:cerebras  — Cerebras ~2000 tok/s, very fast
+ *   2. Qwen/Qwen2.5-72B-Instruct:novita            — Novita, strong + fast
+ *   3. Qwen/Qwen3-30B-A3B-Instruct                 — Qwen3 MoE, best accuracy
+ *   4. Qwen/Qwen2.5-7B-Instruct-1M                 — small fallback, always available
  */
 public class HuggingFaceService {
 
-    // Correct HuggingFace Router endpoint (OpenAI-compatible)
     private static final String API_URL = "https://router.huggingface.co/v1/chat/completions";
 
-    // Models with their providers (format: "model-id:provider")
-    // Try in order until one works
+    /**
+     * Model list in priority order — fastest first.
+     * Cerebras provider runs at ~2000 tokens/sec (vs ~50 for standard inference).
+     */
     private static final String[] MODELS = {
-        "Qwen/Qwen2.5-7B-Instruct-1M",
-        "meta-llama/Llama-3.1-8B-Instruct",
-        "mistralai/Mistral-7B-Instruct-v0.3"
+        "meta-llama/Llama-3.3-70B-Instruct:cerebras", // Fastest: Cerebras hardware, ~2000 tok/s
+        "Qwen/Qwen2.5-72B-Instruct:novita",           // Fast: Novita provider, 72B quality
+        "Qwen/Qwen3-30B-A3B-Instruct",                // Accurate fallback
+        "Qwen/Qwen2.5-7B-Instruct-1M"                 // Last resort, always available
     };
 
     private static String getApiUrl(String model) {
@@ -218,35 +224,33 @@ public class HuggingFaceService {
     // ── Prompt builder (mirrors PHP buildPrompt) ──────────────────────────────
 
     private String buildPrompt(String topic, int count, String difficulty) {
-        String diffInstructions = switch (difficulty.toUpperCase()) {
-            case "EASY" -> "Make the questions suitable for beginners. Use simple language and straightforward concepts.";
-            case "HARD" -> "Make the questions challenging and detailed. Include advanced concepts and require deeper knowledge.";
-            default     -> "Make the questions moderately challenging with clear but not overly simple concepts.";
+        String diffNote = switch (difficulty.toUpperCase()) {
+            case "EASY" -> "Simple, widely-known facts. Beginner level.";
+            case "HARD" -> "Specific verifiable details — dates, names, records. Expert level.";
+            default     -> "Moderately well-known facts. Intermediate level.";
         };
 
-        return "Generate exactly " + count + " multiple choice trivia questions about \"" + topic + "\".\n\n" +
-               "Difficulty Level: " + difficulty + "\n" +
-               diffInstructions + "\n\n" +
-               "For each question, provide:\n" +
-               "1. The question text\n" +
-               "2. Four answer choices (A, B, C, D)\n" +
-               "3. The correct answer (indicate which letter is correct)\n\n" +
-               "Format each question exactly like this:\n\n" +
-               "Q1: [Question text here]\n" +
-               "A) [First choice]\n" +
-               "B) [Second choice]\n" +
-               "C) [Third choice]\n" +
-               "D) [Fourth choice]\n" +
-               "Correct: [A/B/C/D]\n\n" +
-               "Make the questions educational, clear, and appropriate for students. " +
-               "Ensure one answer is clearly correct and the others are plausible but incorrect.\n\n" +
-               "Begin generating the questions now:";
+        return "Write exactly " + count + " multiple choice trivia questions about: \"" + topic + "\"\n" +
+               "Difficulty: " + difficulty + " — " + diffNote + "\n\n" +
+               "Rules: Only use facts you are 100% certain are correct. Never guess or invent.\n\n" +
+               "Use this exact format for every question:\n" +
+               "Q1: [question]\nA) [choice]\nB) [choice]\nC) [choice]\nD) [choice]\nCorrect: [A/B/C/D]\n\n" +
+               "Output only the " + count + " questions. No extra text.";
+    }
+
+    /** Build the system message for grounding — reduces hallucination significantly. */
+    private String buildSystemMessage() {
+        return "You are a trivia question generator. Output only factually correct questions in the exact format requested. No explanations, no extra text.";
     }
 
     // ── HTTP call ─────────────────────────────────────────────────────────────
 
     private String buildRequestBody(String prompt, String model) {
-        // OpenAI-compatible format for HuggingFace Router
+        // OpenAI-compatible format with system + user messages for better grounding
+        String sysMsg = buildSystemMessage()
+            .replace("\\", "\\\\").replace("\"", "\\\"")
+            .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+
         String escaped = prompt
             .replace("\\", "\\\\")
             .replace("\"", "\\\"")
@@ -254,11 +258,17 @@ public class HuggingFaceService {
             .replace("\r", "\\r")
             .replace("\t", "\\t");
 
+        // Qwen3 models support /no_think to skip chain-of-thought (saves tokens on trivia)
+        String userContent = model.contains("Qwen3") ? "/no_think\\n" + escaped : escaped;
+
         return "{" +
                "\"model\":\"" + model + "\"," +
-               "\"messages\":[{\"role\":\"user\",\"content\":\"" + escaped + "\"}]," +
-               "\"max_tokens\":2000," +
-               "\"temperature\":0.7" +
+               "\"messages\":[" +
+                 "{\"role\":\"system\",\"content\":\"" + sysMsg + "\"}," +
+                 "{\"role\":\"user\",\"content\":\"" + userContent + "\"}" +
+               "]," +
+               "\"max_tokens\":1200," +
+               "\"temperature\":0.3" +
                "}";
     }
 
@@ -269,8 +279,8 @@ public class HuggingFaceService {
         conn.setRequestProperty("Authorization", "Bearer " + apiKey);
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setDoOutput(true);
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(60_000);
+        conn.setConnectTimeout(10_000);  // 10s connect timeout — fail fast
+        conn.setReadTimeout(45_000);     // 45s read timeout — Cerebras responds in ~5s
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(requestBody.getBytes(StandardCharsets.UTF_8));
@@ -333,10 +343,16 @@ public class HuggingFaceService {
             }
         }
         // Post-process: clean up any remaining escape artifacts
-        return sb.toString()
+        // Also strip Qwen3 <think>...</think> blocks if present
+        String result = sb.toString()
                  .replace("\\\"", "\"")   // leftover escaped quotes
                  .replace("\\'", "'")      // escaped apostrophes
                  .trim();
+
+        // Remove <think>...</think> reasoning blocks (Qwen3 thinking mode leakage)
+        result = result.replaceAll("(?s)<think>.*?</think>", "").trim();
+
+        return result;
     }
 
     // ── Parser (mirrors PHP parseGeneratedQuestions) ──────────────────────────

@@ -205,8 +205,11 @@ public class UserRewardsController {
         Label value = new Label("+" + reward.getValue() + " pts");
         value.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #3b4fd8;");
 
-        Button btnView = new Button("\uF06E  View Details");
-        btnView.getStyleClass().add("btn-card-edit");
+        Button btnView = new Button("View Details");
+        btnView.setStyle("-fx-background-color:#eef0fd;-fx-text-fill:#3b4fd8;-fx-font-size:12px;" +
+                         "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 16;-fx-cursor:hand;" +
+                         "-fx-border-color:#c3c9f5;-fx-border-radius:8;-fx-border-width:1;");
+        btnView.setMaxWidth(Double.MAX_VALUE);
         btnView.setOnAction(e -> showRewardDetails(reward));
 
         VBox card = new VBox(10, iconPane, name, typeBadge, value, btnView);

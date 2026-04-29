@@ -120,23 +120,32 @@
                     <VBox fx:id="puzzleContent" spacing="12" visible="false" managed="false">
                         <Label text="Word Scramble"
                                style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#b7791f;"/>
-                        <Label text="Players must unscramble the word. Leave blank to use random words from the built-in list."
+                        <Label text="Add words for players to unscramble. Each word can have its own hint. Leave empty to use random built-in words."
                                style="-fx-text-fill:#718096;-fx-font-size:11px;" wrapText="true"/>
 
-                        <HBox spacing="12">
-                            <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                <Label text="Custom Word (optional)" styleClass="field-label"/>
-                                <TextField fx:id="puzzleWordField" promptText="e.g., JAVASCRIPT"/>
-                                <Label text="Will be scrambled for the player to guess"
-                                       style="-fx-text-fill:#a0aec0;-fx-font-size:11px;"/>
+                        <!-- Add word row -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <VBox spacing="3" HBox.hgrow="ALWAYS">
+                                <Label text="Word" styleClass="field-label"/>
+                                <TextField fx:id="puzzleNewWordField" promptText="e.g., JAVASCRIPT"
+                                           style="-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;"/>
                             </VBox>
-                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <VBox spacing="3" HBox.hgrow="ALWAYS">
                                 <Label text="Hint (optional)" styleClass="field-label"/>
-                                <TextField fx:id="puzzleHintField" promptText="e.g., A programming language"/>
-                                <Label text="Shown to the player as a clue"
-                                       style="-fx-text-fill:#a0aec0;-fx-font-size:11px;"/>
+                                <TextField fx:id="puzzleNewHintField" promptText="e.g., A programming language"
+                                           style="-fx-font-size:13px;-fx-padding:8;-fx-background-radius:6;-fx-border-color:#c3c9f5;-fx-border-radius:6;"/>
+                            </VBox>
+                            <VBox spacing="3">
+                                <Label text=" " styleClass="field-label"/>
+                                <Button text="+ Add Word" onAction="#handleAddPuzzleWord"
+                                        style="-fx-background-color:#f6d365;-fx-text-fill:#7c4a00;-fx-font-weight:bold;-fx-font-size:12px;-fx-background-radius:6;-fx-padding:8 14;-fx-cursor:hand;"/>
                             </VBox>
                         </HBox>
+
+                        <!-- Word list -->
+                        <VBox fx:id="puzzleWordsContainer" spacing="6"/>
+                        <Label fx:id="puzzleCountLabel" text="0 words added (add at least 1)"
+                               style="-fx-font-size:11px;-fx-text-fill:#e53e3e;"/>
 
                         <!-- Live scramble preview -->
                         <VBox fx:id="puzzlePreview" spacing="6"

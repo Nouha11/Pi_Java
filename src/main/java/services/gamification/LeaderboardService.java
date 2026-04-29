@@ -49,14 +49,15 @@ public class LeaderboardService {
         }
 
         private static int progressToNext(int xp) {
-            // Level formula: level = floor(1 + sqrt(xp / 50))
-            // XP needed for next level: ((level)^2) * 50
+            // Level thresholds: Lv1=0, Lv2=50, Lv3=200, Lv4=450, Lv5=800...
+            // Formula: xp_for_level_n = (n-1)^2 * 50
             int currentLevel = (int)(1 + Math.sqrt(xp / 50.0));
             int xpForCurrent = (int)(Math.pow(currentLevel - 1, 2) * 50);
             int xpForNext    = (int)(Math.pow(currentLevel, 2) * 50);
             int range = xpForNext - xpForCurrent;
-            if (range <= 0) return 100;
-            return Math.min(100, (int)(((xp - xpForCurrent) * 100.0) / range));
+            if (range <= 0) return 99;
+            int pct = (int)(((xp - xpForCurrent) * 100.0) / range);
+            return Math.max(0, Math.min(99, pct));
         }
     }
 
@@ -122,20 +123,29 @@ public class LeaderboardService {
         }
     }
 
-    /** Get a single player's stats. */
+    /** Get a single player's stats. Falls back to user.xp if student_profile has 0 XP. */
     public PlayerEntry getPlayerStats(int userId) throws SQLException {
-        String sql = "SELECT u.id, u.username, sp.level, sp.total_xp, sp.total_tokens " +
-                     "FROM user u JOIN student_profile sp ON u.student_profile_id = sp.id " +
+        // Primary: join user → student_profile
+        String sql = "SELECT u.id, u.username, u.xp AS user_xp, " +
+                     "sp.level, sp.total_xp, sp.total_tokens " +
+                     "FROM user u " +
+                     "LEFT JOIN student_profile sp ON u.student_profile_id = sp.id " +
                      "WHERE u.id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                int rank = getUserRank(userId);
-                PlayerEntry e = new PlayerEntry(rank,
+                int userXp      = rs.getInt("user_xp");
+                int profileXp   = rs.getObject("total_xp") != null ? rs.getInt("total_xp") : 0;
+                int tokens      = rs.getObject("total_tokens") != null ? rs.getInt("total_tokens") : 0;
+                // Use the higher of the two XP values — student_profile may lag behind user.xp
+                int effectiveXp = Math.max(userXp, profileXp);
+                // Recalculate level from XP dynamically (don't trust stored level column)
+                int level = Math.max(1, (int)(1 + Math.sqrt(effectiveXp / 50.0)));
+                int rank  = getUserRank(userId);
+                return new PlayerEntry(rank,
                     rs.getInt("id"), rs.getString("username"),
-                    rs.getInt("level"), rs.getInt("total_xp"), rs.getInt("total_tokens"));
-                return e;
+                    level, effectiveXp, tokens);
             }
         }
         return null;

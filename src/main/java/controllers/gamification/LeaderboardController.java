@@ -90,73 +90,101 @@ public class LeaderboardController {
     }
 
     private void loadMyRank() {
-        int userId = UserSession.getInstance().getUserId();
+        // Try both session managers — use whichever gives a valid userId > 1
+        int userId = utils.SessionManager.getCurrentUserId();
+        if (userId <= 1) userId = UserSession.getInstance().getUserId();
         if (userId <= 0 || myRankSection == null) return;
+
+        final int finalUserId = userId;
+        System.out.println("[Leaderboard] loadMyRank userId=" + finalUserId +
+                           " (SessionManager=" + utils.SessionManager.getCurrentUserId() +
+                           ", UserSession=" + UserSession.getInstance().getUserId() + ")");
 
         Thread t = new Thread(() -> {
             try {
-                LeaderboardService.PlayerEntry me = service.getPlayerStats(userId);
-                if (me == null) return;
-                Platform.runLater(() -> {
-                    myRankSection.getChildren().clear();
-
-                    // Build the my-rank card programmatically
-                    Label header = new Label("Your Ranking");
-                    header.setStyle("-fx-text-fill:rgba(255,255,255,0.75);-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:0 0 10 0;");
-
-                    // Rank
-                    VBox rankBox = new VBox(4);
-                    rankBox.setAlignment(Pos.CENTER);
-                    Label rankLbl = new Label("#" + me.rank);
-                    rankLbl.setStyle("-fx-font-size:36px;-fx-font-weight:bold;-fx-text-fill:white;");
-                    Label rankSub = new Label("Your Rank");
-                    rankSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
-                    rankBox.getChildren().addAll(rankLbl, rankSub);
-                    HBox.setHgrow(rankBox, Priority.ALWAYS);
-
-                    // Level
-                    VBox levelBox = new VBox(4);
-                    levelBox.setAlignment(Pos.CENTER);
-                    Label levelLbl = new Label(me.levelName + " (Lv." + me.level + ")");
-                    levelLbl.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:white;");
-                    ProgressBar pb = new ProgressBar(me.progressPct / 100.0);
-                    pb.setPrefWidth(120);
-                    pb.setStyle("-fx-accent:#f6d365;");
-                    Label progLbl = new Label(me.progressPct + "% to next level");
-                    progLbl.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:10px;");
-                    levelBox.getChildren().addAll(levelLbl, pb, progLbl);
-                    HBox.setHgrow(levelBox, Priority.ALWAYS);
-
-                    // XP
-                    VBox xpBox = new VBox(4);
-                    xpBox.setAlignment(Pos.CENTER);
-                    Label xpLbl = new Label(me.totalXp + " XP");
-                    xpLbl.setStyle("-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:white;");
-                    Label xpSub = new Label("Total XP");
-                    xpSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
-                    xpBox.getChildren().addAll(xpLbl, xpSub);
-                    HBox.setHgrow(xpBox, Priority.ALWAYS);
-
-                    // Tokens
-                    VBox tokBox = new VBox(4);
-                    tokBox.setAlignment(Pos.CENTER);
-                    Label tokLbl = new Label(me.totalTokens + " Tokens");
-                    tokLbl.setStyle("-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#f6d365;");
-                    Label tokSub = new Label("Tokens");
-                    tokSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
-                    tokBox.getChildren().addAll(tokLbl, tokSub);
-                    HBox.setHgrow(tokBox, Priority.ALWAYS);
-
-                    HBox statsRow = new HBox(0, rankBox, levelBox, xpBox, tokBox);
-                    statsRow.setAlignment(Pos.CENTER);
-
-                    myRankSection.getChildren().addAll(header, statsRow);
-                    myRankSection.setVisible(true);
-                    myRankSection.setManaged(true);
-                });
-            } catch (Exception ignored) {}
+                LeaderboardService.PlayerEntry me = service.getPlayerStats(finalUserId);
+                System.out.println("[Leaderboard] getPlayerStats result: " +
+                    (me == null ? "null" : "rank=" + me.rank + " xp=" + me.totalXp + " tokens=" + me.totalTokens));
+                if (me == null) {
+                    // User has no student_profile yet — show a placeholder
+                    Platform.runLater(() -> buildMyRankCard(null, finalUserId));
+                    return;
+                }
+                Platform.runLater(() -> buildMyRankCard(me, finalUserId));
+            } catch (Exception e) {
+                System.err.println("[Leaderboard] loadMyRank error: " + e.getMessage());
+                e.printStackTrace();
+            }
         });
         t.setDaemon(true); t.start();
+    }
+
+    private void buildMyRankCard(LeaderboardService.PlayerEntry me, int userId) {
+        myRankSection.getChildren().clear();
+
+        Label header = new Label("Your Ranking");
+        header.setStyle("-fx-text-fill:rgba(255,255,255,0.75);-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:0 0 10 0;");
+
+        if (me == null) {
+            // No profile yet
+            Label noProfile = new Label("Play games to appear on the leaderboard!");
+            noProfile.setStyle("-fx-text-fill:rgba(255,255,255,0.8);-fx-font-size:13px;");
+            myRankSection.getChildren().addAll(header, noProfile);
+            myRankSection.setVisible(true);
+            myRankSection.setManaged(true);
+            return;
+        }
+
+        // Rank
+        VBox rankBox = new VBox(4);
+        rankBox.setAlignment(Pos.CENTER);
+        Label rankLbl = new Label("#" + me.rank);
+        rankLbl.setStyle("-fx-font-size:36px;-fx-font-weight:bold;-fx-text-fill:white;");
+        Label rankSub = new Label("Your Rank");
+        rankSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
+        rankBox.getChildren().addAll(rankLbl, rankSub);
+        HBox.setHgrow(rankBox, Priority.ALWAYS);
+
+        // Level + progress bar
+        VBox levelBox = new VBox(6);
+        levelBox.setAlignment(Pos.CENTER);
+        Label levelLbl = new Label(me.levelName + " (Lv." + me.level + ")");
+        levelLbl.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:white;");
+        double progress = Math.max(0.0, Math.min(1.0, me.progressPct / 100.0));
+        ProgressBar pb = new ProgressBar(progress);
+        pb.setPrefWidth(140);
+        pb.setStyle("-fx-accent:#f6d365;");
+        Label progLbl = new Label(me.progressPct + "% to next level");
+        progLbl.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:10px;");
+        levelBox.getChildren().addAll(levelLbl, pb, progLbl);
+        HBox.setHgrow(levelBox, Priority.ALWAYS);
+
+        // XP
+        VBox xpBox = new VBox(4);
+        xpBox.setAlignment(Pos.CENTER);
+        Label xpLbl = new Label(formatNum(me.totalXp) + " XP");
+        xpLbl.setStyle("-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:white;");
+        Label xpSub = new Label("Total XP");
+        xpSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
+        xpBox.getChildren().addAll(xpLbl, xpSub);
+        HBox.setHgrow(xpBox, Priority.ALWAYS);
+
+        // Tokens
+        VBox tokBox = new VBox(4);
+        tokBox.setAlignment(Pos.CENTER);
+        Label tokLbl = new Label(formatNum(me.totalTokens) + " Tokens");
+        tokLbl.setStyle("-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#f6d365;");
+        Label tokSub = new Label("Tokens");
+        tokSub.setStyle("-fx-text-fill:rgba(255,255,255,0.65);-fx-font-size:11px;");
+        tokBox.getChildren().addAll(tokLbl, tokSub);
+        HBox.setHgrow(tokBox, Priority.ALWAYS);
+
+        HBox statsRow = new HBox(0, rankBox, levelBox, xpBox, tokBox);
+        statsRow.setAlignment(Pos.CENTER);
+
+        myRankSection.getChildren().addAll(header, statsRow);
+        myRankSection.setVisible(true);
+        myRankSection.setManaged(true);
     }
 
     // ── Row builder ───────────────────────────────────────────────────────────

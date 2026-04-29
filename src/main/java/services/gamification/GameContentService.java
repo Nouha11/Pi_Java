@@ -2,6 +2,8 @@ package services.gamification;
 
 import utils.MyConnection;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages the game_content table — stores custom JSON data per game.
@@ -50,10 +52,68 @@ public class GameContentService {
 
     // ── Simple JSON builders (no external library needed) ─────────────────────
 
-    /** Build JSON for PUZZLE: {"word":"WORD","hint":"hint text"} */
+    /** Build JSON for PUZZLE (single word, legacy): {"word":"WORD","hint":"hint text"} */
     public static String buildPuzzleJson(String word, String hint) {
         return "{\"word\":\"" + escape(word.toUpperCase()) + "\","
              + "\"hint\":\"" + escape(hint) + "\"}";
+    }
+
+    /**
+     * Build JSON for PUZZLE (multi-word):
+     * {"words":[{"word":"JAVA","hint":"A programming language"},{"word":"PYTHON","hint":"A snake or language"}]}
+     * @param entries list of [word, hint] pairs
+     */
+    public static String buildPuzzleJsonMulti(List<String[]> entries) {
+        StringBuilder sb = new StringBuilder("{\"words\":[");
+        boolean first = true;
+        for (String[] entry : entries) {
+            if (entry == null || entry.length < 1 || entry[0].isBlank()) continue;
+            if (!first) sb.append(",");
+            first = false;
+            String word = entry[0].trim().toUpperCase();
+            String hint = entry.length > 1 && entry[1] != null ? entry[1].trim() : "";
+            sb.append("{\"word\":\"").append(escape(word)).append("\",")
+              .append("\"hint\":\"").append(escape(hint)).append("\"}");
+        }
+        sb.append("]}");
+        return sb.toString();
+    }
+
+    /**
+     * Parse multi-word puzzle JSON back into [word, hint] pairs.
+     * Handles both old format {"word":"X","hint":"Y"} and new {"words":[...]}
+     */
+    public static List<String[]> parsePuzzleWords(String json) {
+        List<String[]> result = new java.util.ArrayList<>();
+        if (json == null || json.isBlank()) return result;
+
+        // New format: {"words":[{"word":"X","hint":"Y"},...]}
+        String arr = extractArray(json, "words");
+        if (arr != null && arr.contains("{")) {
+            // Array of objects
+            int pos = 0;
+            while (pos < arr.length()) {
+                int objStart = arr.indexOf("{", pos);
+                if (objStart == -1) break;
+                int depth = 0, objEnd = objStart;
+                for (; objEnd < arr.length(); objEnd++) {
+                    if (arr.charAt(objEnd) == '{') depth++;
+                    else if (arr.charAt(objEnd) == '}') { depth--; if (depth == 0) { objEnd++; break; } }
+                }
+                String obj = arr.substring(objStart, objEnd);
+                String word = extractString(obj, "word");
+                String hint = extractString(obj, "hint");
+                if (word != null && !word.isBlank()) result.add(new String[]{word, hint != null ? hint : ""});
+                pos = objEnd;
+            }
+            return result;
+        }
+
+        // Old format: {"word":"X","hint":"Y"} — single word
+        String word = extractString(json, "word");
+        String hint = extractString(json, "hint");
+        if (word != null && !word.isBlank()) result.add(new String[]{word, hint != null ? hint : ""});
+        return result;
     }
 
     /**

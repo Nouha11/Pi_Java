@@ -72,7 +72,8 @@
         <ScrollPane fx:id="gameScrollPane" fitToWidth="true" hbarPolicy="NEVER"
                     vbarPolicy="AS_NEEDED"
                     style="-fx-background-color: transparent; -fx-background: transparent;">
-            <VBox fx:id="gameContentArea" alignment="CENTER" spacing="0"
+            <VBox fx:id="gameContentArea" alignment="TOP_CENTER" spacing="0"
+                  fillWidth="true"
                   style="-fx-background-color: #f0f2f8; -fx-min-height: 400;"/>
         </ScrollPane>
 
