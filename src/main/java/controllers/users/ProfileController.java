@@ -448,4 +448,26 @@ public class ProfileController implements Initializable {
     private String typeBadgeFg(String t)  { return switch(t){case "PUZZLE"->"#b7791f";case "MEMORY"->"#805ad5";case "TRIVIA"->"#2b6cb0";case "ARCADE"->"#276749";default->"#3b4fd8";}; }
     private String diffBg(String d)       { return switch(d){case "HARD"->"#fff5f5";case "MEDIUM"->"#fffbeb";default->"#f0fff4";}; }
     private String diffFg(String d)       { return switch(d){case "HARD"->"#e53e3e";case "MEDIUM"->"#d97706";default->"#27ae60";}; }
+
+    // ── Manage 2FA ────────────────────────────────────────────────────────────
+    @FXML
+    private void onManage2FA() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/2fa-setup.fxml"));
+            javafx.scene.Parent root = loader.load();
+            controllers.users.TwoFactorSetupController ctrl = loader.getController();
+            ctrl.setCurrentUser(currentUser);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 480, 560);
+            scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+            javafx.stage.Stage dialog = new javafx.stage.Stage();
+            dialog.setTitle("Two-Factor Authentication");
+            dialog.setScene(scene);
+            dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            dialog.setResizable(false);
+            dialog.showAndWait();
+        } catch (Exception e) {
+            showMsg("2FA error: " + e.getMessage(), true);
+        }
+    }
 }

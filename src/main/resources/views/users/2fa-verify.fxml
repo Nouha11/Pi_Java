@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.users.TwoFactorVerifyController"
+      alignment="CENTER" spacing="0"
+      prefWidth="420" prefHeight="380"
+      style="-fx-background-color: #f8fafc;">
+
+    <stylesheets>
+        <String fx:value="/css/login.css"/>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <padding><Insets top="40" right="50" bottom="40" left="50"/></padding>
+
+    <!-- Shield icon -->
+    <Label text="&#128274;" style="-fx-font-size: 48px;"/>
+
+    <Region prefHeight="16"/>
+
+    <Label text="Two-Factor Authentication"
+           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+
+    <Region prefHeight="6"/>
+
+    <Label fx:id="lblUsername" text=""
+           style="-fx-font-size: 14px; -fx-text-fill: #64748b;"/>
+
+    <Region prefHeight="6"/>
+
+    <Label text="Open Google Authenticator and enter the 6-digit code"
+           wrapText="true" textAlignment="CENTER"
+           style="-fx-font-size: 13px; -fx-text-fill: #64748b;" maxWidth="320"/>
+
+    <Region prefHeight="24"/>
+
+    <!-- Code input -->
+    <TextField fx:id="tfCode" promptText="000000"
+               maxWidth="200"
+               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-letter-spacing: 8px; -fx-alignment: CENTER; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #cbd5e1; -fx-border-radius: 10; -fx-border-width: 2; -fx-background-color: white;"/>
+
+    <Region prefHeight="12"/>
+
+    <Label fx:id="lblError" text=""
+           style="-fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-font-size: 13px;"/>
+
+    <Region prefHeight="20"/>
+
+    <Button fx:id="btnVerify" text="Verify" onAction="#onVerify"
+            maxWidth="200"
+            style="-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"/>
+
+</VBox>

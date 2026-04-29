@@ -195,6 +195,8 @@ public class UserService {
         u.setBanReason(rs.getString("ban_reason"));
         u.setXp(rs.getInt("xp"));
         u.setProfilePicture(rs.getString("profile_picture"));
+        u.setTotpEnabled(rs.getBoolean("totp_enabled"));
+        u.setTotpSecret(rs.getString("totp_secret"));
         Timestamp ca = rs.getTimestamp("created_at");
         if (ca != null) u.setCreatedAt(ca.toLocalDateTime());
         Timestamp ua = rs.getTimestamp("updated_at");
@@ -219,6 +221,24 @@ public class UserService {
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
             return rs.next() && rs.getInt(1) > 0;
+        }
+    }
+
+    // ── UPDATE 2FA ────────────────────────────────────────────────────────────
+    public boolean enableTotp(int userId, String secret) throws SQLException {
+        String sql = "UPDATE user SET totp_enabled=1, totp_secret=?, updated_at=NOW() WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, secret);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean disableTotp(int userId) throws SQLException {
+        String sql = "UPDATE user SET totp_enabled=0, totp_secret=NULL, updated_at=NOW() WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
         }
     }
 }
