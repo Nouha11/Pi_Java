@@ -53,8 +53,6 @@ public class ThemeManager {
         return instance;
     }
 
-    // ── Registration ──────────────────────────────────────────────────────────
-
     public void register(Scene scene) {
         if (scene != null && !scenes.contains(scene)) {
             scenes.add(scene);
@@ -67,8 +65,6 @@ public class ThemeManager {
     public void setDashboardController(controllers.NovaDashboardController ctrl) {
         this.dashboardController = ctrl;
     }
-
-    // ── Public API ────────────────────────────────────────────────────────────
 
     public void setLight() {
         mode = Mode.LIGHT;
@@ -103,34 +99,31 @@ public class ThemeManager {
                (mode == Mode.SCHEDULED && inDarkWindow());
     }
 
-    // ── Apply ─────────────────────────────────────────────────────────────────
-
     private void applyAll() {
-        if (Platform.isFxApplicationThread()) {
-            doApplyAll();
-        } else {
-            Platform.runLater(this::doApplyAll);
-        }
+        if (Platform.isFxApplicationThread()) doApplyAll();
+        else Platform.runLater(this::doApplyAll);
     }
 
     private void doApplyAll() {
         boolean dark = isDark();
         scenes.forEach(s -> applyToScene(s));
-        if (dashboardController != null)
+        if (dashboardController != null) {
             dashboardController.applyDarkModeToNodes(dark);
+            dashboardController.applyDarkModeToContentArea(dark);
+        }
     }
 
     public void applyToScene(Scene scene) {
         if (scene == null || darkCssUrl == null) return;
-        boolean dark = isDark();
-        // 1. CSS stylesheet swap
         scene.getStylesheets().removeIf(s -> s.contains("dark.css"));
-        if (dark) scene.getStylesheets().add(darkCssUrl);
-        // 2. Walk scene graph to override inline styles
-        DarkModeApplier.apply(scene, dark);
+        if (isDark()) scene.getStylesheets().add(darkCssUrl);
     }
 
-    // ── Scheduler ─────────────────────────────────────────────────────────────
+    /** Apply dark mode to a freshly loaded view node */
+    public void applyToParent(javafx.scene.Parent parent) {
+        if (parent == null) return;
+        DarkModeApplier.applyToNode(parent, isDark());
+    }
 
     private void startScheduler() {
         task = scheduler.scheduleAtFixedRate(this::applyAll, 30, 30, TimeUnit.SECONDS);
@@ -148,8 +141,6 @@ public class ThemeManager {
             return !now.isBefore(darkStart) || now.isBefore(lightStart);
         }
     }
-
-    // ── Persistence ───────────────────────────────────────────────────────────
 
     private void savePrefs() {
         try {

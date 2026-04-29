@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controllers.users.FaceLoginController"
+      alignment="CENTER" spacing="20"
+      prefWidth="640" prefHeight="560"
+      style="-fx-background-color: #0f172a;">
+
+    <stylesheets>
+        <String fx:value="/css/login.css"/>
+    </stylesheets>
+
+    <padding><Insets top="30" right="40" bottom="30" left="40"/></padding>
+
+    <!-- Title -->
+    <VBox alignment="CENTER" spacing="6">
+        <Label text="Face Recognition Login"
+               style="-fx-font-size:22px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+        <Label text="Look at the camera and click Scan"
+               style="-fx-font-size:13px;-fx-text-fill:#94a3b8;"/>
+    </VBox>
+
+    <!-- Not configured warning -->
+    <VBox fx:id="paneNotConfigured" alignment="CENTER" spacing="8"
+          visible="false" managed="false"
+          style="-fx-background-color:rgba(239,68,68,0.1);-fx-background-radius:10;-fx-padding:16;-fx-border-color:rgba(239,68,68,0.3);-fx-border-radius:10;-fx-border-width:1;">
+        <Label text="Face++ API not configured"
+               style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#fca5a5;"/>
+        <Label text="Add FACEPP_API_KEY and FACEPP_API_SECRET to config.properties"
+               wrapText="true" textAlignment="CENTER"
+               style="-fx-font-size:12px;-fx-text-fill:#fca5a5;"/>
+    </VBox>
+
+    <!-- Webcam feed -->
+    <StackPane style="-fx-background-color:#1e293b;-fx-background-radius:12;-fx-border-color:#334155;-fx-border-radius:12;-fx-border-width:2;">
+        <ImageView fx:id="imgWebcam" fitWidth="480" fitHeight="320"
+                   preserveRatio="true" smooth="true"/>
+        <!-- Face guide overlay -->
+        <Label text="[ ]"
+               style="-fx-font-size:120px;-fx-text-fill:rgba(79,142,247,0.4);-fx-font-weight:bold;"/>
+    </StackPane>
+
+    <!-- Status -->
+    <Label fx:id="lblStatus" text="" wrapText="true" textAlignment="CENTER"
+           maxWidth="480" style="-fx-font-size:13px;-fx-font-weight:bold;"/>
+
+    <!-- Spinner -->
+    <ProgressIndicator fx:id="spinner" prefWidth="36" prefHeight="36"
+                       style="-fx-progress-color:#4f8ef7;" visible="false" managed="false"/>
+
+    <!-- Buttons -->
+    <HBox spacing="16" alignment="CENTER">
+        <Button fx:id="btnScan" text="Scan Face" onAction="#onScan"
+                style="-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:14px;-fx-padding:12 32;-fx-background-radius:8;-fx-cursor:hand;"/>
+        <Button fx:id="btnCancel" text="Use Password" onAction="#onCancel"
+                style="-fx-background-color:rgba(255,255,255,0.08);-fx-text-fill:#94a3b8;-fx-font-size:13px;-fx-padding:12 24;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(255,255,255,0.15);-fx-border-radius:8;-fx-border-width:1;"/>
+    </HBox>
+
+</VBox>

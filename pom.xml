@@ -116,6 +116,20 @@
             <artifactId>javase</artifactId>
             <version>3.5.2</version>
         </dependency>
+
+        <!-- Webcam capture for face recognition -->
+        <dependency>
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version>
+        </dependency>
+
+        <!-- Bridj (required by webcam-capture) -->
+        <dependency>
+            <groupId>com.nativelibs4java</groupId>
+            <artifactId>bridj</artifactId>
+            <version>0.7.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -332,4 +332,53 @@ public class LoginController implements Initializable {
             showError("2FA error: " + e.getMessage());
         }
     }
+
+    @FXML
+    private void onFaceLogin() {
+        try {
+            javafx.stage.Stage stage = (javafx.stage.Stage) btnLogin.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/face-login.fxml"));
+            javafx.scene.Parent root = loader.load();
+            FaceLoginController ctrl = loader.getController();
+            // Pass the stage so routing works after scene switch
+            ctrl.setStageAndSuccess(stage, user -> routeUserBasedOnRole(user, stage));
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 640, 560);
+            stage.setTitle("NOVA - Face Login");
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            showError("Cannot open face login: " + e.getMessage());
+        }
+    }
+
+    /** Overload used by face login — accepts an explicit stage */
+    private void routeUserBasedOnRole(User loggedInUser, javafx.stage.Stage stage) {
+        try {
+            FXMLLoader loader;
+            Parent root;
+            Scene scene;
+            if (loggedInUser.getRole() == User.Role.ROLE_ADMIN) {
+                loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
+                root = loader.load();
+                controllers.admin.AdminDashboardController adminCtrl = loader.getController();
+                adminCtrl.setCurrentUser(loggedInUser);
+                scene = new Scene(root, 1280, 800);
+                scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+                stage.setTitle("NOVA - Admin Dashboard");
+            } else {
+                loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
+                root = loader.load();
+                controllers.NovaDashboardController dashCtrl = loader.getController();
+                dashCtrl.setCurrentUser(loggedInUser);
+                scene = new Scene(root, 1300, 800);
+                stage.setTitle(loggedInUser.getRole() == User.Role.ROLE_TUTOR
+                    ? "NOVA - Tutor Hub" : "NOVA - Student Hub");
+            }
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (java.io.IOException e) {
+            showError("Cannot load dashboard: " + e.getMessage());
+        }
+    }
 }

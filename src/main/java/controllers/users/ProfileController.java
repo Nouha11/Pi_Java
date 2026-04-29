@@ -438,4 +438,31 @@ public class ProfileController implements Initializable {
     private String typeBadgeFg(String t) { return switch(t){case "PUZZLE"->"#b7791f";case "MEMORY"->"#805ad5";case "TRIVIA"->"#2b6cb0";case "ARCADE"->"#276749";default->"#3b4fd8";}; }
     private String diffBg(String d)      { return switch(d){case "HARD"->"#fff5f5";case "MEDIUM"->"#fffbeb";default->"#f0fff4";}; }
     private String diffFg(String d)      { return switch(d){case "HARD"->"#e53e3e";case "MEDIUM"->"#d97706";default->"#27ae60";}; }
+
+    // ── Open Edit Profile page ────────────────────────────────────────────────
+    @FXML
+    private void onOpenEditProfile() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/edit-profile.fxml"));
+            javafx.scene.Parent root = loader.load();
+            EditProfileController ctrl = loader.getController();
+            ctrl.setCurrentUser(currentUser, () -> {
+                // Refresh profile after save
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        javafx.fxml.FXMLLoader pl = new javafx.fxml.FXMLLoader(
+                            getClass().getResource("/views/users/profile.fxml"));
+                        javafx.scene.Parent pv = pl.load();
+                        ProfileController pc = pl.getController();
+                        pc.setCurrentUser(currentUser, mainLayout, previousView);
+                        controllers.NovaDashboardController.setView(pv);
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                });
+            });
+            controllers.NovaDashboardController.setView(root);
+        } catch (Exception e) {
+            showMsg("Cannot open edit profile: " + e.getMessage(), true);
+        }
+    }
 }

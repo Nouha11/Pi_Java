@@ -16,155 +16,141 @@
 
     <!-- Top bar -->
     <top>
-        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="12">
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
             <Label text="My Profile" styleClass="topbar-title"/>
             <Label text="/" styleClass="topbar-sep"/>
-            <Label text="Account Settings" styleClass="topbar-sub"/>
+            <Label fx:id="lblBreadcrumb" text="Overview" styleClass="topbar-sub"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Edit Profile" onAction="#onOpenEditProfile"
+                    style="-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 18;-fx-background-radius:8;-fx-cursor:hand;"/>
             <Button text="Back" onAction="#onBackToList" styleClass="btn-icon"/>
         </HBox>
     </top>
 
     <center>
         <ScrollPane fitToWidth="true" styleClass="form-scroll">
-            <VBox styleClass="content-area" spacing="20">
-                <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+            <VBox spacing="20">
+                <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
 
-                <!-- Profile header card -->
-                <HBox styleClass="profile-card" spacing="0">
+                <!-- ── HERO CARD ── -->
+                <HBox spacing="0" style="-fx-background-color:white;-fx-background-radius:16;-fx-border-color:#e5e7eb;-fx-border-radius:16;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);">
 
-                    <!-- Left: avatar + controls -->
-                    <VBox styleClass="profile-avatar-panel" alignment="CENTER"
-                          spacing="10" minWidth="220">
-                        <padding><Insets top="28" right="24" bottom="28" left="24"/></padding>
+                    <!-- Left: avatar panel -->
+                    <VBox alignment="CENTER" spacing="12" minWidth="240"
+                          style="-fx-background-color:linear-gradient(to bottom,#1a1f36,#2d3561);-fx-background-radius:16 0 0 16;-fx-padding:36 28;">
 
-                        <!-- Avatar: image or initials fallback -->
+                        <!-- Avatar circle -->
                         <StackPane>
-                            <ImageView fx:id="imgAvatar"
-                                       fitWidth="90" fitHeight="90"
+                            <ImageView fx:id="imgAvatar" fitWidth="100" fitHeight="100"
                                        preserveRatio="false" smooth="true"
                                        visible="false" managed="false">
-                                <clip><Circle centerX="45" centerY="45" radius="45"/></clip>
+                                <clip><Circle centerX="50" centerY="50" radius="50"/></clip>
                             </ImageView>
-                            <StackPane fx:id="paneInitials" styleClass="avatar-circle">
-                                <Label fx:id="lblInitials" text="?" styleClass="avatar-initials"/>
+                            <StackPane fx:id="paneInitials"
+                                       style="-fx-background-color:#4f8ef7;-fx-background-radius:50;-fx-min-width:100;-fx-min-height:100;-fx-max-width:100;-fx-max-height:100;">
+                                <Label fx:id="lblInitials" text="?"
+                                       style="-fx-font-size:36px;-fx-font-weight:bold;-fx-text-fill:white;"/>
                             </StackPane>
                         </StackPane>
 
-                        <Label fx:id="lblGravatarStatus" text=""
-                               style="-fx-font-size:10px;-fx-text-fill:#94a3b8;"/>
+                        <Label fx:id="lblFullName" text="Username"
+                               style="-fx-font-size:18px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                        <Label fx:id="lblRoleBadge" text="ROLE"
+                               style="-fx-background-color:rgba(79,142,247,0.3);-fx-text-fill:#93c5fd;-fx-background-radius:20;-fx-padding:4 14;-fx-font-size:11px;-fx-font-weight:bold;-fx-border-color:rgba(79,142,247,0.5);-fx-border-radius:20;-fx-border-width:1;"/>
 
-                        <Label fx:id="lblFullName" text="Username" styleClass="profile-name"/>
-                        <Label fx:id="lblRoleBadge" text="ROLE" styleClass="profile-role-badge"/>
+                        <Region prefHeight="8"/>
 
-                        <Region prefHeight="6"/>
-
+                        <!-- Photo buttons -->
                         <Button fx:id="btnUploadPic" text="Upload Photo"
                                 onAction="#onUploadPicture" maxWidth="Infinity"
-                                style="-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
+                                style="-fx-background-color:rgba(79,142,247,0.2);-fx-text-fill:#93c5fd;-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(79,142,247,0.4);-fx-border-radius:8;-fx-border-width:1;"/>
                         <Button fx:id="btnRemovePic" text="Remove Photo"
                                 onAction="#onRemovePicture" maxWidth="Infinity"
-                                style="-fx-background-color:rgba(239,68,68,0.12);-fx-text-fill:#ef4444;-fx-font-size:11px;-fx-padding:6 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(239,68,68,0.3);-fx-border-radius:8;-fx-border-width:1;"/>
+                                style="-fx-background-color:rgba(239,68,68,0.1);-fx-text-fill:#fca5a5;-fx-font-size:11px;-fx-padding:6 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(239,68,68,0.3);-fx-border-radius:8;-fx-border-width:1;"/>
 
                         <Region prefHeight="4"/>
 
+                        <!-- Action buttons -->
                         <Button text="&#128274; Manage 2FA" onAction="#onManage2FA"
                                 maxWidth="Infinity"
-                                style="-fx-background-color:#7c3aed;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
-                        <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity"
-                                style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
+                                style="-fx-background-color:rgba(124,58,237,0.2);-fx-text-fill:#c4b5fd;-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(124,58,237,0.4);-fx-border-radius:8;-fx-border-width:1;"/>
+                        <Button text="Sign Out" onAction="#onLogout"
+                                maxWidth="Infinity"
+                                style="-fx-background-color:rgba(239,68,68,0.15);-fx-text-fill:#fca5a5;-fx-font-size:12px;-fx-font-weight:bold;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(239,68,68,0.3);-fx-border-radius:8;-fx-border-width:1;"/>
                     </VBox>
 
-                    <Separator orientation="VERTICAL" style="-fx-background-color:#e5e7eb;"/>
+                    <!-- Right: info section -->
+                    <VBox HBox.hgrow="ALWAYS" spacing="0">
 
-                    <!-- Right: info grid -->
-                    <GridPane hgap="0" vgap="0" HBox.hgrow="ALWAYS">
-                        <padding><Insets top="28" right="32" bottom="28" left="32"/></padding>
-                        <columnConstraints>
-                            <ColumnConstraints minWidth="140" prefWidth="160"/>
-                            <ColumnConstraints hgrow="ALWAYS"/>
-                        </columnConstraints>
+                        <!-- Stats row -->
+                        <HBox spacing="0" style="-fx-border-color:transparent transparent #f1f5f9 transparent;-fx-border-width:0 0 1 0;">
+                            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                                  style="-fx-padding:20 0;-fx-border-color:transparent #f1f5f9 transparent transparent;-fx-border-width:0 1 0 0;">
+                                <Label fx:id="lblXp" text="0"
+                                       style="-fx-font-size:26px;-fx-font-weight:bold;-fx-text-fill:#4f8ef7;"/>
+                                <Label text="XP Points"
+                                       style="-fx-font-size:11px;-fx-text-fill:#94a3b8;-fx-font-weight:bold;"/>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                                  style="-fx-padding:20 0;-fx-border-color:transparent #f1f5f9 transparent transparent;-fx-border-width:0 1 0 0;">
+                                <Label fx:id="lblStatus" text="Active"
+                                       style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#22c55e;"/>
+                                <Label text="Status"
+                                       style="-fx-font-size:11px;-fx-text-fill:#94a3b8;-fx-font-weight:bold;"/>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                                  style="-fx-padding:20 0;">
+                                <Label fx:id="lblVerified" text="Yes"
+                                       style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#f59e0b;"/>
+                                <Label text="Verified"
+                                       style="-fx-font-size:11px;-fx-text-fill:#94a3b8;-fx-font-weight:bold;"/>
+                            </VBox>
+                        </HBox>
 
-                        <Label text="EMAIL"        styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblEmail"    text="-" styleClass="profile-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <!-- Info grid -->
+                        <GridPane hgap="0" vgap="0">
+                            <padding><Insets top="20" right="28" bottom="20" left="28"/></padding>
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="130" prefWidth="150"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
 
-                        <Label text="STATUS"       styleClass="field-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblStatus"   text="-" styleClass="profile-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            <Label text="EMAIL"       style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;-fx-letter-spacing:0.8px;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblEmail"   text="-" style="-fx-font-size:14px;-fx-text-fill:#374151;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                        <Label text="VERIFIED"     styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblVerified" text="-" styleClass="profile-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            <Region prefHeight="14" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
 
-                        <Label fx:id="lblXpLabel" text="XP POINTS" styleClass="field-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblXp"      text="0" styleClass="profile-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            <Label text="MEMBER SINCE" style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;-fx-letter-spacing:0.8px;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblCreatedAt" text="-" style="-fx-font-size:14px;-fx-text-fill:#374151;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                        <Label text="MEMBER SINCE"  styleClass="field-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblCreatedAt" text="-" styleClass="profile-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                            <Region prefHeight="14" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
 
-                        <Label text="AVATAR"           styleClass="field-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                        <Label fx:id="lblGravatarInfo" text="Checking..." styleClass="profile-value" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-                    </GridPane>
+                            <Label text="PHOTO"       style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;-fx-letter-spacing:0.8px;" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                            <Label fx:id="lblGravatarInfo" text="-" style="-fx-font-size:14px;-fx-text-fill:#374151;" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        </GridPane>
+                    </VBox>
                 </HBox>
 
-                <!-- Tabs -->
+                <!-- ── TABS ── -->
                 <TabPane fx:id="profileTabs" tabClosingPolicy="UNAVAILABLE"
-                         style="-fx-background-color:white;-fx-tab-min-width:160px;-fx-tab-max-width:200px;">
-
-                    <!-- Settings tab -->
-                    <Tab text="Settings">
-                        <VBox styleClass="profile-card" spacing="0">
-                            <HBox styleClass="profile-card-header" alignment="CENTER_LEFT">
-                                <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
-                                <Label text="Change Password" styleClass="profile-section-title"/>
-                            </HBox>
-                            <Separator style="-fx-background-color:#e5e7eb;"/>
-                            <VBox spacing="16">
-                                <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
-                                <GridPane hgap="20" vgap="0">
-                                    <columnConstraints>
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="34"/>
-                                    </columnConstraints>
-                                    <VBox spacing="6" GridPane.columnIndex="0">
-                                        <Label text="CURRENT PASSWORD" styleClass="field-label"/>
-                                        <PasswordField fx:id="pfCurrent" promptText="Current password" styleClass="form-field"/>
-                                    </VBox>
-                                    <VBox spacing="6" GridPane.columnIndex="1">
-                                        <Label text="NEW PASSWORD" styleClass="field-label"/>
-                                        <PasswordField fx:id="pfNew" promptText="Min 8 chars" styleClass="form-field"/>
-                                    </VBox>
-                                    <VBox spacing="6" GridPane.columnIndex="2">
-                                        <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
-                                        <PasswordField fx:id="pfConfirm" promptText="Repeat new password" styleClass="form-field"/>
-                                    </VBox>
-                                </GridPane>
-                                <Label fx:id="lblPwdMsg" text="" wrapText="true"
-                                       styleClass="form-errors" maxWidth="Infinity"
-                                       visible="false" managed="false"/>
-                                <HBox alignment="CENTER_RIGHT">
-                                    <Button text="Update Password" onAction="#onChangePassword" styleClass="btn-save"/>
-                                </HBox>
-                            </VBox>
-                        </VBox>
-                    </Tab>
-
-                    <!-- Favorite Games tab (hidden for tutors at runtime) -->
+                         style="-fx-background-color:transparent;-fx-tab-min-width:140px;">
+                    <!-- Favorite Games tab -->
                     <Tab text="Favorite Games">
-                        <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+                        <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e7eb;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.05),8,0,0,2);">
                             <HBox alignment="CENTER_LEFT" spacing="12"
                                   style="-fx-background-color:linear-gradient(to right,#3b4fd8,#5b6ef5);-fx-background-radius:14 14 0 0;-fx-padding:16 24;">
                                 <Label text="Favorite Games"
-                                       style="-fx-text-fill:white;-fx-font-size:16px;-fx-font-weight:bold;"/>
+                                       style="-fx-text-fill:white;-fx-font-size:15px;-fx-font-weight:bold;"/>
                                 <Label fx:id="lblFavCount" text="0 games"
                                        style="-fx-background-color:rgba(255,255,255,0.2);-fx-text-fill:white;-fx-background-radius:20;-fx-padding:3 12;-fx-font-size:11px;-fx-font-weight:bold;"/>
                             </HBox>
-                            <VBox fx:id="lblFavEmpty" alignment="CENTER" spacing="12"
-                                  style="-fx-padding:60 0;" visible="true" managed="true">
+                            <VBox fx:id="lblFavEmpty" alignment="CENTER" spacing="10"
+                                  style="-fx-padding:50 0;" visible="true" managed="true">
                                 <Label text="No favorite games yet"
-                                       style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#a0aec0;"/>
+                                       style="-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#a0aec0;"/>
                                 <Label text="Add games to your favorites from the Games section"
-                                       style="-fx-font-size:13px;-fx-text-fill:#cbd5e0;"/>
+                                       style="-fx-font-size:12px;-fx-text-fill:#cbd5e0;"/>
                             </VBox>
                             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                                         style="-fx-background-color:transparent;-fx-background:transparent;">
