@@ -6,10 +6,15 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -48,6 +53,8 @@ public class QuizPlayController {
     @FXML private Button      btnNext;
     @FXML private Button      btnHint;
     @FXML private ComboBox<String> cmbLanguage;
+    @FXML private VBox        leftCol;
+    @FXML private Separator   colDivider;
 
     // ── Config ────────────────────────────────────────────────
     /** Seconds allowed per question. */
@@ -469,97 +476,271 @@ public class QuizPlayController {
         removeFocusListener();
         progressBar.setProgress(1.0);
 
-        // Hide question-phase UI
+        // ── Hide all question-phase UI ────────────────────────
         if (timerRow != null) { timerRow.setVisible(false); timerRow.setManaged(false); }
-        lblDifficulty.setVisible(false);
-        lblXp.setVisible(false);
-        lblFeedback.setVisible(false);
-        lblFeedback.setManaged(false);
-        hintBox.setVisible(false);
-        hintBox.setManaged(false);
-        btnHint.setVisible(false);
-        btnHint.setManaged(false);
+        lblDifficulty.setVisible(false);  lblDifficulty.setManaged(false);
+        lblXp.setVisible(false);          lblXp.setManaged(false);
+        lblFeedback.setVisible(false);    lblFeedback.setManaged(false);
+        hintBox.setVisible(false);        hintBox.setManaged(false);
+        btnHint.setVisible(false);        btnHint.setManaged(false);
+        lblQuestion.setVisible(false);    lblQuestion.setManaged(false);
         if (imgQuestion != null) { imgQuestion.setVisible(false); imgQuestion.setManaged(false); }
+        // Collapse left column so results use full width
+        if (leftCol != null)    { leftCol.setVisible(false);    leftCol.setManaged(false); }
+        if (colDivider != null) { colDivider.setVisible(false); colDivider.setManaged(false); }
 
-        // Score header in the question label
-        int total = questions.size();
-        String pct = total > 0 ? (score * 100 / total) + "%" : "—";
-        String emoji = score == total ? "\uD83C\uDF1F" : score >= total / 2 ? "\uD83D\uDCAA" : "\uD83D\uDCDA";
-        lblQuestion.setText(emoji + "  Quiz Complete!");
-        lblQuestion.getStyleClass().setAll("play-results-text");
+        // ── Derived stats ─────────────────────────────────────
+        int total     = questions.size();
+        int wrong     = (int) reviewResults.stream().filter(r -> !r.correct && !r.timedOut).count();
+        int timedOut  = (int) reviewResults.stream().filter(r -> r.timedOut).count();
+        int hintsUsed = (int) reviewResults.stream().filter(r -> r.hintUsed).count();
+        int pctInt    = total > 0 ? (score * 100 / total) : 0;
+        String pct    = pctInt + "%";
+
+        String grade, gradeColor, gradeBg;
+        String resultEmoji, resultTitle, resultSub;
+        if (pctInt == 100) {
+            grade = "S"; gradeColor = "#7c3aed"; gradeBg = "#f5f3ff";
+            resultEmoji = "\uD83C\uDF1F"; resultTitle = "Perfect Score!";
+            resultSub = "Flawless — you nailed every single question.";
+        } else if (pctInt >= 80) {
+            grade = "A"; gradeColor = "#047857"; gradeBg = "#f0fff4";
+            resultEmoji = "\uD83D\uDCAA"; resultTitle = "Excellent!";
+            resultSub = "Great work — you really know your stuff.";
+        } else if (pctInt >= 60) {
+            grade = "B"; gradeColor = "#b45309"; gradeBg = "#fffbeb";
+            resultEmoji = "\uD83D\uDC4D"; resultTitle = "Good Job!";
+            resultSub = "Solid effort — a little more practice and you'll ace it.";
+        } else if (pctInt >= 40) {
+            grade = "C"; gradeColor = "#c2410c"; gradeBg = "#fff7ed";
+            resultEmoji = "\uD83D\uDCDA"; resultTitle = "Keep Practicing";
+            resultSub = "You're getting there — review the missed questions below.";
+        } else {
+            grade = "D"; gradeColor = "#b91c1c"; gradeBg = "#fff5f5";
+            resultEmoji = "\uD83D\uDE13"; resultTitle = "Needs Work";
+            resultSub = "Don't give up — go through the answers and try again!";
+        }
+
         lblProgress.setText(score + " / " + total);
 
-        // Reuse timer bar as score bar
-        timerBar.setProgress(total > 0 ? (double) score / total : 0);
-        timerBar.getStyleClass().setAll("timer-bar",
-                score == total ? "timer-bar-ok" : score >= total / 2 ? "timer-bar-warn" : "timer-bar-danger");
-        lblTimer.setText(pct);
-        lblTimer.getStyleClass().setAll("timer-label");
-        if (timerRow != null) { timerRow.setVisible(true); timerRow.setManaged(true); }
-
-        // Build summary
+        // ── Build the full results panel inside choicesBox ────
         choicesBox.getChildren().clear();
 
-        Label statsLabel = new Label(
-                "Score: " + score + " / " + total + "   \u00B7   XP earned: " + totalXp + "   \u00B7   " + pct);
-        statsLabel.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;" +
-                " -fx-background-color:#eef0fd; -fx-background-radius:8; -fx-padding:10 16 10 16;");
-        statsLabel.setMaxWidth(Double.MAX_VALUE);
-        choicesBox.getChildren().add(statsLabel);
+        // ── Hero banner ───────────────────────────────────────
+        Label emojiLbl = new Label(resultEmoji);
+        emojiLbl.setStyle("-fx-font-size:42px;");
 
-        Label divider = new Label("Answer Review");
-        divider.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#4a5568; -fx-padding:12 0 4 0;");
-        choicesBox.getChildren().add(divider);
+        Label titleLbl = new Label(resultTitle);
+        titleLbl.setStyle("-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;");
 
+        Label subLbl = new Label(resultSub);
+        subLbl.setStyle("-fx-font-size:13px; -fx-text-fill:#718096;");
+        subLbl.setWrapText(true);
+
+        // Grade circle
+        Label gradeLbl = new Label(grade);
+        gradeLbl.setStyle(
+                "-fx-font-size:28px; -fx-font-weight:bold; -fx-text-fill:" + gradeColor + ";" +
+                "-fx-background-color:" + gradeBg + ";" +
+                "-fx-background-radius:50%; -fx-border-color:" + gradeColor + ";" +
+                "-fx-border-radius:50%; -fx-border-width:2.5;" +
+                "-fx-min-width:64px; -fx-min-height:64px; -fx-max-width:64px; -fx-max-height:64px;" +
+                "-fx-alignment:center;");
+
+        VBox heroText = new VBox(4, emojiLbl, titleLbl, subLbl);
+        heroText.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(heroText, Priority.ALWAYS);
+
+        HBox heroBanner = new HBox(20, heroText, gradeLbl);
+        heroBanner.setAlignment(Pos.CENTER_LEFT);
+        heroBanner.setStyle(
+                "-fx-background-color:white;" +
+                "-fx-background-radius:14px;" +
+                "-fx-border-color:#e8ecf8;" +
+                "-fx-border-radius:14px;" +
+                "-fx-border-width:1;" +
+                "-fx-padding:20 24 20 24;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);");
+        heroBanner.setMaxWidth(Double.MAX_VALUE);
+        choicesBox.getChildren().add(heroBanner);
+
+        // ── Score bar ─────────────────────────────────────────
+        double ratio = total > 0 ? (double) score / total : 0;
+        ProgressBar scoreBar = new ProgressBar(ratio);
+        scoreBar.setMaxWidth(Double.MAX_VALUE);
+        scoreBar.setPrefHeight(14);
+        String barStyle = pctInt >= 80 ? "timer-bar-ok" : pctInt >= 40 ? "timer-bar-warn" : "timer-bar-danger";
+        scoreBar.getStyleClass().setAll("timer-bar", barStyle, "results-score-bar");
+
+        Label barPctLbl = new Label(pct);
+        barPctLbl.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e; -fx-min-width:40px; -fx-alignment:center-right;");
+
+        HBox barRow = new HBox(10, scoreBar, barPctLbl);
+        barRow.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(scoreBar, Priority.ALWAYS);
+        choicesBox.getChildren().add(barRow);
+
+        // ── Stat pills row ────────────────────────────────────
+        HBox statsRow = new HBox(10,
+                buildStatPill("\u2705  Correct",   String.valueOf(score),   "#f0fff4", "#27ae60", "#9ae6b4"),
+                buildStatPill("\u274C  Wrong",      String.valueOf(wrong),   "#fff5f5", "#e53e3e", "#feb2b2"),
+                buildStatPill("\u23F0  Timed Out",  String.valueOf(timedOut),"#fff7ed", "#c2410c", "#fed7aa"),
+                buildStatPill("\u2B50  XP Earned",  String.valueOf(totalXp), "#fffbeb", "#b45309", "#fde68a"),
+                buildStatPill("\uD83D\uDCA1  Hints", String.valueOf(hintsUsed),"#f5f3ff","#7c3aed","#ddd6fe")
+        );
+        statsRow.setAlignment(Pos.CENTER_LEFT);
+        statsRow.setMaxWidth(Double.MAX_VALUE);
+        choicesBox.getChildren().add(statsRow);
+
+        // ── Section heading ───────────────────────────────────
+        Label reviewHeading = new Label("Answer Review");
+        reviewHeading.setStyle(
+                "-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;" +
+                "-fx-border-color:transparent transparent #e4e8f0 transparent;" +
+                "-fx-border-width:0 0 2 0; -fx-padding:4 0 8 0;");
+        reviewHeading.setMaxWidth(Double.MAX_VALUE);
+        choicesBox.getChildren().add(reviewHeading);
+
+        // ── Per-question review cards ─────────────────────────
         for (int i = 0; i < reviewResults.size(); i++) {
             choicesBox.getChildren().add(buildReviewCard(i + 1, reviewResults.get(i)));
         }
 
-        btnNext.setText("Close");
+        btnNext.setText("\u2714  Close");
         btnNext.setDisable(false);
         btnNext.setOnAction(e -> ((Stage) btnNext.getScene().getWindow()).close());
     }
 
-    private VBox buildReviewCard(int number, AnswerReview r) {
-        Label qNum = new Label("Q" + number);
-        qNum.setStyle("-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:white;" +
-                " -fx-background-color:" + (r.correct ? "#27ae60" : "#e53e3e") + ";" +
-                " -fx-background-radius:20; -fx-padding:2 8 2 8;");
+    /** Small coloured pill used in the stats row. */
+    private VBox buildStatPill(String label, String value, String bg, String fg, String border) {
+        Label valLbl = new Label(value);
+        valLbl.setStyle("-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill:" + fg + ";");
 
+        Label nameLbl = new Label(label);
+        nameLbl.setStyle("-fx-font-size:11px; -fx-text-fill:" + fg + "; -fx-opacity:0.8;");
+
+        VBox pill = new VBox(2, valLbl, nameLbl);
+        pill.setAlignment(Pos.CENTER);
+        pill.setStyle(
+                "-fx-background-color:" + bg + ";" +
+                "-fx-border-color:" + border + ";" +
+                "-fx-border-radius:10px; -fx-background-radius:10px;" +
+                "-fx-border-width:1.5; -fx-padding:12 18 12 18;");
+        HBox.setHgrow(pill, Priority.ALWAYS);
+        return pill;
+    }
+
+    private VBox buildReviewCard(int number, AnswerReview r) {
+        // ── Card accent colour ────────────────────────────────
+        String accentColor  = r.correct ? "#27ae60" : r.timedOut ? "#c2410c" : "#e53e3e";
+        String cardBg       = r.correct ? "#f0fff4" : r.timedOut ? "#fff7ed" : "#fff5f5";
+        String cardBorder   = r.correct ? "#9ae6b4" : r.timedOut ? "#fed7aa" : "#feb2b2";
+
+        // ── Question number badge ─────────────────────────────
+        Label qNum = new Label("Q" + number);
+        qNum.setStyle(
+                "-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:white;" +
+                "-fx-background-color:" + accentColor + ";" +
+                "-fx-background-radius:20; -fx-padding:3 9 3 9;");
+
+        // ── Status icon ───────────────────────────────────────
+        String statusIcon = r.correct ? "\u2705" : r.timedOut ? "\u23F0" : "\u274C";
+        Label statusLbl = new Label(statusIcon);
+        statusLbl.setStyle("-fx-font-size:14px;");
+
+        // ── Question text ─────────────────────────────────────
         Label qText = new Label(r.question.getText());
         qText.setWrapText(true);
         qText.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;");
         qText.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(qText, Priority.ALWAYS);
 
-        HBox header = new HBox(8, qNum, qText);
-        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        HBox header = new HBox(8, qNum, statusLbl, qText);
+        header.setAlignment(Pos.CENTER_LEFT);
 
-        String yourAnswerText = r.timedOut ? "\u23F0  No answer (timed out)"
-                : r.selected != null ? r.selected.getContent() : "\u2014";
-        Label yourAnswer = new Label((r.correct ? "\u2713" : "\u2717") + "  Your answer:  " + yourAnswerText);
-        yourAnswer.setWrapText(true);
-        yourAnswer.setStyle("-fx-font-size:12px; -fx-text-fill:" + (r.correct ? "#047857" : "#b91c1c") + ";");
-
-        VBox card = new VBox(8, header, yourAnswer);
-
-        if (!r.correct) {
-            String correctText = r.correctChoice != null ? r.correctChoice.getContent() : "\u2014";
-            Label correctAnswer = new Label("\u2713  Correct answer:  " + correctText);
-            correctAnswer.setWrapText(true);
-            correctAnswer.setStyle("-fx-font-size:12px; -fx-text-fill:#047857;");
-            card.getChildren().add(correctAnswer);
-        }
-
+        // ── Difficulty + XP meta row ──────────────────────────
         String diff = r.question.getDifficulty() != null
                 ? capitalize(r.question.getDifficulty().toLowerCase()) : "Easy";
-        Label meta = new Label(diff + "  \u00B7  " + r.question.getXpValue() + " XP"
-                + (r.hintUsed ? "  \u00B7  \uD83D\uDCA1 hint used" : ""));
-        meta.setStyle("-fx-font-size:11px; -fx-text-fill:#a0aec0;");
-        card.getChildren().add(meta);
+        String diffColor = switch (diff.toLowerCase()) {
+            case "hard"   -> "#e53e3e";
+            case "medium" -> "#d97706";
+            default       -> "#27ae60";
+        };
+        Label diffLbl = new Label(diff);
+        diffLbl.setStyle(
+                "-fx-font-size:10px; -fx-font-weight:bold; -fx-text-fill:" + diffColor + ";" +
+                "-fx-background-color:transparent; -fx-border-color:" + diffColor + ";" +
+                "-fx-border-radius:10; -fx-background-radius:10; -fx-border-width:1; -fx-padding:1 7 1 7;");
 
-        card.setStyle("-fx-background-color:" + (r.correct ? "#f0fff4" : "#fff5f5") + ";" +
-                " -fx-border-color:" + (r.correct ? "#9ae6b4" : "#feb2b2") + ";" +
-                " -fx-border-radius:10; -fx-background-radius:10; -fx-padding:14; -fx-border-width:1.5;");
+        Label xpLbl = new Label("\u2B50 " + r.question.getXpValue() + " XP");
+        xpLbl.setStyle("-fx-font-size:11px; -fx-text-fill:#b45309;");
+
+        Label hintTag = new Label("\uD83D\uDCA1 hint used");
+        hintTag.setStyle("-fx-font-size:11px; -fx-text-fill:#7c3aed;");
+        hintTag.setVisible(r.hintUsed);
+        hintTag.setManaged(r.hintUsed);
+
+        HBox metaRow = new HBox(8, diffLbl, xpLbl, hintTag);
+        metaRow.setAlignment(Pos.CENTER_LEFT);
+
+        // ── Separator ─────────────────────────────────────────
+        Separator sep = new Separator();
+        sep.setStyle("-fx-background-color:#e4e8f0;");
+
+        // ── All choices with visual state ─────────────────────
+        VBox choicesList = new VBox(6);
+        if (r.question.getChoices() != null) {
+            for (Choice c : r.question.getChoices()) {
+                boolean isCorrect   = c.isCorrect();
+                boolean wasSelected = r.selected != null && r.selected.getId() == c.getId();
+
+                String choiceBg, choiceBorder, choiceFg, choicePrefix;
+                if (isCorrect) {
+                    choiceBg = "#f0fff4"; choiceBorder = "#27ae60"; choiceFg = "#047857";
+                    choicePrefix = "\u2705  ";
+                } else if (wasSelected) {
+                    choiceBg = "#fff5f5"; choiceBorder = "#e53e3e"; choiceFg = "#b91c1c";
+                    choicePrefix = "\u274C  ";
+                } else {
+                    choiceBg = "#f8f9ff"; choiceBorder = "#e4e8f0"; choiceFg = "#718096";
+                    choicePrefix = "      ";
+                }
+
+                Label choiceLbl = new Label(choicePrefix + c.getContent());
+                choiceLbl.setWrapText(true);
+                choiceLbl.setMaxWidth(Double.MAX_VALUE);
+                choiceLbl.setStyle(
+                        "-fx-font-size:12px; -fx-text-fill:" + choiceFg + ";" +
+                        "-fx-background-color:" + choiceBg + ";" +
+                        "-fx-border-color:" + choiceBorder + ";" +
+                        "-fx-border-radius:7; -fx-background-radius:7;" +
+                        "-fx-border-width:1.5; -fx-padding:8 12 8 12;" +
+                        (isCorrect ? "-fx-font-weight:bold;" : "") +
+                        (wasSelected && !isCorrect ? "-fx-strikethrough:false;" : ""));
+                choicesList.getChildren().add(choiceLbl);
+            }
+        }
+
+        // ── Timed-out notice ──────────────────────────────────
+        if (r.timedOut) {
+            Label timeoutNote = new Label("\u23F0  Time ran out — no answer was submitted for this question.");
+            timeoutNote.setWrapText(true);
+            timeoutNote.setStyle(
+                    "-fx-font-size:12px; -fx-text-fill:#c2410c;" +
+                    "-fx-background-color:#fff7ed; -fx-border-color:#fed7aa;" +
+                    "-fx-border-radius:7; -fx-background-radius:7;" +
+                    "-fx-border-width:1; -fx-padding:8 12 8 12;");
+            choicesList.getChildren().add(timeoutNote);
+        }
+
+        // ── Assemble card ─────────────────────────────────────
+        VBox card = new VBox(10, header, metaRow, sep, choicesList);
+        card.setStyle(
+                "-fx-background-color:" + cardBg + ";" +
+                "-fx-border-color:" + cardBorder + ";" +
+                "-fx-border-radius:12; -fx-background-radius:12;" +
+                "-fx-padding:16; -fx-border-width:1.5;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.05),8,0,0,2);");
         card.setMaxWidth(Double.MAX_VALUE);
         return card;
     }

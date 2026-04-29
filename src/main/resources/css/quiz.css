@@ -719,6 +719,40 @@
     -fx-alignment: center;
 }
 
+/* ── RESULTS SCORE BAR ───────────────────────────────────── */
+.results-score-bar {
+    -fx-pref-height: 14px;
+    -fx-background-radius: 7px;
+}
+.results-score-bar .track {
+    -fx-background-radius: 7px;
+    -fx-background-insets: 0;
+}
+.results-score-bar .bar {
+    -fx-background-radius: 7px;
+    -fx-background-insets: 0;
+}
+
+/* ── PLAY SCREEN TWO-COLUMN LAYOUT ──────────────────────── */
+.play-left-col {
+    -fx-background-color: white;
+}
+
+.play-col-divider {
+    -fx-background-color: #e4e8f0;
+    -fx-pref-width: 1px;
+    -fx-min-width: 1px;
+    -fx-max-width: 1px;
+}
+
+.play-choices-heading {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #a0aec0;
+    -fx-text-transform: uppercase;
+    -fx-letter-spacing: 0.5px;
+}
+
 /* ── LANGUAGE SELECTOR (play screen) ────────────────────── */
 .lang-combo {
     -fx-background-color: rgba(255,255,255,0.15);

@@ -217,7 +217,9 @@ public class QuizPlayListController {
             stage.setTitle("Playing \u2014 " + quiz.getTitle());
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
-            stage.setResizable(false);
+            stage.setResizable(true);
+            stage.setMinWidth(800);
+            stage.setMinHeight(560);
             stage.show();
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Could not open quiz: " + e.getMessage(),

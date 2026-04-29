@@ -5,41 +5,42 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="620" prefWidth="640" styleClass="module-pane"
+<VBox prefHeight="680" prefWidth="1020" styleClass="module-pane"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="controllers.quiz.QuizPlayController">
 
-    <!-- HEADER -->
+    <!-- ══ HEADER ══════════════════════════════════════════════ -->
     <HBox alignment="CENTER_LEFT" spacing="12" styleClass="form-header">
-        <padding><Insets bottom="16" left="20" right="20" top="16"/></padding>
+        <padding><Insets bottom="14" left="20" right="20" top="14"/></padding>
         <Label fx:id="lblQuizTitle" styleClass="form-title" text="Quiz"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="cmbLanguage" styleClass="lang-combo" prefWidth="130"
+        <ComboBox fx:id="cmbLanguage" styleClass="lang-combo" prefWidth="140"
                   onAction="#handleLanguageChange"/>
         <Label fx:id="lblProgress" styleClass="play-progress" text="1 / 5"/>
     </HBox>
 
-    <!-- QUESTION PROGRESS BAR -->
+    <!-- ══ QUESTION PROGRESS BAR ═══════════════════════════════ -->
     <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="6"
                  styleClass="play-progress-bar" progress="0.0"/>
 
-    <!-- TIMER ROW -->
+    <!-- ══ TIMER ROW ════════════════════════════════════════════ -->
     <HBox fx:id="timerRow" alignment="CENTER_LEFT" spacing="10" styleClass="timer-row">
         <padding><Insets bottom="8" left="20" right="20" top="8"/></padding>
         <Label text="⏱" style="-fx-font-size:14px;"/>
-        <ProgressBar fx:id="timerBar" prefHeight="10" prefWidth="480"
+        <ProgressBar fx:id="timerBar" prefHeight="10"
                      styleClass="timer-bar" progress="1.0" HBox.hgrow="ALWAYS"/>
         <Label fx:id="lblTimer" styleClass="timer-label" text="30"/>
     </HBox>
 
-    <!-- QUESTION AREA -->
-    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                style="-fx-background-color:transparent;-fx-background:transparent;"
-                VBox.vgrow="ALWAYS">
-        <VBox spacing="20">
-            <padding><Insets bottom="24" left="32" right="32" top="20"/></padding>
+    <!-- ══ TWO-COLUMN BODY ══════════════════════════════════════ -->
+    <HBox VBox.vgrow="ALWAYS" spacing="0">
+
+        <!-- ── LEFT COLUMN: question text + image + badges ─── -->
+        <VBox fx:id="leftCol" styleClass="play-left-col" spacing="20" minWidth="440" maxWidth="440"
+              VBox.vgrow="ALWAYS">
+            <padding><Insets bottom="28" left="32" right="24" top="24"/></padding>
 
             <!-- XP + Difficulty badges -->
             <HBox spacing="8" alignment="CENTER_LEFT">
@@ -53,9 +54,12 @@
                    text="Question text goes here"/>
 
             <!-- Question image (hidden when no image) -->
-            <ImageView fx:id="imgQuestion" fitWidth="560" fitHeight="260"
+            <ImageView fx:id="imgQuestion" fitWidth="380" fitHeight="260"
                        preserveRatio="true" managed="false" visible="false"
                        styleClass="play-question-image"/>
+
+            <!-- Spacer pushes hint box to bottom of left col -->
+            <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Hint box (hidden until requested) -->
             <VBox fx:id="hintBox" spacing="6" managed="false" visible="false"
@@ -65,22 +69,40 @@
                        wrapText="true" maxWidth="Infinity" text=""/>
             </VBox>
 
-            <!-- Choices -->
-            <VBox fx:id="choicesBox" spacing="10"/>
-
-            <!-- Feedback -->
-            <Label fx:id="lblFeedback" styleClass="play-feedback"
-                   managed="false" visible="false" wrapText="true"/>
-
         </VBox>
-    </ScrollPane>
 
-    <!-- FOOTER -->
+        <!-- Vertical divider -->
+        <Separator fx:id="colDivider" orientation="VERTICAL" styleClass="play-col-divider"/>
+
+        <!-- ── RIGHT COLUMN: choices + feedback ─────────────── -->
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                    style="-fx-background-color:transparent;-fx-background:transparent;"
+                    VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+            <VBox spacing="14">
+                <padding><Insets bottom="28" left="24" right="32" top="24"/></padding>
+
+                <Label text="Choose your answer" styleClass="play-choices-heading"/>
+
+                <!-- Choices -->
+                <VBox fx:id="choicesBox" spacing="10"/>
+
+                <!-- Feedback -->
+                <Label fx:id="lblFeedback" styleClass="play-feedback"
+                       managed="false" visible="false" wrapText="true"
+                       maxWidth="Infinity"/>
+
+            </VBox>
+        </ScrollPane>
+
+    </HBox>
+
+    <!-- ══ FOOTER ═══════════════════════════════════════════════ -->
     <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="form-footer">
-        <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
+        <padding><Insets bottom="14" left="24" right="24" top="12"/></padding>
         <Button onAction="#handleQuit" styleClass="btn-ghost" text="✕  Quit"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="btnHint" onAction="#handleHint" styleClass="btn-hint" text="💡  Hint  (−½ XP)"/>
+        <Button fx:id="btnHint" onAction="#handleHint" styleClass="btn-hint"
+                text="💡  Hint  (−½ XP)"/>
         <Button fx:id="btnNext" onAction="#handleNext" styleClass="btn-primary"
                 text="Next  →" disable="true"/>
     </HBox>
