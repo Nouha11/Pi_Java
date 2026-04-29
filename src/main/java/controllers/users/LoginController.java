@@ -206,6 +206,9 @@ public class LoginController implements Initializable {
             u.setBanned(rs.getBoolean("is_banned"));
             u.setBanReason(rs.getString("ban_reason"));
             u.setXp(rs.getInt("xp"));
+            try { u.setProfilePicture(rs.getString("profile_picture")); } catch (Exception ignored) {}
+            try { u.setTotpEnabled(rs.getBoolean("totp_enabled")); }     catch (Exception ignored) {}
+            try { u.setTotpSecret(rs.getString("totp_secret")); }        catch (Exception ignored) {}
             return u;
         }
     }
