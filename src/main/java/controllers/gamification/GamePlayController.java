@@ -360,15 +360,15 @@ public class GamePlayController {
                 svc.awardMiniGameEnergy(userId, ep);
             } else {
                 svc.awardGameRewards(userId, game.getRewardXP(), game.getRewardTokens());
-                // Check for newly earned linked rewards and send notification
-                sendAchievementNotification(userId);
+                // Award linked rewards to the user
+                awardLinkedRewards(userId);
             }
         } catch (Exception e) {
             System.err.println("Could not grant rewards: " + e.getMessage());
         }
     }
 
-    private void sendAchievementNotification(int userId) {
+    private void awardLinkedRewards(int userId) {
         try {
             java.util.List<models.gamification.Reward> linkedRewards =
                 new services.gamification.GameService().getRewardsForGame(game.getId());
@@ -376,22 +376,12 @@ public class GamePlayController {
             if (linkedRewards.isEmpty()) return;
 
             services.gamification.EarnedRewardService earnedSvc = new services.gamification.EarnedRewardService();
-            java.util.List<models.gamification.Reward> newlyEarned = new java.util.ArrayList<>();
-
             for (models.gamification.Reward r : linkedRewards) {
                 boolean alreadyEarned = earnedSvc.hasEarned(userId, r.getId());
                 System.out.println("[Achievement] Reward " + r.getId() + " (" + r.getName() + ") alreadyEarned=" + alreadyEarned);
                 if (!alreadyEarned) {
                     earnedSvc.awardReward(userId, r.getId());
-                    newlyEarned.add(r);
                 }
-            }
-
-            if (!newlyEarned.isEmpty()) {
-                String username = UserSession.getInstance().getUsername();
-                new services.gamification.AchievementNotificationService()
-                    .notifyAchievements(username, game.getName(), newlyEarned,
-                                        game.getRewardXP(), game.getRewardTokens());
             }
         } catch (Exception e) {
             System.err.println("[Achievement] Error: " + e.getMessage());
@@ -691,6 +681,17 @@ public class GamePlayController {
     }
 
     // ── TRIVIA ────────────────────────────────────────────────────────────────
+    /** Clean AI-generated text: remove stray backslashes, normalize quotes. */
+    private String cleanText(String s) {
+        if (s == null) return null;
+        return s.replace("\\\"", "\"")   // escaped quotes → real quotes
+                .replace("\\'", "'")      // escaped apostrophes
+                .replace("\\n", " ")      // newlines → space
+                .replace("\\t", " ")      // tabs → space
+                .replaceAll("\\\\(?![ntr\"\\\\])", "") // remove stray backslashes
+                .trim();
+    }
+
     private void buildTrivia() {
         // Try to load custom questions from game_content
         List<String[]> customQuestions = null;
@@ -720,7 +721,7 @@ public class GamePlayController {
             int objEnd = arr.indexOf("}", objStart);
             if (objEnd == -1) break;
             String obj = arr.substring(objStart, objEnd + 1);
-            String q = GameContentService.extractString(obj, "question");
+            String q = cleanText(GameContentService.extractString(obj, "question"));
             String choicesArr = GameContentService.extractArray(obj, "choices");
             String correctStr = null;
             int ci = obj.indexOf("\"correct\":");
@@ -731,9 +732,14 @@ public class GamePlayController {
                 correctStr = obj.substring(numStart, numEnd);
             }
             if (q != null && choicesArr != null && correctStr != null) {
-                String[] choices = GameContentService.parseStringArray(choicesArr);
-                if (choices.length >= 4) {
-                    result.add(new String[]{q, choices[0], choices[1], choices[2], choices[3], correctStr});
+                String[] rawChoices = GameContentService.parseStringArray(choicesArr);
+                if (rawChoices.length >= 4) {
+                    result.add(new String[]{
+                        q,
+                        cleanText(rawChoices[0]), cleanText(rawChoices[1]),
+                        cleanText(rawChoices[2]), cleanText(rawChoices[3]),
+                        correctStr
+                    });
                 }
             }
             pos = objEnd + 1;

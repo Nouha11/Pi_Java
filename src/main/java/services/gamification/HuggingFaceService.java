@@ -307,11 +307,24 @@ public class HuggingFaceService {
             if (c == '\\' && idx + 1 < responseBody.length()) {
                 char next = responseBody.charAt(idx + 1);
                 switch (next) {
-                    case 'n' -> { sb.append('\n'); idx += 2; }
-                    case 't' -> { sb.append('\t'); idx += 2; }
-                    case '"' -> { sb.append('"');  idx += 2; }
+                    case 'n'  -> { sb.append('\n'); idx += 2; }
+                    case 't'  -> { sb.append('\t'); idx += 2; }
+                    case '"'  -> { sb.append('"');  idx += 2; }
                     case '\\' -> { sb.append('\\'); idx += 2; }
-                    default  -> { sb.append(c); idx++; }
+                    case 'r'  -> { sb.append('\r'); idx += 2; }
+                    case 'u'  -> {
+                        // Unicode escape sequence (4 hex digits)
+                        if (idx + 5 < responseBody.length()) {
+                            try {
+                                int cp = Integer.parseInt(responseBody.substring(idx + 2, idx + 6), 16);
+                                sb.appendCodePoint(cp); idx += 6;
+                            } catch (NumberFormatException e) { idx++; }
+                        } else { idx++; }
+                    }
+                    default -> {
+                        // Stray backslash (e.g. \to, \star) — skip the backslash, keep the char
+                        idx++;
+                    }
                 }
             } else if (c == '"') {
                 break;
@@ -319,7 +332,11 @@ public class HuggingFaceService {
                 sb.append(c); idx++;
             }
         }
-        return sb.toString();
+        // Post-process: clean up any remaining escape artifacts
+        return sb.toString()
+                 .replace("\\\"", "\"")   // leftover escaped quotes
+                 .replace("\\'", "'")      // escaped apostrophes
+                 .trim();
     }
 
     // ── Parser (mirrors PHP parseGeneratedQuestions) ──────────────────────────

@@ -338,11 +338,17 @@ public class GameFormController {
                 List<HuggingFaceService.TriviaQuestion> questions =
                     hfService.generateTriviaQuestions(topic, count, difficulty);
 
-                // Build raw text for storage
+                // Build raw text for storage — clean AI artifacts first
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < questions.size(); i++) {
                     if (i > 0) sb.append("\n---\n");
-                    sb.append(questions.get(i).toFormFormat());
+                    HuggingFaceService.TriviaQuestion q = questions.get(i);
+                    // Clean each field before storing
+                    sb.append(new HuggingFaceService.TriviaQuestion(
+                        cleanAiText(q.question),
+                        q.choices.stream().map(this::cleanAiText).collect(java.util.stream.Collectors.toList()),
+                        q.correct
+                    ).toFormFormat());
                 }
                 String raw = sb.toString();
 
@@ -528,6 +534,15 @@ public class GameFormController {
             if (triviaQuestionsArea != null) triviaQuestionsArea.setText(newRaw);
             renderQuestionCards(parseRawToQuestions(newRaw), null);
         });
+    }
+
+    private String cleanAiText(String s) {
+        if (s == null) return "";
+        return s.replace("\\\"", "\"")
+                .replace("\\'", "'")
+                .replace("\\n", " ")
+                .replaceAll("\\\\(?![ntr\"\\\\])", "")
+                .trim();
     }
 
     @FXML
