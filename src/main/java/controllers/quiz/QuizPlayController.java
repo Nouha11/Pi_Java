@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -16,11 +17,16 @@ import models.quiz.Choice;
 import models.quiz.Question;
 import models.quiz.Quiz;
 import services.quiz.ChoiceService;
+import services.quiz.HuggingFaceService;
 import services.quiz.QuestionService;
+import services.quiz.TranslationService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class QuizPlayController {
 
@@ -28,7 +34,7 @@ public class QuizPlayController {
     @FXML private Label       lblQuizTitle;
     @FXML private Label       lblProgress;
     @FXML private ProgressBar progressBar;
-    @FXML private HBox timerRow;
+    @FXML private HBox        timerRow;
     @FXML private ProgressBar timerBar;
     @FXML private Label       lblTimer;
     @FXML private Label       lblDifficulty;
@@ -36,8 +42,12 @@ public class QuizPlayController {
     @FXML private Label       lblQuestion;
     @FXML private ImageView   imgQuestion;
     @FXML private VBox        choicesBox;
+    @FXML private VBox        hintBox;
+    @FXML private Label       lblHint;
     @FXML private Label       lblFeedback;
     @FXML private Button      btnNext;
+    @FXML private Button      btnHint;
+    @FXML private ComboBox<String> cmbLanguage;
 
     // ── Config ────────────────────────────────────────────────
     /** Seconds allowed per question. */
@@ -45,8 +55,10 @@ public class QuizPlayController {
     private static final String IMAGES_DIR           = "src/main/resources/images/quiz/";
 
     // ── Services ──────────────────────────────────────────────
-    private final QuestionService questionService = new QuestionService();
-    private final ChoiceService   choiceService   = new ChoiceService();
+    private final QuestionService    questionService    = new QuestionService();
+    private final ChoiceService      choiceService      = new ChoiceService();
+    private final HuggingFaceService hfService          = new HuggingFaceService();
+    private final TranslationService translationService = new TranslationService();
 
     // ── State ─────────────────────────────────────────────────
     private List<Question> questions;
@@ -54,8 +66,16 @@ public class QuizPlayController {
     private int  currentIndex = 0;
     private int  score        = 0;
     private int  totalXp      = 0;
-    private int  timeLeft;          // seconds remaining for current question
-    private boolean answered;       // true once the user picks or time runs out
+    private int  timeLeft;
+    private boolean answered;
+    private boolean hintUsed;
+
+    /** Cache: questionId → Map<langCode, translatedText> to avoid re-calling the API */
+    private final Map<Integer, Map<String, String>> translationCache = new HashMap<>();
+    /** Cache: questionId → Map<langCode, List<translatedChoiceText>> */
+    private final Map<Integer, Map<String, List<String>>> choiceTranslationCache = new HashMap<>();
+
+    private String selectedLangCode = "en"; // default English = no translation
 
     private ToggleGroup toggleGroup;
     private Timeline    countdownTimer;
@@ -68,9 +88,17 @@ public class QuizPlayController {
         lblQuizTitle.setText(quiz.getTitle());
         questions = questionService.getQuestionsByQuizId(quiz.getId());
         reviewResults.clear();
+        translationCache.clear();
+        choiceTranslationCache.clear();
         currentIndex = 0;
         score = 0;
         totalXp = 0;
+
+        // Populate language selector
+        cmbLanguage.setItems(FXCollections.observableArrayList(
+                TranslationService.LANGUAGES.keySet()));
+        cmbLanguage.setValue("English");
+        selectedLangCode = "en";
 
         if (questions.isEmpty()) {
             lblQuestion.setText("This quiz has no questions yet.");
@@ -104,10 +132,93 @@ public class QuizPlayController {
         showQuestion(0);
     }
 
+    // ── Language / Translation ────────────────────────────────
+
+    @FXML
+    private void handleLanguageChange() {
+        String selected = cmbLanguage.getValue();
+        if (selected == null) return;
+        selectedLangCode = TranslationService.LANGUAGES.getOrDefault(selected, "en");
+
+        // Re-render the current question in the new language (background thread)
+        if (questions != null && !questions.isEmpty() && !answered) {
+            applyTranslationToCurrentQuestion();
+        }
+    }
+
+    /**
+     * Translates the current question + choices and updates the UI.
+     * Uses cache so the same question is never translated twice for the same language.
+     */
+    private void applyTranslationToCurrentQuestion() {
+        if ("en".equals(selectedLangCode)) {
+            // English = show originals immediately
+            Question q = questions.get(currentIndex);
+            lblQuestion.setText(q.getText());
+            updateChoiceLabels(q.getChoices().stream()
+                    .map(Choice::getContent).collect(Collectors.toList()));
+            return;
+        }
+
+        Question q = questions.get(currentIndex);
+        int qId = q.getId();
+
+        // Check question text cache
+        String cachedQ = translationCache
+                .getOrDefault(qId, Map.of()).get(selectedLangCode);
+        List<String> cachedChoices = choiceTranslationCache
+                .getOrDefault(qId, Map.of()).get(selectedLangCode);
+
+        if (cachedQ != null && cachedChoices != null) {
+            lblQuestion.setText(cachedQ);
+            updateChoiceLabels(cachedChoices);
+            return;
+        }
+
+        // Translate on background thread
+        String langCode = selectedLangCode;
+        Thread t = new Thread(() -> {
+            String translatedQ = translationService.translate(q.getText(), langCode);
+
+            List<String> translatedChoices = q.getChoices().stream()
+                    .map(c -> translationService.translate(c.getContent(), langCode))
+                    .collect(Collectors.toList());
+
+            // Store in cache
+            translationCache.computeIfAbsent(qId, k -> new HashMap<>())
+                    .put(langCode, translatedQ);
+            choiceTranslationCache.computeIfAbsent(qId, k -> new HashMap<>())
+                    .put(langCode, translatedChoices);
+
+            Platform.runLater(() -> {
+                // Only apply if the user hasn't moved to the next question
+                if (currentIndex < questions.size()
+                        && questions.get(currentIndex).getId() == qId
+                        && langCode.equals(selectedLangCode)) {
+                    lblQuestion.setText(translatedQ);
+                    updateChoiceLabels(translatedChoices);
+                }
+            });
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Updates the text of existing RadioButton choices without rebuilding them. */
+    private void updateChoiceLabels(List<String> texts) {
+        var children = choicesBox.getChildren();
+        for (int i = 0; i < children.size() && i < texts.size(); i++) {
+            if (children.get(i) instanceof RadioButton rb) {
+                rb.setText(texts.get(i));
+            }
+        }
+    }
+
     // ── Question display ──────────────────────────────────────
 
     private void showQuestion(int index) {
-        answered = false;
+        answered  = false;
+        hintUsed  = false;
         Question q = questions.get(index);
 
         List<Choice> choices = choiceService.getChoicesByQuestionId(q.getId());
@@ -130,12 +241,18 @@ public class QuizPlayController {
         lblQuestion.getStyleClass().setAll("play-question-text");
         loadQuestionImage(q.getImageName());
 
+        // Reset hint box
+        hintBox.setVisible(false);
+        hintBox.setManaged(false);
+        lblHint.setText("");
+        btnHint.setDisable(false);
+        btnHint.setText("\uD83D\uDCA1  Hint  (\u2212\u00BD XP)");
+
         // Reset feedback + next button
         lblFeedback.setVisible(false);
         lblFeedback.setManaged(false);
         btnNext.setDisable(true);
         btnNext.setText(index == questions.size() - 1 ? "Finish" : "Next  \u2192");
-        // Reset next button action to default handler
         btnNext.setOnAction(e -> handleNext());
         if (timerRow != null) {
             timerRow.setVisible(true);
@@ -158,6 +275,9 @@ public class QuizPlayController {
 
         // Start the per-question countdown
         startTimer();
+
+        // Apply translation if a non-English language is selected
+        applyTranslationToCurrentQuestion();
     }
 
     // ── Timer ─────────────────────────────────────────────────
@@ -242,6 +362,48 @@ public class QuizPlayController {
         }
     }
 
+    // ── Hint ──────────────────────────────────────────────────
+
+    @FXML
+    private void handleHint() {
+        if (hintUsed || answered) return;
+        hintUsed = true;
+        btnHint.setDisable(true);
+        btnHint.setText("\uD83D\uDCA1  Loading…");
+
+        // Pause the timer while fetching
+        if (countdownTimer != null) countdownTimer.pause();
+
+        Question current = questions.get(currentIndex);
+
+        // Build choices string for context
+        String choicesText = current.getChoices() == null ? "" :
+                current.getChoices().stream()
+                        .map(Choice::getContent)
+                        .collect(Collectors.joining(", "));
+
+        // Halve the XP for this question immediately
+        int originalXp = current.getXpValue();
+        int halvedXp   = Math.max(1, originalXp / 2);
+        current.setXpValue(halvedXp);
+        lblXp.setText("\u2B50 " + halvedXp + " XP  (\u2212\u00BD hint penalty)");
+
+        // Call HuggingFace on a background thread
+        Thread hintThread = new Thread(() -> {
+            String hint = hfService.generateHint(current.getText(), choicesText);
+            Platform.runLater(() -> {
+                lblHint.setText(hint);
+                hintBox.setVisible(true);
+                hintBox.setManaged(true);
+                btnHint.setText("\uD83D\uDCA1  Hint used");
+                // Resume timer
+                if (countdownTimer != null) countdownTimer.play();
+            });
+        });
+        hintThread.setDaemon(true);
+        hintThread.start();
+    }
+
     // ── Answer handling ───────────────────────────────────────
 
     private void onChoiceSelected() {
@@ -306,37 +468,100 @@ public class QuizPlayController {
         stopTimer();
         removeFocusListener();
         progressBar.setProgress(1.0);
-        timerBar.setProgress(0);
-        lblTimer.setText("0");
 
-        choicesBox.getChildren().clear();
-        lblFeedback.setVisible(false);
-        lblFeedback.setManaged(false);
+        // Hide question-phase UI
+        if (timerRow != null) { timerRow.setVisible(false); timerRow.setManaged(false); }
         lblDifficulty.setVisible(false);
         lblXp.setVisible(false);
-        if (imgQuestion != null) {
-            imgQuestion.setVisible(false);
-            imgQuestion.setManaged(false);
-        }
+        lblFeedback.setVisible(false);
+        lblFeedback.setManaged(false);
+        hintBox.setVisible(false);
+        hintBox.setManaged(false);
+        btnHint.setVisible(false);
+        btnHint.setManaged(false);
+        if (imgQuestion != null) { imgQuestion.setVisible(false); imgQuestion.setManaged(false); }
 
-        lblQuestion.setText(
-                "\uD83C\uDF89  Quiz Complete!\n\n" +
-                "Score: " + score + " / " + questions.size() + "\n" +
-                "Total XP earned: " + totalXp
-        );
+        // Score header in the question label
+        int total = questions.size();
+        String pct = total > 0 ? (score * 100 / total) + "%" : "—";
+        String emoji = score == total ? "\uD83C\uDF1F" : score >= total / 2 ? "\uD83D\uDCAA" : "\uD83D\uDCDA";
+        lblQuestion.setText(emoji + "  Quiz Complete!");
         lblQuestion.getStyleClass().setAll("play-results-text");
-        lblProgress.setText(score + " / " + questions.size());
+        lblProgress.setText(score + " / " + total);
 
-        if (timerRow != null) {
-            timerRow.setVisible(false);
-            timerRow.setManaged(false);
+        // Reuse timer bar as score bar
+        timerBar.setProgress(total > 0 ? (double) score / total : 0);
+        timerBar.getStyleClass().setAll("timer-bar",
+                score == total ? "timer-bar-ok" : score >= total / 2 ? "timer-bar-warn" : "timer-bar-danger");
+        lblTimer.setText(pct);
+        lblTimer.getStyleClass().setAll("timer-label");
+        if (timerRow != null) { timerRow.setVisible(true); timerRow.setManaged(true); }
+
+        // Build summary
+        choicesBox.getChildren().clear();
+
+        Label statsLabel = new Label(
+                "Score: " + score + " / " + total + "   \u00B7   XP earned: " + totalXp + "   \u00B7   " + pct);
+        statsLabel.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;" +
+                " -fx-background-color:#eef0fd; -fx-background-radius:8; -fx-padding:10 16 10 16;");
+        statsLabel.setMaxWidth(Double.MAX_VALUE);
+        choicesBox.getChildren().add(statsLabel);
+
+        Label divider = new Label("Answer Review");
+        divider.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#4a5568; -fx-padding:12 0 4 0;");
+        choicesBox.getChildren().add(divider);
+
+        for (int i = 0; i < reviewResults.size(); i++) {
+            choicesBox.getChildren().add(buildReviewCard(i + 1, reviewResults.get(i)));
         }
-
-        renderReviewSummary();
 
         btnNext.setText("Close");
         btnNext.setDisable(false);
         btnNext.setOnAction(e -> ((Stage) btnNext.getScene().getWindow()).close());
+    }
+
+    private VBox buildReviewCard(int number, AnswerReview r) {
+        Label qNum = new Label("Q" + number);
+        qNum.setStyle("-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:white;" +
+                " -fx-background-color:" + (r.correct ? "#27ae60" : "#e53e3e") + ";" +
+                " -fx-background-radius:20; -fx-padding:2 8 2 8;");
+
+        Label qText = new Label(r.question.getText());
+        qText.setWrapText(true);
+        qText.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;");
+        qText.setMaxWidth(Double.MAX_VALUE);
+
+        HBox header = new HBox(8, qNum, qText);
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        String yourAnswerText = r.timedOut ? "\u23F0  No answer (timed out)"
+                : r.selected != null ? r.selected.getContent() : "\u2014";
+        Label yourAnswer = new Label((r.correct ? "\u2713" : "\u2717") + "  Your answer:  " + yourAnswerText);
+        yourAnswer.setWrapText(true);
+        yourAnswer.setStyle("-fx-font-size:12px; -fx-text-fill:" + (r.correct ? "#047857" : "#b91c1c") + ";");
+
+        VBox card = new VBox(8, header, yourAnswer);
+
+        if (!r.correct) {
+            String correctText = r.correctChoice != null ? r.correctChoice.getContent() : "\u2014";
+            Label correctAnswer = new Label("\u2713  Correct answer:  " + correctText);
+            correctAnswer.setWrapText(true);
+            correctAnswer.setStyle("-fx-font-size:12px; -fx-text-fill:#047857;");
+            card.getChildren().add(correctAnswer);
+        }
+
+        String diff = r.question.getDifficulty() != null
+                ? capitalize(r.question.getDifficulty().toLowerCase()) : "Easy";
+        Label meta = new Label(diff + "  \u00B7  " + r.question.getXpValue() + " XP"
+                + (r.hintUsed ? "  \u00B7  \uD83D\uDCA1 hint used" : ""));
+        meta.setStyle("-fx-font-size:11px; -fx-text-fill:#a0aec0;");
+        card.getChildren().add(meta);
+
+        card.setStyle("-fx-background-color:" + (r.correct ? "#f0fff4" : "#fff5f5") + ";" +
+                " -fx-border-color:" + (r.correct ? "#9ae6b4" : "#feb2b2") + ";" +
+                " -fx-border-radius:10; -fx-background-radius:10; -fx-padding:14; -fx-border-width:1.5;");
+        card.setMaxWidth(Double.MAX_VALUE);
+        return card;
     }
 
     @FXML
@@ -394,45 +619,12 @@ public class QuizPlayController {
     }
 
     private void addReview(Question question, Choice selected, Choice correct, boolean timedOut) {
-        reviewResults.add(new AnswerReview(question, selected, correct, selected != null && selected.isCorrect(), timedOut));
+        reviewResults.add(new AnswerReview(question, selected, correct,
+                selected != null && selected.isCorrect(), timedOut, hintUsed));
     }
 
     private void renderReviewSummary() {
-        choicesBox.getChildren().clear();
-        if (reviewResults.isEmpty()) {
-            Label emptyLabel = new Label("No answers were recorded for this quiz.");
-            emptyLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #475569;");
-            choicesBox.getChildren().add(emptyLabel);
-            return;
-        }
-
-        for (int i = 0; i < reviewResults.size(); i++) {
-            AnswerReview review = reviewResults.get(i);
-            Label questionLabel = new Label((i + 1) + ". " + review.question.getText());
-            questionLabel.setWrapText(true);
-            questionLabel.getStyleClass().add("play-question-text");
-
-            Label statusLabel = new Label(review.correct ? "Result: Correct ✓" : "Result: Incorrect ✕");
-            statusLabel.setStyle(review.correct
-                    ? "-fx-text-fill: #047857; -fx-font-weight: bold;"
-                    : "-fx-text-fill: #b91c1c; -fx-font-weight: bold;");
-
-            String selectedText = review.timedOut ? "No answer selected" :
-                    review.selected != null ? review.selected.getContent() : "No answer selected";
-            Label selectedLabel = new Label("Your answer: " + selectedText);
-            selectedLabel.setWrapText(true);
-
-            String correctText = review.correctChoice != null ? review.correctChoice.getContent() : "—";
-            Label correctLabel = new Label("Correct answer: " + correctText);
-            correctLabel.setWrapText(true);
-
-            VBox reviewCard = new VBox(6, questionLabel, statusLabel, selectedLabel, correctLabel);
-            reviewCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-radius: 10; " +
-                    "-fx-background-radius: 10; -fx-padding: 14; -fx-effect: dropshadow(gaussian, rgba(148,163,184,0.2), 8, 0, 0, 1);");
-            reviewCard.setMaxWidth(Double.MAX_VALUE);
-
-            choicesBox.getChildren().add(reviewCard);
-        }
+        // kept for compatibility — actual rendering now in showResults/buildReviewCard
     }
 
     private static class AnswerReview {
@@ -441,13 +633,16 @@ public class QuizPlayController {
         private final Choice correctChoice;
         private final boolean correct;
         private final boolean timedOut;
+        private final boolean hintUsed;
 
-        private AnswerReview(Question question, Choice selected, Choice correctChoice, boolean correct, boolean timedOut) {
-            this.question = question;
-            this.selected = selected;
+        private AnswerReview(Question question, Choice selected, Choice correctChoice,
+                             boolean correct, boolean timedOut, boolean hintUsed) {
+            this.question     = question;
+            this.selected     = selected;
             this.correctChoice = correctChoice;
-            this.correct = correct;
-            this.timedOut = timedOut;
+            this.correct      = correct;
+            this.timedOut     = timedOut;
+            this.hintUsed     = hintUsed;
         }
     }
 

@@ -49,10 +49,16 @@
         </VBox>
     </ScrollPane>
 
-    <!-- STATUS BAR -->
-    <HBox styleClass="status-bar">
+    <!-- STATUS BAR + PAGINATION -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="status-bar">
         <padding><Insets bottom="8" left="20" right="20" top="8"/></padding>
         <Label fx:id="lblStatus" styleClass="status-label" text=""/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnPrev" onAction="#handlePrev" styleClass="btn-page"
+                text="‹  Prev" disable="true"/>
+        <Label fx:id="lblPage" styleClass="page-label" text="Page 1 / 1"/>
+        <Button fx:id="btnNext" onAction="#handleNext" styleClass="btn-page"
+                text="Next  ›" disable="true"/>
     </HBox>
 
 </VBox>

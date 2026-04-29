@@ -16,6 +16,8 @@
         <padding><Insets bottom="16" left="20" right="20" top="16"/></padding>
         <Label fx:id="lblQuizTitle" styleClass="form-title" text="Quiz"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <ComboBox fx:id="cmbLanguage" styleClass="lang-combo" prefWidth="130"
+                  onAction="#handleLanguageChange"/>
         <Label fx:id="lblProgress" styleClass="play-progress" text="1 / 5"/>
     </HBox>
 
@@ -55,6 +57,14 @@
                        preserveRatio="true" managed="false" visible="false"
                        styleClass="play-question-image"/>
 
+            <!-- Hint box (hidden until requested) -->
+            <VBox fx:id="hintBox" spacing="6" managed="false" visible="false"
+                  styleClass="hint-box">
+                <Label text="💡  AI Hint" styleClass="hint-title"/>
+                <Label fx:id="lblHint" styleClass="hint-text"
+                       wrapText="true" maxWidth="Infinity" text=""/>
+            </VBox>
+
             <!-- Choices -->
             <VBox fx:id="choicesBox" spacing="10"/>
 
@@ -69,6 +79,8 @@
     <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="form-footer">
         <padding><Insets bottom="16" left="24" right="24" top="14"/></padding>
         <Button onAction="#handleQuit" styleClass="btn-ghost" text="✕  Quit"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnHint" onAction="#handleHint" styleClass="btn-hint" text="💡  Hint  (−½ XP)"/>
         <Button fx:id="btnNext" onAction="#handleNext" styleClass="btn-primary"
                 text="Next  →" disable="true"/>
     </HBox>
