@@ -29,7 +29,7 @@ public class MainFX extends Application {
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 900, 600);
+        Scene scene = new Scene(root, 1100, 720);
         primaryStage.setTitle("NOVA - Login");
         primaryStage.setScene(scene);
         primaryStage.centerOnScreen();

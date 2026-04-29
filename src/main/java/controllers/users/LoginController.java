@@ -1,14 +1,20 @@
 package controllers.users;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.animation.RotateTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -32,14 +38,26 @@ import java.util.ResourceBundle;
 public class LoginController implements Initializable {
 
     @FXML private StackPane leftPanel;
-    @FXML private VBox rightPanel;
-    @FXML private Pane animatedSceneContainer;
+    @FXML private VBox      rightPanel;
+    @FXML private Pane      animatedSceneContainer;
 
-    @FXML private TextField      tfUsername;
-    @FXML private PasswordField  pfPassword;
-    @FXML private Label          lblError;
-    @FXML private Button         btnLogin;
+    @FXML private TextField         tfUsername;
+    @FXML private PasswordField     pfPassword;
+    @FXML private Label             lblError;
+    @FXML private Button            btnLogin;
     @FXML private ProgressIndicator spinner;
+
+    // ── reCAPTCHA-style checkbox ──────────────────────────────────────────────
+    @FXML private HBox      captchaBox;
+    @FXML private StackPane captchaCheckPane;
+    @FXML private Label     lblCaptchaCheck;
+    @FXML private Label     lblCaptchaStatus;
+
+    // Behavioral analysis
+    private boolean captchaVerified  = false;
+    private boolean captchaChecking  = false;
+    private int     mouseMoveCount   = 0;
+    private long    pageLoadTime     = 0;
 
     private final Connection conn = MyConnection.getInstance().getCnx();
 
@@ -48,6 +66,8 @@ public class LoginController implements Initializable {
         lblError.setText("");
         spinner.setVisible(false);
         spinner.setManaged(false);
+        pageLoadTime = System.currentTimeMillis();
+
         tfUsername.setOnAction(e -> onLogin());
         pfPassword.setOnAction(e -> onLogin());
 
@@ -55,64 +75,76 @@ public class LoginController implements Initializable {
         createBackgroundParticles();
     }
 
-    private void createBackgroundParticles() {
-        Random random = new Random();
-        int particleCount = 20;
+    // ── reCAPTCHA checkbox behavior ───────────────────────────────────────────
 
-        for (int i = 0; i < particleCount; i++) {
-            int size = random.nextInt(15) + 5;
-            Rectangle rect = new Rectangle(size, size);
+    @FXML
+    private void onCaptchaMouseMoved(MouseEvent e) {
+        if (!captchaVerified) mouseMoveCount++;
+    }
 
-            rect.setFill(Color.web("#ffffff", random.nextDouble() * 0.15 + 0.05));
+    @FXML
+    private void onCaptchaClick(MouseEvent e) {
+        if (captchaVerified || captchaChecking) return;
+        captchaChecking = true;
 
-            rect.setX(random.nextInt(420));
-            rect.setY(random.nextInt(580));
-            rect.setRotate(random.nextInt(360));
+        // Show spinner animation inside checkbox
+        lblCaptchaCheck.setText("⟳");
+        captchaCheckPane.setStyle(
+            "-fx-background-color: white; -fx-border-color: #1a73e8; " +
+            "-fx-border-radius: 3; -fx-border-width: 2; -fx-cursor: hand; -fx-background-radius: 3;");
 
-            animatedSceneContainer.getChildren().add(rect);
+        // Spin animation
+        Timeline spin = new Timeline(
+            new KeyFrame(Duration.ZERO,       new KeyValue(lblCaptchaCheck.rotateProperty(), 0)),
+            new KeyFrame(Duration.millis(600), new KeyValue(lblCaptchaCheck.rotateProperty(), 360))
+        );
+        spin.setCycleCount(2);
 
-            TranslateTransition tt = new TranslateTransition(Duration.seconds(random.nextInt(15) + 15), rect);
-            tt.setByY(-150 - random.nextInt(200));
-            tt.setByX((random.nextDouble() - 0.5) * 100);
-            tt.setCycleCount(TranslateTransition.INDEFINITE);
-            tt.setAutoReverse(true);
-            tt.play();
+        long timeSinceLoad = System.currentTimeMillis() - pageLoadTime;
+        boolean looksHuman = mouseMoveCount >= 3 && timeSinceLoad > 1500;
 
-            RotateTransition rt = new RotateTransition(Duration.seconds(random.nextInt(10) + 10), rect);
-            rt.setByAngle(360);
-            rt.setCycleCount(RotateTransition.INDEFINITE);
-            rt.setAutoReverse(false);
-            rt.play();
+        spin.setOnFinished(ev -> {
+            if (looksHuman) {
+                // ✓ Verified
+                captchaVerified = true;
+                captchaChecking = false;
+                lblCaptchaCheck.setRotate(0);
+                lblCaptchaCheck.setText("✓");
+                lblCaptchaCheck.setStyle("-fx-font-size: 16px; -fx-text-fill: #1a73e8; -fx-font-weight: bold;");
+                captchaCheckPane.setStyle(
+                    "-fx-background-color: white; -fx-border-color: #1a73e8; " +
+                    "-fx-border-radius: 3; -fx-border-width: 2; -fx-background-radius: 3;");
+                if (lblCaptchaStatus != null)
+                    lblCaptchaStatus.setText("Verified");
+            } else {
+                // Not enough human signals — reset and ask to try again
+                captchaChecking = false;
+                lblCaptchaCheck.setRotate(0);
+                lblCaptchaCheck.setText("");
+                captchaCheckPane.setStyle(
+                    "-fx-background-color: white; -fx-border-color: #9ca3af; " +
+                    "-fx-border-radius: 3; -fx-border-width: 2; -fx-cursor: hand; -fx-background-radius: 3;");
+                if (lblCaptchaStatus != null)
+                    lblCaptchaStatus.setText("Please move your mouse first");
+                mouseMoveCount = 0;
+            }
+        });
+        spin.play();
+    }
 
-            FadeTransition ft = new FadeTransition(Duration.seconds(random.nextInt(8) + 5), rect);
-            ft.setFromValue(0.1);
-            ft.setToValue(0.6);
-            ft.setCycleCount(FadeTransition.INDEFINITE);
-            ft.setAutoReverse(true);
-            ft.play();
+    private boolean validateCaptcha() {
+        if (captchaVerified) return true;
+        showError("Please complete the CAPTCHA.");
+        // Highlight the checkbox
+        if (captchaCheckPane != null) {
+            captchaCheckPane.setStyle(
+                "-fx-background-color: #fff8f8; -fx-border-color: #ef4444; " +
+                "-fx-border-radius: 3; -fx-border-width: 2; -fx-cursor: hand; -fx-background-radius: 3;");
         }
+        return false;
     }
 
-    private void playEntranceAnimation() {
-        leftPanel.setOpacity(0);
-        rightPanel.setOpacity(0);
-
-        TranslateTransition slideRight = new TranslateTransition(Duration.millis(600), rightPanel);
-        slideRight.setFromY(30);
-        slideRight.setToY(0);
-
-        FadeTransition fadeRight = new FadeTransition(Duration.millis(600), rightPanel);
-        fadeRight.setFromValue(0);
-        fadeRight.setToValue(1);
-
-        FadeTransition fadeLeft = new FadeTransition(Duration.millis(800), leftPanel);
-        fadeLeft.setFromValue(0);
-        fadeLeft.setToValue(1);
-
-        slideRight.play();
-        fadeRight.play();
-        fadeLeft.play();
-    }
+    // ── Login ─────────────────────────────────────────────────────────────────
 
     @FXML
     private void onLogin() {
@@ -122,6 +154,7 @@ public class LoginController implements Initializable {
 
         if (username.isBlank()) { showError("Username is required."); tfUsername.requestFocus(); return; }
         if (password.isBlank()) { showError("Password is required."); pfPassword.requestFocus(); return; }
+        if (!validateCaptcha()) return;
 
         spinner.setVisible(true);
         spinner.setManaged(true);
@@ -133,9 +166,7 @@ public class LoginController implements Initializable {
             if (user.isBanned()) { showError("Account banned. Reason: " + (user.getBanReason() != null ? user.getBanReason() : "N/A")); return; }
             if (!user.isActive()) { showError("Account inactive. Contact an administrator."); return; }
 
-            // 🔥 NEW: Save the user globally in the session
             utils.UserSession.getInstance().setLoggedInUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
-
             routeUserBasedOnRole(user);
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());
@@ -145,6 +176,8 @@ public class LoginController implements Initializable {
             btnLogin.setDisable(false);
         }
     }
+
+    // ── Auth ──────────────────────────────────────────────────────────────────
 
     private User authenticate(String username, String password) throws SQLException {
         String sql = "SELECT * FROM user WHERE username = ? LIMIT 1";
@@ -156,7 +189,7 @@ public class LoginController implements Initializable {
             boolean passwordMatches;
             if (storedHash != null && storedHash.startsWith("$2")) {
                 String jbcryptHash = storedHash.replaceFirst("^\\$2y\\$", "\\$2a\\$");
-                try { passwordMatches = BCrypt.checkpw(password, jbcryptHash); }
+                try   { passwordMatches = BCrypt.checkpw(password, jbcryptHash); }
                 catch (Exception e) { passwordMatches = false; }
             } else {
                 passwordMatches = password.equals(storedHash);
@@ -177,6 +210,8 @@ public class LoginController implements Initializable {
         }
     }
 
+    // ── Routing ───────────────────────────────────────────────────────────────
+
     private void routeUserBasedOnRole(User loggedInUser) {
         try {
             Stage stage = (Stage) btnLogin.getScene().getWindow();
@@ -193,17 +228,14 @@ public class LoginController implements Initializable {
                 scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
                 stage.setTitle("NOVA - Admin Dashboard");
             } else {
-                // Both ROLE_STUDENT and ROLE_TUTOR use NovaDashboard.
-                // Tutors get a Courses dropdown with "My Courses" and "Enrollment Requests".
                 loader = new FXMLLoader(getClass().getResource("/views/NovaDashboard.fxml"));
                 root = loader.load();
                 controllers.NovaDashboardController dashCtrl = loader.getController();
                 dashCtrl.setCurrentUser(loggedInUser);
                 scene = new Scene(root, 1300, 800);
                 stage.setTitle(loggedInUser.getRole() == User.Role.ROLE_TUTOR
-                        ? "NOVA - Tutor Hub" : "NOVA - Student Hub");
+                    ? "NOVA - Tutor Hub" : "NOVA - Student Hub");
             }
-
             stage.setScene(scene);
             stage.centerOnScreen();
         } catch (IOException e) {
@@ -212,14 +244,61 @@ public class LoginController implements Initializable {
         }
     }
 
+    // ── Animations ────────────────────────────────────────────────────────────
+
+    private void createBackgroundParticles() {
+        Random random = new Random();
+        for (int i = 0; i < 20; i++) {
+            int size = random.nextInt(15) + 5;
+            Rectangle rect = new Rectangle(size, size);
+            rect.setFill(Color.web("#ffffff", random.nextDouble() * 0.15 + 0.05));
+            rect.setX(random.nextInt(420));
+            rect.setY(random.nextInt(580));
+            rect.setRotate(random.nextInt(360));
+            animatedSceneContainer.getChildren().add(rect);
+
+            TranslateTransition tt = new TranslateTransition(Duration.seconds(random.nextInt(15) + 15), rect);
+            tt.setByY(-150 - random.nextInt(200));
+            tt.setByX((random.nextDouble() - 0.5) * 100);
+            tt.setCycleCount(TranslateTransition.INDEFINITE);
+            tt.setAutoReverse(true);
+            tt.play();
+
+            RotateTransition rt = new RotateTransition(Duration.seconds(random.nextInt(10) + 10), rect);
+            rt.setByAngle(360);
+            rt.setCycleCount(RotateTransition.INDEFINITE);
+            rt.play();
+
+            FadeTransition ft = new FadeTransition(Duration.seconds(random.nextInt(8) + 5), rect);
+            ft.setFromValue(0.1);
+            ft.setToValue(0.6);
+            ft.setCycleCount(FadeTransition.INDEFINITE);
+            ft.setAutoReverse(true);
+            ft.play();
+        }
+    }
+
+    private void playEntranceAnimation() {
+        leftPanel.setOpacity(0);
+        rightPanel.setOpacity(0);
+        TranslateTransition slideRight = new TranslateTransition(Duration.millis(600), rightPanel);
+        slideRight.setFromY(30); slideRight.setToY(0);
+        FadeTransition fadeRight = new FadeTransition(Duration.millis(600), rightPanel);
+        fadeRight.setFromValue(0); fadeRight.setToValue(1);
+        FadeTransition fadeLeft = new FadeTransition(Duration.millis(800), leftPanel);
+        fadeLeft.setFromValue(0); fadeLeft.setToValue(1);
+        slideRight.play(); fadeRight.play(); fadeLeft.play();
+    }
+
+    // ── Signup navigation ─────────────────────────────────────────────────────
+
     @FXML
     private void onGoToSignup() {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/views/users/signup.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.stage.Stage stage = (javafx.stage.Stage) btnLogin.getScene().getWindow();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 620);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/users/signup.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnLogin.getScene().getWindow();
+            Scene scene = new Scene(root, 1100, 720);
             scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
             stage.setTitle("NOVA - Create Account");
             stage.setScene(scene);
@@ -230,7 +309,5 @@ public class LoginController implements Initializable {
         }
     }
 
-    private void showError(String msg) {
-        lblError.setText(msg);
-    }
+    private void showError(String msg) { lblError.setText(msg); }
 }
