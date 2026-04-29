@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.TwoFactorSetupController"
+            prefWidth="480" prefHeight="560"
+            style="-fx-background-color: #f8fafc;">
+
+    <stylesheets>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox style="-fx-background-color: #1a1f36; -fx-padding: 18 24;" alignment="CENTER_LEFT" spacing="12">
+            <Label text="Two-Factor Authentication"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblCurrentStatus" text="2FA is DISABLED"
+                   style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #ef4444;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="form-scroll">
+            <VBox spacing="20">
+                <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+                <!-- Instructions -->
+                <VBox spacing="6" style="-fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-padding: 14; -fx-border-color: #bfdbfe; -fx-border-radius: 8; -fx-border-width: 1;">
+                    <Label text="How to set up 2FA:" style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #1e40af;"/>
+                    <Label text="1. Install Google Authenticator on your phone" style="-fx-font-size: 12px; -fx-text-fill: #1e3a8a;"/>
+                    <Label text="2. Scan the QR code below" style="-fx-font-size: 12px; -fx-text-fill: #1e3a8a;"/>
+                    <Label text="3. Enter the 6-digit code to confirm" style="-fx-font-size: 12px; -fx-text-fill: #1e3a8a;"/>
+                </VBox>
+
+                <!-- QR Code -->
+                <VBox alignment="CENTER" spacing="10">
+                    <ImageView fx:id="imgQrCode" fitWidth="200" fitHeight="200" preserveRatio="true"
+                               style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 2);"/>
+                    <Label fx:id="lblSecretKey" text=""
+                           style="-fx-font-size: 11px; -fx-text-fill: #64748b; -fx-font-family: monospace;"/>
+                </VBox>
+
+                <!-- Verify code input -->
+                <VBox spacing="8">
+                    <Label text="ENTER CODE FROM APP" styleClass="field-label"/>
+                    <TextField fx:id="tfVerifyCode" promptText="6-digit code"
+                               styleClass="form-field" maxWidth="200"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-letter-spacing: 6px; -fx-alignment: CENTER;"/>
+                </VBox>
+
+                <!-- Status -->
+                <Label fx:id="lblStatus" text="" wrapText="true" maxWidth="Infinity"/>
+
+                <!-- Action buttons -->
+                <HBox spacing="12">
+                    <Button fx:id="btnEnable" text="Enable 2FA" onAction="#onEnable"
+                            styleClass="btn-save" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button fx:id="btnDisable" text="Disable 2FA" onAction="#onDisable"
+                            styleClass="btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT">
+            <padding><Insets top="12" right="24" bottom="16" left="24"/></padding>
+            <Button fx:id="btnClose" text="Close" onAction="#onClose" styleClass="btn-cancel"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

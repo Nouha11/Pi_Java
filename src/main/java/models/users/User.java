@@ -72,4 +72,11 @@ public class User {
     public String toString() {
         return username + " <" + email + "> [" + role + "]";
     }
+
+    private boolean totpEnabled = false;
+    private String  totpSecret  = null;
+    public boolean isTotpEnabled()                    { return totpEnabled; }
+    public void    setTotpEnabled(boolean totpEnabled){ this.totpEnabled = totpEnabled; }
+    public String  getTotpSecret()                    { return totpSecret; }
+    public void    setTotpSecret(String totpSecret)   { this.totpSecret = totpSecret; }
 }

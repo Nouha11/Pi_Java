@@ -69,6 +69,9 @@
 
                         <Region prefHeight="4"/>
 
+                        <Button text="&#128274; Manage 2FA" onAction="#onManage2FA"
+                                maxWidth="Infinity"
+                                style="-fx-background-color:#7c3aed;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
                         <Button text="Sign Out" onAction="#onLogout" maxWidth="Infinity"
                                 style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 0;-fx-background-radius:8;-fx-cursor:hand;"/>
                     </VBox>

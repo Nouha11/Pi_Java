@@ -310,4 +310,23 @@ public class LoginController implements Initializable {
     }
 
     private void showError(String msg) { lblError.setText(msg); }
+
+    private void showTwoFactorVerify(User user) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/users/2fa-verify.fxml"));
+            javafx.scene.Parent root = loader.load();
+            TwoFactorVerifyController ctrl = loader.getController();
+            ctrl.setup(user, this::routeUserBasedOnRole);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 420, 380);
+            scene.getStylesheets().add(getClass().getResource("/css/login.css").toExternalForm());
+            javafx.stage.Stage stage = (javafx.stage.Stage) btnLogin.getScene().getWindow();
+            stage.setTitle("NOVA - Two-Factor Authentication");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            showError("2FA error: " + e.getMessage());
+        }
+    }
 }
