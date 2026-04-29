@@ -376,12 +376,21 @@ public class GamePlayController {
             if (linkedRewards.isEmpty()) return;
 
             services.gamification.EarnedRewardService earnedSvc = new services.gamification.EarnedRewardService();
+            java.util.List<models.gamification.Reward> newlyEarned = new java.util.ArrayList<>();
+
             for (models.gamification.Reward r : linkedRewards) {
                 boolean alreadyEarned = earnedSvc.hasEarned(userId, r.getId());
                 System.out.println("[Achievement] Reward " + r.getId() + " (" + r.getName() + ") alreadyEarned=" + alreadyEarned);
                 if (!alreadyEarned) {
                     earnedSvc.awardReward(userId, r.getId());
+                    newlyEarned.add(r);
                 }
+            }
+
+            // Send achievement email for newly earned rewards (non-blocking)
+            if (!newlyEarned.isEmpty()) {
+                new services.gamification.AchievementMailService()
+                    .sendAsync(userId, game.getName(), newlyEarned);
             }
         } catch (Exception e) {
             System.err.println("[Achievement] Error: " + e.getMessage());

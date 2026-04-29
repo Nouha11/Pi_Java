@@ -74,7 +74,7 @@ public class EarnedRewardService {
 
     /** Get student_profile_id for a user, creating one if it doesn't exist. */
     private int getOrCreateStudentProfile(int userId) throws SQLException {
-        // Try to get existing profile
+        // 1. Check if user already has a linked profile
         String getProfile = "SELECT student_profile_id FROM user WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(getProfile)) {
             ps.setInt(1, userId);
@@ -85,18 +85,45 @@ public class EarnedRewardService {
             }
         }
 
-        // No profile — create one
-        System.out.println("[EarnedReward] Creating student_profile for userId=" + userId);
-        String getUser = "SELECT username, email FROM user WHERE id = ?";
+        // 2. No link — get the user's email and username
+        System.out.println("[EarnedReward] No student_profile linked for userId=" + userId + ", searching by email...");
         String username = "Student", email = null;
+        String getUser = "SELECT username, email FROM user WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(getUser)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) { username = rs.getString("username"); email = rs.getString("email"); }
+            if (rs.next()) {
+                username = rs.getString("username");
+                email    = rs.getString("email");
+            }
         }
 
-        String createProfile = "INSERT INTO student_profile (first_name, last_name, email, total_xp, total_tokens, level, energy) " +
-                               "VALUES (?, '', ?, 0, 0, 1, 100)";
+        // 3. Check if a student_profile already exists with this email (created by Symfony)
+        if (email != null && !email.isBlank()) {
+            String findByEmail = "SELECT id FROM student_profile WHERE email = ?";
+            try (PreparedStatement ps = conn.prepareStatement(findByEmail)) {
+                ps.setString(1, email);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    int existingId = rs.getInt("id");
+                    // Link the existing profile to this user
+                    String link = "UPDATE user SET student_profile_id = ? WHERE id = ?";
+                    try (PreparedStatement ps2 = conn.prepareStatement(link)) {
+                        ps2.setInt(1, existingId);
+                        ps2.setInt(2, userId);
+                        ps2.executeUpdate();
+                    }
+                    System.out.println("[EarnedReward] Linked existing student_profile " + existingId + " to userId=" + userId);
+                    return existingId;
+                }
+            }
+        }
+
+        // 4. No existing profile at all — create a fresh one
+        System.out.println("[EarnedReward] Creating new student_profile for userId=" + userId);
+        String createProfile =
+            "INSERT INTO student_profile (first_name, last_name, email, total_xp, total_tokens, level, energy) " +
+            "VALUES (?, '', ?, 0, 0, 1, 100)";
         try (PreparedStatement ps = conn.prepareStatement(createProfile, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, username);
             ps.setString(2, email);
@@ -104,10 +131,10 @@ public class EarnedRewardService {
             ResultSet keys = ps.getGeneratedKeys();
             if (keys.next()) {
                 int newProfileId = keys.getInt(1);
-                // Link to user
                 String link = "UPDATE user SET student_profile_id = ? WHERE id = ?";
                 try (PreparedStatement ps2 = conn.prepareStatement(link)) {
-                    ps2.setInt(1, newProfileId); ps2.setInt(2, userId);
+                    ps2.setInt(1, newProfileId);
+                    ps2.setInt(2, userId);
                     ps2.executeUpdate();
                 }
                 System.out.println("[EarnedReward] Created student_profile " + newProfileId + " for userId=" + userId);
