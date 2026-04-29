@@ -27,6 +27,10 @@ import services.quiz.QuestionService;
 import services.quiz.TranslationService;
 
 import java.io.File;
+import java.awt.Desktop;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -592,6 +596,9 @@ public class QuizPlayController {
         statsRow.setMaxWidth(Double.MAX_VALUE);
         choicesBox.getChildren().add(statsRow);
 
+        // ── LinkedIn share banner ─────────────────────────────
+        choicesBox.getChildren().add(buildLinkedInBanner(lblQuizTitle.getText(), score, total, pctInt, totalXp, grade));
+
         // ── Section heading ───────────────────────────────────
         Label reviewHeading = new Label("Answer Review");
         reviewHeading.setStyle(
@@ -609,6 +616,71 @@ public class QuizPlayController {
         btnNext.setText("\u2714  Close");
         btnNext.setDisable(false);
         btnNext.setOnAction(e -> ((Stage) btnNext.getScene().getWindow()).close());
+    }
+
+    /** Builds the LinkedIn share banner shown at the bottom of results. */
+    private HBox buildLinkedInBanner(String quizTitle, int score, int total, int pctInt, int xp, String grade) {
+        Label liIcon = new Label("\uD83D\uDCBC");
+        liIcon.setStyle("-fx-font-size:22px;");
+
+        Label msgLbl = new Label("Proud of your result? Share it with your network!");
+        msgLbl.setStyle("-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#0a66c2;");
+
+        Label subLbl = new Label("Let people know what you achieved on Nova Platform.");
+        subLbl.setStyle("-fx-font-size:11px; -fx-text-fill:#4a5568;");
+
+        VBox textBox = new VBox(2, msgLbl, subLbl);
+        textBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(textBox, Priority.ALWAYS);
+
+        Button shareBtn = new Button("\uD83D\uDD17  Share on LinkedIn");
+        shareBtn.setStyle(
+                "-fx-background-color:#0a66c2; -fx-text-fill:white;" +
+                "-fx-font-weight:bold; -fx-font-size:12px;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 18 9 18;");
+        shareBtn.setOnMouseEntered(e -> shareBtn.setStyle(
+                "-fx-background-color:#004182; -fx-text-fill:white;" +
+                "-fx-font-weight:bold; -fx-font-size:12px;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 18 9 18;"));
+        shareBtn.setOnMouseExited(e -> shareBtn.setStyle(
+                "-fx-background-color:#0a66c2; -fx-text-fill:white;" +
+                "-fx-font-weight:bold; -fx-font-size:12px;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 18 9 18;"));
+        shareBtn.setOnAction(e -> shareOnLinkedIn(quizTitle, score, total, pctInt, xp, grade));
+
+        HBox banner = new HBox(14, liIcon, textBox, shareBtn);
+        banner.setAlignment(Pos.CENTER_LEFT);
+        banner.setStyle(
+                "-fx-background-color:#e8f0fe;" +
+                "-fx-border-color:#0a66c2;" +
+                "-fx-border-radius:12; -fx-background-radius:12;" +
+                "-fx-border-width:1.5; -fx-padding:16 20 16 20;");
+        banner.setMaxWidth(Double.MAX_VALUE);
+        return banner;
+    }
+
+    /** Opens the LinkedIn share dialog in the default browser. */
+    private void shareOnLinkedIn(String quizTitle, int score, int total, int pctInt, int xp, String grade) {
+        String medal = pctInt == 100 ? "\uD83C\uDF1F" : pctInt >= 80 ? "\uD83C\uDFC6" : pctInt >= 60 ? "\uD83D\uDCAA" : "\uD83D\uDCDA";
+        String message = String.format(
+                "%s I just completed \"%s\" on Nova Platform and scored %d/%d (%d%%) — Grade %s, earning %d XP!%n%n" +
+                "Nova is an all-in-one learning platform with quizzes, courses, gamification, and more.%n" +
+                "Check it out \uD83D\uDC49 https://github.com/Nouha11/Pi_Java",
+                medal, quizTitle, score, total, pctInt, grade, xp);
+
+        try {
+            String encoded = URLEncoder.encode(message, StandardCharsets.UTF_8);
+            // /feed/?shareActive=true&text=... is the only LinkedIn endpoint
+            // that reliably pre-fills the post composer with custom text
+            String url = "https://www.linkedin.com/feed/?shareActive=true&text=" + encoded;
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR,
+                    "Could not open browser: " + ex.getMessage(), ButtonType.OK).showAndWait();
+        }
     }
 
     /** Small coloured pill used in the stats row. */
