@@ -533,11 +533,20 @@ setActiveButton(btnForum);
 
     @FXML void handleShowRewards(ActionEvent event) {
         setActiveButton(btnRewards);
-        loadPage("/views/gamification/user_rewards.fxml");
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/gamification/user_rewards.fxml"));
+            javafx.scene.Parent view = loader.load();
+            controllers.gamification.UserRewardsController ctrl = loader.getController();
+            ctrl.refreshAchievements(); // ensure achievements load with correct user
+            setView(view);
+        } catch (Exception e) {
+            System.err.println("[NAV] Failed to load rewards: " + e.getMessage());
+            loadPage("/views/gamification/user_rewards.fxml");
+        }
     }
 
     @FXML void handleShowLeaderboard(ActionEvent event) {
-        setActiveButton(btnLeaderboard);
         loadPage("/views/gamification/leaderboard.fxml");
     }
 

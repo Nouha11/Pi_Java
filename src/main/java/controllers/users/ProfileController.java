@@ -250,53 +250,62 @@ public class ProfileController implements Initializable {
     private VBox buildFavoriteCard(Game game) {
         boolean isMini = "MINI_GAME".equals(game.getCategory());
 
-        Label iconLbl = new Label(typeIcon(game.getType()));
-        iconLbl.setStyle("-fx-font-size:22px;");
-        StackPane iconCircle = utils.TwemojiUtil.circle(typeIcon(game.getType()), 56, typeGradient(game.getType()), 32);
-        iconCircle.setMaxSize(56, 56);
+        // Twemoji icon — no FA font needed
+        StackPane iconCircle = utils.TwemojiUtil.circle(
+            typeEmoji(game.getType()), 64, typeGradient(game.getType()), 38);
+        iconCircle.setMaxSize(64, 64);
 
         Label title = new Label(game.getName());
-        title.setStyle("-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
-        title.setWrapText(true); title.setMaxWidth(170); title.setAlignment(Pos.CENTER);
+        title.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
+        title.setWrapText(true); title.setMaxWidth(180); title.setAlignment(Pos.CENTER);
 
         HBox badges = new HBox(6,
             badge(game.getType(), typeBadgeBg(game.getType()), typeBadgeFg(game.getType())),
             badge(game.getDifficulty(), diffBg(game.getDifficulty()), diffFg(game.getDifficulty())));
         badges.setAlignment(Pos.CENTER);
 
-        Label rewardLbl;
+        // Reward row
+        HBox rewardRow;
         if (isMini) {
             int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 0;
-            rewardLbl = new Label("+" + ep + " Energy");
-            rewardLbl.setStyle("-fx-text-fill:#27ae60;-fx-font-size:12px;-fx-font-weight:bold;");
+            Label e = new Label("+" + ep + " Energy");
+            e.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#27ae60;");
+            rewardRow = new HBox(e); rewardRow.setAlignment(Pos.CENTER);
         } else {
-            rewardLbl = new Label("+" + game.getRewardTokens() + " tokens  +" + game.getRewardXP() + " XP");
-            rewardLbl.setStyle("-fx-text-fill:#3b4fd8;-fx-font-size:12px;-fx-font-weight:bold;");
+            Label tok = new Label("+" + game.getRewardTokens() + " tokens");
+            tok.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#b7791f;");
+            Label xp = new Label("  +" + game.getRewardXP() + " XP");
+            xp.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#2b6cb0;");
+            rewardRow = new HBox(tok, xp); rewardRow.setAlignment(Pos.CENTER);
         }
 
-        // Unfavorite button with proper FA graphic
-        Label heartIco = new Label("\uF004");
-        heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:#e53e3e;");
-        Label unfavTxt = new Label("  Unfavorite");
-        unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#e53e3e;");
-        HBox btnContent = new HBox(2, heartIco, unfavTxt); btnContent.setAlignment(Pos.CENTER);
-        Button btnRemove = new Button(); btnRemove.setGraphic(btnContent); btnRemove.setMaxWidth(Double.MAX_VALUE);
-        btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;-fx-border-color:#fed7d7;-fx-border-radius:8;");
-        btnRemove.setOnMouseEntered(e -> {
-            btnRemove.setStyle("-fx-background-color:#e53e3e;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;");
-            heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:white;");
-            unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;");
-        });
-        btnRemove.setOnMouseExited(e -> {
-            btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;-fx-border-color:#fed7d7;-fx-border-radius:8;");
-            heartIco.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:12px;-fx-text-fill:#e53e3e;");
-            unfavTxt.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#e53e3e;");
-        });
+        Separator sep = new Separator();
+
+        // Play button
+        Button btnPlay = new Button("Play Now");
+        btnPlay.setMaxWidth(Double.MAX_VALUE);
+        btnPlay.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-text-fill:white;" +
+                         "-fx-font-weight:bold;-fx-font-size:13px;-fx-background-radius:8;-fx-padding:9 0;-fx-cursor:hand;");
+        btnPlay.setOnAction(e -> launchGame(game));
+
+        // Unfavorite button — plain text, no FA icon
+        Button btnRemove = new Button("Remove from Favorites");
+        btnRemove.setMaxWidth(Double.MAX_VALUE);
+        btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-text-fill:#e53e3e;-fx-font-size:12px;" +
+                           "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
+                           "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;");
+        btnRemove.setOnMouseEntered(e -> btnRemove.setStyle(
+            "-fx-background-color:#e53e3e;-fx-text-fill:white;-fx-font-size:12px;" +
+            "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;"));
+        btnRemove.setOnMouseExited(e -> btnRemove.setStyle(
+            "-fx-background-color:#fff5f5;-fx-text-fill:#e53e3e;-fx-font-size:12px;" +
+            "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
+            "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;"));
         btnRemove.setOnAction(e -> {
             try {
                 favService.removeFavorite(currentUser.getId(), game.getId());
                 ScaleTransition st = new ScaleTransition(Duration.millis(200), btnRemove.getParent());
-                st.setToX(0.8); st.setToY(0.8);
+                st.setToX(0.9); st.setToY(0.9);
                 FadeTransition ft = new FadeTransition(Duration.millis(200), btnRemove.getParent());
                 ft.setToValue(0);
                 ParallelTransition pt = new ParallelTransition(st, ft);
@@ -305,12 +314,55 @@ public class ProfileController implements Initializable {
             } catch (Exception ex) { System.err.println("Remove favorite: " + ex.getMessage()); }
         });
 
-        VBox card = new VBox(10, iconCircle, title, badges, rewardLbl, btnRemove);
-        card.setAlignment(Pos.TOP_CENTER); card.setPadding(new Insets(18, 14, 18, 14)); card.setPrefWidth(210);
-        card.setStyle("-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);");
-        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#c3c9f5;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.15),14,0,0,5);"));
-        card.setOnMouseExited(e  -> card.setStyle("-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);"));
+        VBox card = new VBox(10, iconCircle, title, badges, rewardRow, sep, btnPlay, btnRemove);
+        card.setAlignment(Pos.TOP_CENTER);
+        card.setPadding(new Insets(18, 14, 18, 14));
+        card.setPrefWidth(210);
+        card.setStyle("-fx-background-color:white;-fx-background-radius:14;" +
+                      "-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;" +
+                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);");
+        card.setOnMouseEntered(e -> card.setStyle(card.getStyle()
+            .replace("rgba(0,0,0,0.07)", "rgba(59,79,216,0.15)")
+            .replace("#e4e8f0", "#c3c9f5")));
+        card.setOnMouseExited(e -> card.setStyle(card.getStyle()
+            .replace("rgba(59,79,216,0.15)", "rgba(0,0,0,0.07)")
+            .replace("#c3c9f5", "#e4e8f0")));
         return card;
+    }
+
+    private String typeEmoji(String t) {
+        return switch(t) {
+            case "PUZZLE" -> utils.TwemojiUtil.PUZZLE;
+            case "MEMORY" -> utils.TwemojiUtil.MEMORY;
+            case "TRIVIA" -> utils.TwemojiUtil.TRIVIA;
+            case "ARCADE" -> utils.TwemojiUtil.ARCADE;
+            default       -> utils.TwemojiUtil.GAMEPAD;
+        };
+    }
+
+    private String typeGradient(String t) {
+        return switch(t) {
+            case "PUZZLE" -> "linear-gradient(to bottom right,#f6d365,#fda085)";
+            case "MEMORY" -> "linear-gradient(to bottom right,#a18cd1,#fbc2eb)";
+            case "TRIVIA" -> "linear-gradient(to bottom right,#4facfe,#00f2fe)";
+            case "ARCADE" -> "linear-gradient(to bottom right,#43e97b,#38f9d7)";
+            default       -> "linear-gradient(to bottom right,#667eea,#764ba2)";
+        };
+    }
+
+    private void launchGame(models.gamification.Game game) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/views/gamification/game_play.fxml"));
+            javafx.scene.Parent view = loader.load();
+            controllers.gamification.GamePlayController ctrl = loader.getController();
+            ctrl.setGame(game);
+            // Pass the content area from the dashboard
+            ctrl.setContentArea(null); // will use NovaDashboardController.setView
+            controllers.NovaDashboardController.setView(view);
+        } catch (Exception e) {
+            System.err.println("Cannot launch game: " + e.getMessage());
+        }
     }
 
     // ── Change password ───────────────────────────────────────────────────────
@@ -392,8 +444,6 @@ public class ProfileController implements Initializable {
         return l;
     }
 
-    private String typeIcon(String t)     { return switch(t){case "PUZZLE"->"\uF12E";case "MEMORY"->"\uF5DC";case "TRIVIA"->"\uF059";case "ARCADE"->"\uF11B";default->"\uF11B";}; }
-    private String typeGradient(String t) { return switch(t){case "PUZZLE"->"linear-gradient(to bottom right,#f6d365,#fda085)";case "MEMORY"->"linear-gradient(to bottom right,#a18cd1,#fbc2eb)";case "TRIVIA"->"linear-gradient(to bottom right,#4facfe,#00f2fe)";case "ARCADE"->"linear-gradient(to bottom right,#43e97b,#38f9d7)";default->"linear-gradient(to bottom right,#667eea,#764ba2)";}; }
     private String typeBadgeBg(String t)  { return switch(t){case "PUZZLE"->"#fff8e1";case "MEMORY"->"#f3e5f5";case "TRIVIA"->"#e3f2fd";case "ARCADE"->"#e8f5e9";default->"#eef0fd";}; }
     private String typeBadgeFg(String t)  { return switch(t){case "PUZZLE"->"#b7791f";case "MEMORY"->"#805ad5";case "TRIVIA"->"#2b6cb0";case "ARCADE"->"#276749";default->"#3b4fd8";}; }
     private String diffBg(String d)       { return switch(d){case "HARD"->"#fff5f5";case "MEDIUM"->"#fffbeb";default->"#f0fff4";}; }

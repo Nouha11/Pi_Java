@@ -11,6 +11,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.TextAlignment;
 import models.gamification.Game;
 import models.gamification.Reward;
+import services.gamification.EarnedRewardService;
 import services.gamification.GameService;
 import services.gamification.RewardService;
 
@@ -24,9 +25,13 @@ public class UserRewardsController {
     @FXML private Label            lblStatus;
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> filterType;
+    @FXML private VBox             achievementsSection;
+    @FXML private FlowPane         achievementsPane;
+    @FXML private Label            lblAchievementCount;
 
-    private final RewardService rewardService = new RewardService();
-    private final GameService   gameService   = new GameService();
+    private final RewardService      rewardService  = new RewardService();
+    private final GameService        gameService    = new GameService();
+    private final EarnedRewardService earnedService = new EarnedRewardService();
     private List<Reward> allRewards;
 
     @FXML
@@ -40,9 +45,126 @@ public class UserRewardsController {
                     .filter(Reward::isActive).collect(Collectors.toList());
         } catch (Exception e) { allRewards = List.of(); }
         renderCards(allRewards);
+        // Delay achievements load to ensure SessionManager is set
+        javafx.application.Platform.runLater(this::loadMyAchievements);
+    }
+
+    @FXML private void handleViewAllEarned() {
+        // Switch filter to show only earned rewards — open a dialog with full list
+        int userId = utils.SessionManager.getCurrentUserId();
+        if (userId <= 1) userId = utils.UserSession.getInstance().getUserId();
+        if (userId <= 0) return;
+        try {
+            List<Reward> earned = earnedService.getEarnedRewards(userId);
+            Dialog<Void> dlg = new Dialog<>();
+            dlg.setTitle("My Earned Rewards (" + earned.size() + ")");
+            VBox content = new VBox(12);
+            content.setPadding(new Insets(20));
+            content.setMinWidth(500);
+            if (earned.isEmpty()) {
+                Label none = new Label("You haven't earned any rewards yet. Complete games to unlock them!");
+                none.setWrapText(true); none.setStyle("-fx-text-fill:#718096;-fx-font-size:13px;");
+                content.getChildren().add(none);
+            } else {
+                for (Reward r : earned) {
+                    HBox row = new HBox(12);
+                    row.setAlignment(Pos.CENTER_LEFT);
+                    row.setPadding(new Insets(10, 14, 10, 14));
+                    row.setStyle("-fx-background-color:white;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-border-width:1;");
+                    StackPane ico = faCircle(rewardTypeIcon(r.getType()), 18, rewardGradient(r.getType()), "white");
+                    ico.setPrefSize(40, 40); ico.setMaxSize(40, 40);
+                    VBox info = new VBox(3);
+                    Label nm = new Label(r.getName()); nm.setStyle("-fx-font-weight:bold;-fx-text-fill:#1e2a5e;-fx-font-size:13px;");
+                    Label tp = new Label(r.getType() + "  ·  +" + r.getValue() + " pts"); tp.setStyle("-fx-text-fill:#718096;-fx-font-size:11px;");
+                    info.getChildren().addAll(nm, tp);
+                    HBox.setHgrow(info, Priority.ALWAYS);
+                    Label check = new Label("\u2705"); check.setStyle("-fx-font-size:16px;");
+                    row.getChildren().addAll(ico, info, check);
+                    content.getChildren().add(row);
+                }
+            }
+            ScrollPane scroll = new ScrollPane(content);
+            scroll.setFitToWidth(true); scroll.setPrefHeight(400);
+            scroll.setStyle("-fx-background-color:transparent;-fx-background:#f0f2f8;");
+            dlg.getDialogPane().setContent(scroll);
+            dlg.getDialogPane().setStyle("-fx-background-color:#f0f2f8;");
+            dlg.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            dlg.getDialogPane().lookupButton(ButtonType.CLOSE)
+               .setStyle("-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;-fx-padding:7 18;");
+            dlg.showAndWait();
+        } catch (Exception e) { System.err.println("Error loading earned rewards: " + e.getMessage()); }
+    }
+
+    /** Called after the page is loaded to ensure SessionManager is set. */
+    public void refreshAchievements() {
+        loadMyAchievements();
     }
 
     @FXML private void handleSearch() { applyFilters(); }
+
+    private void loadMyAchievements() {
+        // Try both session managers
+        int userId = utils.SessionManager.getCurrentUserId();
+        if (userId <= 1) userId = utils.UserSession.getInstance().getUserId();
+        System.out.println("[Rewards] loadMyAchievements userId=" + userId + 
+                           " (SessionManager=" + utils.SessionManager.getCurrentUserId() + 
+                           ", UserSession=" + utils.UserSession.getInstance().getUserId() + ")");
+        if (userId <= 0 || achievementsPane == null) return;
+        final int finalUserId = userId;
+
+        Thread t = new Thread(() -> {
+            try {
+                List<Reward> earned = earnedService.getEarnedRewards(finalUserId);
+                javafx.application.Platform.runLater(() -> {
+                    achievementsPane.getChildren().clear();
+                    if (lblAchievementCount != null)
+                        lblAchievementCount.setText(earned.size() + " earned");
+
+                    if (earned.isEmpty()) {
+                        Label none = new Label("No achievements yet — complete games to earn rewards!");
+                        none.setStyle("-fx-text-fill:#a0aec0;-fx-font-size:13px;-fx-padding:12 0;");
+                        achievementsPane.getChildren().add(none);
+                    } else {
+                        // Show up to 6 as preview chips
+                        int preview = Math.min(6, earned.size());
+                        for (int i = 0; i < preview; i++) {
+                            achievementsPane.getChildren().add(buildAchievementChip(earned.get(i)));
+                        }
+                        if (earned.size() > 6) {
+                            Label more = new Label("+" + (earned.size() - 6) + " more");
+                            more.setStyle("-fx-background-color:#eef0fd;-fx-text-fill:#3b4fd8;-fx-font-size:12px;-fx-font-weight:bold;-fx-background-radius:20;-fx-padding:6 14;-fx-cursor:hand;");
+                            achievementsPane.getChildren().add(more);
+                        }
+                    }
+                    if (achievementsSection != null) {
+                        achievementsSection.setVisible(true);
+                        achievementsSection.setManaged(true);
+                    }
+                });
+            } catch (Exception e) {
+                System.err.println("Could not load achievements: " + e.getMessage());
+            }
+        });
+        t.setDaemon(true); t.start();
+    }
+
+    private HBox buildAchievementChip(Reward reward) {
+        StackPane ico = faCircle(rewardTypeIcon(reward.getType()), 16, rewardGradient(reward.getType()), "white");
+        ico.setPrefSize(32, 32); ico.setMaxSize(32, 32);
+        Label name = new Label(reward.getName());
+        name.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
+        Label type = new Label(reward.getType());
+        type.setStyle("-fx-font-size:10px;-fx-text-fill:#718096;");
+        VBox info = new VBox(2, name, type);
+        HBox chip = new HBox(8, ico, info);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.setPadding(new Insets(8, 12, 8, 10));
+        chip.setStyle("-fx-background-color:white;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-border-width:1;-fx-cursor:hand;");
+        chip.setOnMouseEntered(e -> chip.setStyle("-fx-background-color:#f5f7ff;-fx-background-radius:10;-fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-border-width:1;-fx-cursor:hand;"));
+        chip.setOnMouseExited(e  -> chip.setStyle("-fx-background-color:white;-fx-background-radius:10;-fx-border-color:#e4e8f0;-fx-border-radius:10;-fx-border-width:1;-fx-cursor:hand;"));
+        chip.setOnMouseClicked(e -> showRewardDetails(reward));
+        return chip;
+    }
 
     private void applyFilters() {
         String kw   = searchField.getText().trim().toLowerCase();

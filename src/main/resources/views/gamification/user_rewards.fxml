@@ -22,15 +22,39 @@
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                 VBox.vgrow="ALWAYS"
                 style="-fx-background-color: transparent; -fx-background: transparent;">
-        <VBox>
+        <VBox spacing="20">
             <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <FlowPane fx:id="cardsPane" hgap="18" vgap="18" styleClass="cards-pane"/>
+
+            <!-- MY ACHIEVEMENTS SECTION -->
+            <VBox fx:id="achievementsSection" spacing="12" visible="false" managed="false"
+                  style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;-fx-padding:18;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+                <!-- Header -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="My Achievements"
+                           style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                    <Label fx:id="lblAchievementCount" text="0 earned"
+                           style="-fx-background-color:#3b4fd8;-fx-text-fill:white;-fx-background-radius:20;-fx-padding:2 10;-fx-font-size:11px;-fx-font-weight:bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="View All My Rewards"
+                            onAction="#handleViewAllEarned"
+                            style="-fx-background-color:#eef0fd;-fx-text-fill:#3b4fd8;-fx-font-size:12px;-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:6 14;-fx-cursor:hand;-fx-border-color:#c3c9f5;-fx-border-radius:8;"/>
+                </HBox>
+                <Label text="Rewards you have earned by completing games"
+                       style="-fx-text-fill:#718096;-fx-font-size:12px;"/>
+                <!-- Achievement chips -->
+                <FlowPane fx:id="achievementsPane" hgap="10" vgap="10"/>
+            </VBox>
+
+            <!-- ALL REWARDS -->
+            <VBox spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="All Available Rewards"
+                           style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                    <Label fx:id="lblStatus" text=""
+                           style="-fx-text-fill:#718096;-fx-font-size:12px;"/>
+                </HBox>
+                <FlowPane fx:id="cardsPane" hgap="18" vgap="18" styleClass="cards-pane"/>
+            </VBox>
         </VBox>
     </ScrollPane>
-
-    <!-- STATUS BAR -->
-    <HBox styleClass="status-bar">
-        <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
-        <Label fx:id="lblStatus" styleClass="status-label" text=""/>
-    </HBox>
 </VBox>

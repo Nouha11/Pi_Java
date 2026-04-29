@@ -105,7 +105,7 @@
 
                 <!-- Tabs -->
                 <TabPane fx:id="profileTabs" tabClosingPolicy="UNAVAILABLE"
-                         style="-fx-background-color:transparent;-fx-tab-min-width:160px;">
+                         style="-fx-background-color:white;-fx-tab-min-width:160px;-fx-tab-max-width:200px;">
 
                     <!-- Settings tab -->
                     <Tab text="Settings">

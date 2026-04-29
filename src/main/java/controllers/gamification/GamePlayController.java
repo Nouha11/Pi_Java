@@ -119,7 +119,7 @@ public class GamePlayController {
         HBox ratingDisplay = buildOverlayRating(game.getId());
 
         // Favorite button
-        int userId = UserSession.getInstance().getUserId();
+        int userId = utils.SessionManager.getCurrentUserId();
         HBox favRow = new HBox();
         favRow.setAlignment(Pos.CENTER);
         if (userId > 0) {
@@ -144,17 +144,108 @@ public class GamePlayController {
         javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
         sep.setMaxWidth(380);
 
+        // Linked achievements section
+        javafx.scene.control.ScrollPane achievementsSection = buildLinkedAchievements(game.getId(), userId);
+
         if (isMiniGame) {
             Button startBtn = new Button("Start");
             startBtn.setStyle("-fx-background-color:linear-gradient(to right,#43e97b,#38f9d7);-fx-text-fill:white;" +
                               "-fx-font-weight:bold;-fx-font-size:15px;-fx-background-radius:10;-fx-padding:12 40;-fx-cursor:hand;");
             startBtn.setOnAction(e -> startGame());
-            overlayContent.getChildren().addAll(ico, title, badgeRow, desc, info, rewardInfo, ratingDisplay, favRow, sep, startBtn);
+            overlayContent.getChildren().addAll(ico, title, badgeRow, desc, info, rewardInfo, ratingDisplay, favRow, sep, achievementsSection, startBtn);
         } else {
             btnStart.setText("Start Game");
             btnStart.setOnAction(e -> startGame());
-            overlayContent.getChildren().addAll(ico, title, badgeRow, desc, info, rewardInfo, ratingDisplay, favRow);
+            overlayContent.getChildren().addAll(ico, title, badgeRow, desc, info, rewardInfo, ratingDisplay, favRow, sep, achievementsSection);
         }
+    }
+
+    /** Build the linked achievements panel for the start overlay. */
+    private javafx.scene.control.ScrollPane buildLinkedAchievements(int gameId, int userId) {
+        VBox section = new VBox(6);
+        section.setMaxWidth(400);
+        section.setAlignment(Pos.CENTER_LEFT);
+
+        try {
+            java.util.List<models.gamification.Reward> linked =
+                new services.gamification.GameService().getRewardsForGame(gameId);
+            if (linked.isEmpty()) {
+                // Return empty invisible pane
+                javafx.scene.control.ScrollPane empty = new javafx.scene.control.ScrollPane();
+                empty.setVisible(false); empty.setManaged(false);
+                return empty;
+            }
+
+            services.gamification.EarnedRewardService earnedSvc =
+                new services.gamification.EarnedRewardService();
+
+            Label header = new Label("Achievements you can earn (" + linked.size() + "):");
+            header.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#718096;-fx-padding:0 0 4 0;");
+            section.getChildren().add(header);
+
+            for (models.gamification.Reward r : linked) {
+                boolean earned = userId > 0 && earnedSvc.hasEarned(userId, r.getId());
+
+                StackPane ico = faCircle(rewardTypeIcon(r.getType()), 14,
+                    earned ? "linear-gradient(to bottom right,#27ae60,#2ecc71)"
+                           : rewardGradient(r.getType()), "white");
+                ico.setPrefSize(32, 32); ico.setMaxSize(32, 32);
+                if (!earned) ico.setOpacity(0.45);
+
+                Label name = new Label(r.getName());
+                name.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:" +
+                              (earned ? "#27ae60" : "#1e2a5e") + ";");
+                Label type = new Label(r.getType());
+                type.setStyle("-fx-font-size:10px;-fx-text-fill:#a0aec0;");
+                VBox info2 = new VBox(2, name, type);
+                info2.setAlignment(Pos.CENTER_LEFT);
+                HBox.setHgrow(info2, Priority.ALWAYS);
+
+                Label status = new Label(earned ? "\u2705 Earned" : "\uD83D\uDD12 Locked");
+                status.setStyle("-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" +
+                                (earned ? "#27ae60" : "#a0aec0") + ";");
+
+                HBox row = new HBox(10, ico, info2, status);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setPadding(new Insets(7, 10, 7, 10));
+                row.setStyle("-fx-background-color:" + (earned ? "#f0fff4" : "#f8f9ff") + ";" +
+                             "-fx-background-radius:8;-fx-border-color:" +
+                             (earned ? "#9ae6b4" : "#e4e8f0") + ";-fx-border-radius:8;-fx-border-width:1;");
+                section.getChildren().add(row);
+            }
+        } catch (Exception e) {
+            System.err.println("Could not load linked achievements: " + e.getMessage());
+        }
+
+        // Wrap in a ScrollPane with max height so it doesn't overflow
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(section);
+        scroll.setFitToWidth(true);
+        scroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setMaxHeight(180); // show ~3 rows, scroll for more
+        scroll.setMaxWidth(400);
+        scroll.setStyle("-fx-background-color:transparent;-fx-background:#f0f2f8;-fx-border-color:transparent;");
+        return scroll;
+    }
+
+    private String rewardTypeIcon(String type) {
+        return switch (type) {
+            case "BADGE"        -> utils.TwemojiUtil.MEDAL;
+            case "ACHIEVEMENT"  -> utils.TwemojiUtil.TROPHY;
+            case "BONUS_XP"     -> utils.TwemojiUtil.STAR;
+            case "BONUS_TOKENS" -> utils.TwemojiUtil.COIN;
+            default             -> utils.TwemojiUtil.GIFT;
+        };
+    }
+
+    private String rewardGradient(String type) {
+        return switch (type) {
+            case "BADGE"        -> "linear-gradient(to bottom right,#f6d365,#fda085)";
+            case "ACHIEVEMENT"  -> "linear-gradient(to bottom right,#a18cd1,#fbc2eb)";
+            case "BONUS_XP"     -> "linear-gradient(to bottom right,#4facfe,#00f2fe)";
+            case "BONUS_TOKENS" -> "linear-gradient(to bottom right,#43e97b,#38f9d7)";
+            default             -> "linear-gradient(to bottom right,#667eea,#764ba2)";
+        };
     }
 
     private HBox buildOverlayRating(int gameId) {
@@ -201,7 +292,7 @@ public class GamePlayController {
             overlayContent.getChildren().add(rl);
 
             // ── Star rating widget ────────────────────────────────────────────
-            int userId = UserSession.getInstance().getUserId();
+            int userId = utils.SessionManager.getCurrentUserId();
             if (userId > 0) {
                 Separator rateSep = new Separator();
                 rateSep.setStyle("-fx-background-color:#e4e8f0;");
@@ -260,7 +351,7 @@ public class GamePlayController {
     }
 
     private void grantRewards() {
-        int userId = UserSession.getInstance().getUserId();
+        int userId = utils.SessionManager.getCurrentUserId();
         if (userId <= 0) return;
         try {
             GameRewardService svc = new GameRewardService();
@@ -269,9 +360,42 @@ public class GamePlayController {
                 svc.awardMiniGameEnergy(userId, ep);
             } else {
                 svc.awardGameRewards(userId, game.getRewardXP(), game.getRewardTokens());
+                // Check for newly earned linked rewards and send notification
+                sendAchievementNotification(userId);
             }
         } catch (Exception e) {
             System.err.println("Could not grant rewards: " + e.getMessage());
+        }
+    }
+
+    private void sendAchievementNotification(int userId) {
+        try {
+            java.util.List<models.gamification.Reward> linkedRewards =
+                new services.gamification.GameService().getRewardsForGame(game.getId());
+            System.out.println("[Achievement] Game " + game.getId() + " has " + linkedRewards.size() + " linked rewards, userId=" + userId);
+            if (linkedRewards.isEmpty()) return;
+
+            services.gamification.EarnedRewardService earnedSvc = new services.gamification.EarnedRewardService();
+            java.util.List<models.gamification.Reward> newlyEarned = new java.util.ArrayList<>();
+
+            for (models.gamification.Reward r : linkedRewards) {
+                boolean alreadyEarned = earnedSvc.hasEarned(userId, r.getId());
+                System.out.println("[Achievement] Reward " + r.getId() + " (" + r.getName() + ") alreadyEarned=" + alreadyEarned);
+                if (!alreadyEarned) {
+                    earnedSvc.awardReward(userId, r.getId());
+                    newlyEarned.add(r);
+                }
+            }
+
+            if (!newlyEarned.isEmpty()) {
+                String username = UserSession.getInstance().getUsername();
+                new services.gamification.AchievementNotificationService()
+                    .notifyAchievements(username, game.getName(), newlyEarned,
+                                        game.getRewardXP(), game.getRewardTokens());
+            }
+        } catch (Exception e) {
+            System.err.println("[Achievement] Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -716,9 +840,9 @@ public class GamePlayController {
         gameContentArea.getChildren().add(box);
 
         String[][] targets = {
-            {"\uF005","#f6d365","#fda085"}, {"\uF06B","#43e97b","#38f9d7"},
-            {"\uF091","#a18cd1","#fbc2eb"}, {"\uF059","#4facfe","#00f2fe"},
-            {"\uF72E","#fc5c7d","#6a3093"}
+            {"#f6d365","#fda085"}, {"#43e97b","#38f9d7"},
+            {"#a18cd1","#fbc2eb"}, {"#4facfe","#00f2fe"},
+            {"#fc5c7d","#6a3093"}
         };
         int speed = "HARD".equals(game.getDifficulty()) ? 1000 : "MEDIUM".equals(game.getDifficulty()) ? 1600 : 2200;
 
@@ -730,8 +854,11 @@ public class GamePlayController {
             }
             if (targetsHit + targetsMissed >= totalTargets) { endGame((double) targetsHit / totalTargets >= 0.6); return; }
             String[] t = targets[new Random().nextInt(targets.length)];
-            Button btn = new Button(t[0]); btn.setPrefSize(64, 64);
-            btn.setStyle("-fx-background-color:linear-gradient(to bottom right," + t[1] + "," + t[2] + ");-fx-text-fill:white;-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:24px;-fx-background-radius:50;-fx-cursor:hand;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.25),10,0,0,4);");
+            // Plain colored circle — no text, no font dependency
+            Button btn = new Button(); btn.setPrefSize(64, 64);
+            btn.setStyle("-fx-background-color:linear-gradient(to bottom right," + t[0] + "," + t[1] + ");" +
+                         "-fx-background-radius:50;-fx-cursor:hand;" +
+                         "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.3),12,0,0,4);");
             double x = 20 + Math.random() * (700 - 84), y = 20 + Math.random() * (380 - 84);
             btn.setLayoutX(x); btn.setLayoutY(y); btn.setScaleX(0); btn.setScaleY(0);
             arena.getChildren().add(btn); activeTarget = btn;

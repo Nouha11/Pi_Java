@@ -153,7 +153,7 @@ public class GameLauncherController {
 
         // Rating row
         HBox ratingRow = buildRatingDisplay(game.getId());
-        int userId = UserSession.getInstance().getUserId();
+        int userId = utils.SessionManager.getCurrentUserId();
         if (userId > 0) {
             Button btnRate = new Button("Rate");
             btnRate.setStyle("-fx-background-color:transparent;-fx-text-fill:#3b4fd8;-fx-font-size:11px;-fx-cursor:hand;-fx-underline:true;-fx-padding:0 4;");
@@ -225,7 +225,7 @@ public class GameLauncherController {
     }
 
     private void showRatingDialog(Game game, HBox ratingRowToRefresh) {
-        int userId = UserSession.getInstance().getUserId();
+        int userId = utils.SessionManager.getCurrentUserId();
         if (userId<=0) return;
         Dialog<Void> dlg = new Dialog<>(); dlg.setTitle("Rate: "+game.getName());
         VBox content = new VBox(14); content.setAlignment(Pos.CENTER); content.setPadding(new Insets(24)); content.setMinWidth(300);

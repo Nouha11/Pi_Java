@@ -79,12 +79,14 @@
         <!-- Overlay (start / result) -->
         <StackPane fx:id="gameOverlay"
                    style="-fx-background-color: rgba(240,242,248,0.93);">
-            <VBox fx:id="overlayContent" alignment="CENTER" spacing="16"
-                  style="-fx-padding: 40; -fx-background-color: white; -fx-background-radius: 16;
-                         -fx-border-color: #e4e8f0; -fx-border-radius: 16; -fx-border-width: 1;
-                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 16, 0, 0, 4);"
-                  maxWidth="460">
-            </VBox>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                        maxWidth="480" maxHeight="520"
+                        style="-fx-background-color:white;-fx-background:white;-fx-background-radius:16;-fx-border-color:#e4e8f0;-fx-border-radius:16;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.10),16,0,0,4);">
+                <VBox fx:id="overlayContent" alignment="CENTER" spacing="14"
+                      style="-fx-padding:32 36;-fx-background-color:white;"
+                      maxWidth="440">
+                </VBox>
+            </ScrollPane>
         </StackPane>
 
     </StackPane>
