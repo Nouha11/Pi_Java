@@ -32,10 +32,9 @@ public class HuggingFaceService {
      * Cerebras provider runs at ~2000 tokens/sec (vs ~50 for standard inference).
      */
     private static final String[] MODELS = {
-        "meta-llama/Llama-3.3-70B-Instruct:cerebras", // Fastest: Cerebras hardware, ~2000 tok/s
-        "Qwen/Qwen2.5-72B-Instruct:novita",           // Fast: Novita provider, 72B quality
-        "Qwen/Qwen3-30B-A3B-Instruct",                // Accurate fallback
-        "Qwen/Qwen2.5-7B-Instruct-1M"                 // Last resort, always available
+        "Qwen/Qwen2.5-7B-Instruct-1M",           // Fast and reliable — original working model
+        "meta-llama/Llama-3.1-8B-Instruct",       // Fallback #1
+        "mistralai/Mistral-7B-Instruct-v0.3"      // Fallback #2
     };
 
     private static String getApiUrl(String model) {
@@ -258,8 +257,8 @@ public class HuggingFaceService {
             .replace("\r", "\\r")
             .replace("\t", "\\t");
 
-        // Qwen3 models support /no_think to skip chain-of-thought (saves tokens on trivia)
-        String userContent = model.contains("Qwen3") ? "/no_think\\n" + escaped : escaped;
+        // Build request — no special prefix needed for these models
+        String userContent = escaped;
 
         return "{" +
                "\"model\":\"" + model + "\"," +

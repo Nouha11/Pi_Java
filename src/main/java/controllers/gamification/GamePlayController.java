@@ -438,7 +438,7 @@ public class GamePlayController {
         for (int i : order) { memorySymbols.add(symList.get(i)); shuffledColors.add(colList.get(i)); }
         memoryCards = new ArrayList<>(); flippedIndices = new ArrayList<>(); matchedPairs = 0; canFlip = true;
 
-        StackPane brainIco = faCircle("\uF5DC", 18, "linear-gradient(to right,#a18cd1,#fbc2eb)", "white");
+        StackPane brainIco = faCircle(utils.TwemojiUtil.MEMORY, 18, "linear-gradient(to right,#a18cd1,#fbc2eb)", "white");
         brainIco.setPrefSize(36, 36); brainIco.setMaxSize(36, 36);
         Label hdrTxt = new Label("Memory Match — find all " + pairs + " pairs");
         hdrTxt.setStyle("-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
@@ -499,11 +499,10 @@ public class GamePlayController {
                     }));
                 }
             } else if (!isText) {
-                // FA icon — use a Label graphic so font-family applies correctly
-                Label ico = new Label(sym);
-                ico.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;" +
-                             "-fx-font-size:24px;-fx-text-fill:white;");
-                card.setGraphic(ico); card.setText("");
+                // Emoji text fallback — render directly
+                card.setGraphic(null);
+                card.setText(sym);
+                card.setStyle(card.getStyle() + "-fx-font-size:22px;-fx-text-fill:white;");
             } else {
                 // Plain text word
                 card.setGraphic(null);
@@ -961,11 +960,11 @@ public class GamePlayController {
     private void buildStretchGame() {
         int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 20;
         String[][] exercises = {
-            {"\uF44B","Neck Rolls","Slowly roll your neck in circles","#f6d365","#fda085"},
-            {"\uF44B","Shoulder Shrugs","Lift shoulders up and down","#43e97b","#38f9d7"},
-            {"\uF44B","Arm Circles","Make big circles with your arms","#4facfe","#00f2fe"},
-            {"\uF44B","Wrist Rotations","Rotate your wrists gently","#a18cd1","#fbc2eb"},
-            {"\uF44B","Back Stretch","Reach up and stretch your back","#fc5c7d","#6a3093"}
+            {"\uD83E\uDDB4","Neck Rolls","Slowly roll your neck in circles","#f6d365","#fda085"},
+            {"\uD83D\uDCAA","Shoulder Shrugs","Lift shoulders up and down","#43e97b","#38f9d7"},
+            {"\uD83D\uDC4B","Arm Circles","Make big circles with your arms","#4facfe","#00f2fe"},
+            {"\uD83E\uDD32","Wrist Rotations","Rotate your wrists gently","#a18cd1","#fbc2eb"},
+            {"\uD83E\uDDD8","Back Stretch","Reach up and stretch your back","#fc5c7d","#6a3093"}
         };
         StackPane exIcon = faCircle(exercises[0][0], 32, "linear-gradient(to bottom right," + exercises[0][3] + "," + exercises[0][4] + ")", "white");
         exIcon.setPrefSize(90, 90); exIcon.setMaxSize(90, 90);
@@ -995,8 +994,10 @@ public class GamePlayController {
                 if (exIdx[0] >= exercises.length) { running = false; endGame(true); return; }
                 secs[0] = 10;
                 String[] ex = exercises[exIdx[0]];
-                Label ico = new Label(ex[0]); ico.setStyle("-fx-font-family:'Font Awesome 5 Free';-fx-font-weight:900;-fx-font-size:32px;-fx-text-fill:white;");
-                exIcon.getChildren().setAll(ico);
+                // Use TwemojiUtil to render the emoji icon properly
+                StackPane newIco = faCircle(ex[0], 32, "linear-gradient(to bottom right," + ex[3] + "," + ex[4] + ")", "white");
+                newIco.setPrefSize(90, 90); newIco.setMaxSize(90, 90);
+                exIcon.getChildren().setAll(newIco.getChildren());
                 exIcon.setStyle("-fx-background-color:linear-gradient(to bottom right," + ex[3] + "," + ex[4] + ");-fx-background-radius:50;");
                 nameLbl.setText(ex[1]); instrLbl.setText(ex[2]);
                 timerLbl.setText("10"); timerLbl.setStyle("-fx-font-size:64px;-fx-font-weight:bold;-fx-text-fill:#3b4fd8;");
@@ -1014,7 +1015,7 @@ public class GamePlayController {
     private void buildEyeRestGame() {
         int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 20;
         int duration = 20;
-        StackPane eyeIco = faCircle("\uF06E", 36, "linear-gradient(to bottom right,#4facfe,#00f2fe)", "white");
+        StackPane eyeIco = faCircle("\uD83D\uDC41", 36, "linear-gradient(to bottom right,#4facfe,#00f2fe)", "white");
         eyeIco.setPrefSize(100, 100); eyeIco.setMaxSize(100, 100);
         ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), eyeIco);
         pulse.setFromX(1); pulse.setToX(1.1); pulse.setFromY(1); pulse.setToY(1.1);

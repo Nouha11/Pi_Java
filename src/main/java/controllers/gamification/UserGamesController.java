@@ -87,8 +87,11 @@ public class UserGamesController {
         stats.setAlignment(Pos.CENTER);
         stats.setStyle("-fx-background-color: #f8f9ff; -fx-background-radius: 8; -fx-padding: 8 12;");
 
-        Button btnView = new Button("\uF06E  View Details");
-        btnView.getStyleClass().add("btn-card-edit");
+        Button btnView = new Button("View Details");
+        btnView.setStyle("-fx-background-color:#eef0fd;-fx-text-fill:#3b4fd8;-fx-font-size:12px;" +
+                         "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 16;-fx-cursor:hand;" +
+                         "-fx-border-color:#c3c9f5;-fx-border-radius:8;-fx-border-width:1;");
+        btnView.setMaxWidth(Double.MAX_VALUE);
         btnView.setOnAction(e -> showGameDetails(game));
 
         VBox card = new VBox(12, icon, title, badges, stats, btnView);
@@ -137,13 +140,9 @@ public class UserGamesController {
         rewardsBox.setStyle("-fx-background-color: #f8f9ff; -fx-padding: 16 24 20 24;");
         try {
             List<Reward> rewards = gameService.getRewardsForGame(game.getId());
-            StackPane trophyIcon = faCircle("\uF091", 14, "linear-gradient(to bottom right, #f6d365, #fda085)", "white");
-            trophyIcon.setPrefSize(28, 28); trophyIcon.setMaxSize(28, 28);
             Label rwTitle = new Label("Linked Rewards  (" + rewards.size() + ")");
             rwTitle.setStyle("-fx-text-fill: #3b4fd8; -fx-font-size: 13px; -fx-font-weight: bold;");
-            HBox rwHeader = new HBox(8, trophyIcon, rwTitle);
-            rwHeader.setAlignment(Pos.CENTER_LEFT);
-            rewardsBox.getChildren().add(rwHeader);
+            rewardsBox.getChildren().add(rwTitle);
             if (rewards.isEmpty()) {
                 Label none = new Label("No rewards linked to this game.");
                 none.setStyle("-fx-text-fill: #a0aec0; -fx-font-size: 12px;");
@@ -156,7 +155,8 @@ public class UserGamesController {
                     ImageView iv = loadRewardIcon(r.getIcon(), 36);
                     if (iv != null) chip.getChildren().add(iv);
                     else {
-                        StackPane ico = faCircle("\uF5A2", 18, "linear-gradient(to bottom right, #f6d365, #fda085)", "white");
+                        StackPane ico = faCircle(rewardTypeIcon(r.getType()), 18,
+                            "linear-gradient(to bottom right, #f6d365, #fda085)", "white");
                         ico.setPrefSize(36, 36); ico.setMaxSize(36, 36);
                         chip.getChildren().add(ico);
                     }
@@ -242,6 +242,16 @@ public class UserGamesController {
             case "TRIVIA" -> utils.TwemojiUtil.TRIVIA;
             case "ARCADE" -> utils.TwemojiUtil.ARCADE;
             default       -> utils.TwemojiUtil.GAMEPAD;
+        };
+    }
+
+    private String rewardTypeIcon(String type) {
+        return switch (type) {
+            case "BADGE"        -> utils.TwemojiUtil.MEDAL;
+            case "ACHIEVEMENT"  -> utils.TwemojiUtil.TROPHY;
+            case "BONUS_XP"     -> utils.TwemojiUtil.STAR;
+            case "BONUS_TOKENS" -> utils.TwemojiUtil.COIN;
+            default             -> utils.TwemojiUtil.GIFT;
         };
     }
 

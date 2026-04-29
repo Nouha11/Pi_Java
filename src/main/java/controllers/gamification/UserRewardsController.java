@@ -269,13 +269,9 @@ public class UserRewardsController {
         gamesBox.setStyle("-fx-background-color: #f8f9ff; -fx-padding: 16 24 20 24;");
         try {
             List<Game> games = gameService.getGamesForReward(reward.getId());
-            StackPane gameIcon = faCircle("\uF11B", 14, "linear-gradient(to bottom right, #43e97b, #38f9d7)", "white");
-            gameIcon.setPrefSize(28, 28); gameIcon.setMaxSize(28, 28);
             Label gTitle = new Label("Available in Games  (" + games.size() + ")");
             gTitle.setStyle("-fx-text-fill: #3b4fd8; -fx-font-size: 13px; -fx-font-weight: bold;");
-            HBox gHeader = new HBox(8, gameIcon, gTitle);
-            gHeader.setAlignment(Pos.CENTER_LEFT);
-            gamesBox.getChildren().add(gHeader);
+            gamesBox.getChildren().add(gTitle);
             if (games.isEmpty()) {
                 Label none = new Label("Not linked to any game yet.");
                 none.setStyle("-fx-text-fill: #a0aec0; -fx-font-size: 12px;");
