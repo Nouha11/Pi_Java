@@ -1,0 +1,116 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - Chat Panel Height Exceeds Viewport
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: Scope the property to concrete failing cases - chat panel with 15+ messages where panel height exceeds 800px and input controls are pushed below viewport
+  - Test that when messageCount > 10, chatPanel height exceeds viewport height (e.g., 800px) and input controls (send button, text field) are not visible in viewport
+  - Test implementation details from Bug Condition in design: `input.messageCount > threshold AND chatPanel.height > viewport.height AND inputControls.visibleInViewport == false`
+  - The test assertions should match the Expected Behavior Properties from design: chatPanel maintains maxHeight, ScrollPane scrolls independently, all controls remain visible
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found to understand root cause (e.g., "After adding 15 messages, chatPanel height is 1500px, send button Y-coordinate is 1450px, viewport height is 800px - button is inaccessible")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Layout Functionality Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (interactions that don't involve vertical layout)
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Test cases to observe and capture:
+    - Chat panel initial display with proper styling and positioning in bottom-right corner
+    - Floating action button toggle functionality (open/close chat panel)
+    - Quick prompt suggestions display in horizontal scrollable area
+    - Typing indicator display between messages area and input controls
+    - User and assistant message rendering with existing styling and formatting
+    - Chat panel minimize/close functionality
+    - Clear history button functionality
+    - Button click handlers (send, close, minimize, clear history)
+    - Message styling (user messages with blue background, assistant messages with dark background)
+    - Timestamp display on messages
+    - Favorite toggle on assistant messages
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+- [-] 3. Fix for AI chat layout - prevent indefinite expansion and keep controls visible
+
+  - [x] 3.1 Add maximum height constraint to chatPanel VBox in FXML
+    - Open `src/main/resources/views/studysession/AiStudyAssistantView.fxml`
+    - Locate the `VBox` with `fx:id="chatPanel"`
+    - Add `maxHeight="600"` attribute to prevent indefinite vertical expansion
+    - This constrains the panel to a fixed maximum height that fits within typical viewport dimensions
+    - _Bug_Condition: isBugCondition(input) where input.messageCount > threshold AND chatPanel.height > viewport.height_
+    - _Expected_Behavior: chatPanel.height <= maxHeight (600px) for all message counts_
+    - _Preservation: Chat panel styling, positioning, and initial display behavior unchanged_
+    - _Requirements: 2.1, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+  - [x] 3.2 Verify ScrollPane configuration in FXML
+    - Verify the `ScrollPane` with `fx:id="scrollPane"` has `VBox.vgrow="ALWAYS"` (already present)
+    - Verify `fitToWidth="true"` is set (already present)
+    - Verify `hbarPolicy="NEVER"` is set (already present)
+    - These settings ensure the ScrollPane fills available vertical space within the constrained panel and scrolls messages independently
+    - _Bug_Condition: isBugCondition(input) where ScrollPane does not constrain parent VBox growth_
+    - _Expected_Behavior: ScrollPane fills available space and scrolls content independently_
+    - _Preservation: ScrollPane behavior for horizontal scrolling and content wrapping unchanged_
+    - _Requirements: 2.2, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+  - [x] 3.3 Implement auto-scroll behavior in controller
+    - Open `src/main/java/controllers/studysession/AiStudyAssistantController.java`
+    - Locate the `scrollToBottom()` method (already exists)
+    - Verify it calls `Platform.runLater(() -> scrollPane.setVvalue(1.0))` to scroll to bottom
+    - Ensure `scrollToBottom()` is called after adding user messages in `handleSend()`
+    - Ensure `scrollToBottom()` is called after adding assistant messages in the `aiTask.setOnSucceeded()` handler
+    - Ensure `scrollToBottom()` is called after loading chat history in `initData()`
+    - This ensures the latest message is always visible when new messages are added
+    - _Bug_Condition: isBugCondition(input) where new messages are added but not visible_
+    - _Expected_Behavior: ScrollPane automatically scrolls to show latest message (vvalue = 1.0)_
+    - _Preservation: Existing message rendering, styling, and display logic unchanged_
+    - _Requirements: 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+  - [ ] 3.4 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Chat Panel Height Constraint Enforced
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - Verify that with 15+ messages, chatPanel height does not exceed maxHeight (600px)
+    - Verify that input controls (send button, text field) remain visible in viewport
+    - Verify that ScrollPane scrolls independently to show all messages
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+
+  - [ ] 3.5 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Layout Functionality Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - Verify all non-layout functionality continues to work:
+      - Chat panel initial display and positioning
+      - Floating action button toggle
+      - Quick prompt suggestions
+      - Typing indicator
+      - Message rendering and styling
+      - Button actions (send, close, minimize, clear history)
+      - Timestamp display
+      - Favorite toggle
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Run all bug condition exploration tests - verify they pass
+  - Run all preservation tests - verify they pass
+  - Manually test the chat interface with 20+ messages to confirm:
+    - Chat panel maintains fixed height (600px max)
+    - Messages scroll independently in the ScrollPane
+    - Send button and text field remain visible and accessible
+    - Close, minimize, and clear history buttons remain visible and accessible
+    - Auto-scroll shows the latest message when new messages are added
+    - All existing functionality (styling, quick prompts, typing indicator, favorites) works correctly
+  - If any issues arise, document them and ask the user for guidance

@@ -36,6 +36,7 @@
         <VBox fx:id="chatPanel"
               minHeight="400" minWidth="320"
               prefWidth="360"
+              maxHeight="600"
               visible="false" managed="false"
               AnchorPane.bottomAnchor="24"
               AnchorPane.rightAnchor="24"
