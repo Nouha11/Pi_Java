@@ -198,6 +198,8 @@ public class UserService {
         u.setTotpEnabled(rs.getBoolean("totp_enabled"));
         u.setTotpSecret(rs.getString("totp_secret"));
         try { u.setFaceToken(rs.getString("face_token")); } catch (Exception ignored) {}
+        try { u.setCountryCode(rs.getString("country_code")); } catch (Exception ignored) {}
+        try { u.setLastLat(rs.getDouble("last_lat")); u.setLastLon(rs.getDouble("last_lon")); } catch (Exception ignored) {}
         Timestamp ca = rs.getTimestamp("created_at");
         if (ca != null) u.setCreatedAt(ca.toLocalDateTime());
         Timestamp ua = rs.getTimestamp("updated_at");
@@ -250,5 +252,35 @@ public class UserService {
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         }
+    }
+
+    public boolean updateCountryCode(int userId, String countryCode) throws SQLException {
+        String sql = "UPDATE user SET country_code=?, updated_at=NOW() WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, countryCode);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateLocation(int userId, String countryCode, double lat, double lon) throws SQLException {
+        String sql = "UPDATE user SET country_code=?, last_lat=?, last_lon=?, updated_at=NOW() WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, countryCode);
+            ps.setDouble(2, lat);
+            ps.setDouble(3, lon);
+            ps.setInt(4, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /** Returns all users that have location data */
+    public java.util.List<User> getUsersWithLocation() throws SQLException {
+        java.util.List<User> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM user WHERE last_lat != 0 AND last_lon != 0 ORDER BY username";
+        try (java.sql.Statement st = conn.createStatement(); java.sql.ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) list.add(mapRow(rs));
+        }
+        return list;
     }
 }

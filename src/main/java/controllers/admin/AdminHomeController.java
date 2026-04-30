@@ -24,6 +24,7 @@ import services.library.LoanService;
 import services.quiz.QuestionService;
 import services.quiz.QuizService;
 import services.studysession.CourseService;
+import services.api.GeoLocationService;
 import utils.MyConnection;
 
 import java.net.URL;
@@ -62,6 +63,12 @@ public class AdminHomeController implements Initializable {
     // ── Content row containers ────────────────────────────────────────
     @FXML private HBox contentArea, row2, row3, row4;
     @FXML private VBox coursesPanel, sidebar, loansPanel, gamesPanel, topGamesBox;
+    @FXML private javafx.scene.layout.HBox geoWidget;
+    @FXML private javafx.scene.control.Label lblGeoLocation;
+    @FXML private javafx.scene.control.Label lblGeoTimezone;
+    @FXML private javafx.scene.control.Label lblGeoIp;
+    @FXML private javafx.scene.control.Label lblGeoCurrency;
+    private final GeoLocationService geoService = new GeoLocationService();
     @FXML private VBox quizzesPanel, rewardsPanel, topRewardsBox;
     @FXML private VBox recentGamesPanel, recentRewardsPanel;
 
@@ -95,6 +102,7 @@ public class AdminHomeController implements Initializable {
         updateGreeting();
         startLiveClock();
         loadStats();
+        loadGeoLocationAsync();
 
         loadRecentCourses();
         loadRecentLoans();
@@ -558,5 +566,26 @@ public class AdminHomeController implements Initializable {
                 }
             }
         } catch (Exception ignored) {}
+    }
+
+    // ── IPGeolocation + RestCountries ─────────────────────────────────────────
+    private void loadGeoLocationAsync() {
+        if (lblGeoLocation == null) return;
+        lblGeoLocation.setText("Detecting...");
+
+        new Thread(() -> {
+            GeoLocationService.GeoInfo info = geoService.fetchCurrentLocation();
+            javafx.application.Platform.runLater(() -> {
+                if (info == null) {
+                    if (lblGeoLocation != null) lblGeoLocation.setText("Unavailable");
+                    return;
+                }
+                if (lblGeoLocation != null) lblGeoLocation.setText(info.getSummary());
+                if (lblGeoTimezone != null) lblGeoTimezone.setText(info.getTimezoneDisplay());
+                if (lblGeoIp       != null) lblGeoIp.setText(info.ip);
+                if (lblGeoCurrency != null) lblGeoCurrency.setText(
+                    info.currency.isBlank() ? "—" : info.currency);
+            });
+        }, "GeoLocation").start();
     }
 }

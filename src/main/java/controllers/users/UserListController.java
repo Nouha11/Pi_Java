@@ -62,7 +62,15 @@ public class UserListController implements Initializable {
     }
 
     private void setupColumns() {
-        colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
+        // Show flag emoji + username
+        colUsername.setCellValueFactory(c -> {
+            User u = c.getValue();
+            String cc = u.getCountryCode();
+            String display = (cc != null && !cc.isBlank())
+                ? "[" + cc.toUpperCase() + "] " + u.getUsername()
+                : u.getUsername();
+            return new SimpleStringProperty(display);
+        });
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colXp.setCellValueFactory(new PropertyValueFactory<>("xp"));
 
@@ -192,5 +200,15 @@ public class UserListController implements Initializable {
     private void showError(String title, String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
         a.setTitle(title); a.setHeaderText(null); a.showAndWait();
+    }
+
+    /** Converts ISO-2 country code to flag emoji */
+    private String countryCodeToFlag(String code) {
+        if (code == null || code.length() != 2) return "";
+        try {
+            int base = 0x1F1E6 - 'A';
+            return new String(Character.toChars(base + Character.toUpperCase(code.charAt(0))))
+                 + new String(Character.toChars(base + Character.toUpperCase(code.charAt(1))));
+        } catch (Exception e) { return ""; }
     }
 }

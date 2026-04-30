@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.shape.Rectangle;
 import models.users.User;
 import org.mindrot.jbcrypt.BCrypt;
 import services.users.UserService;
@@ -31,6 +32,11 @@ public class EditProfileController implements Initializable {
     @FXML private PasswordField pfNew;
     @FXML private PasswordField pfConfirm;
     @FXML private Label         lblPwdMsg;
+    @FXML private TextField  tfNewVisible;
+    @FXML private Button     btnShowNew;
+    @FXML private Rectangle  pwBar1, pwBar2, pwBar3, pwBar4;
+    @FXML private Label      lblPwStrength;
+    private boolean showingNew = false;
 
     private User              currentUser;
     private Runnable          onSavedCallback;
@@ -40,6 +46,8 @@ public class EditProfileController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         if (lblMessage != null) { lblMessage.setVisible(false); lblMessage.setManaged(false); }
         if (lblPwdMsg  != null) { lblPwdMsg.setVisible(false);  lblPwdMsg.setManaged(false); }
+        if (pfNew != null) pfNew.textProperty().addListener((obs, old, val) -> updateStrengthMeter(val));
+        if (tfNewVisible != null) tfNewVisible.textProperty().addListener((obs, old, val) -> updateStrengthMeter(val));
     }
 
     public void setCurrentUser(User user, Runnable onSaved) {
@@ -230,6 +238,46 @@ public class EditProfileController implements Initializable {
             }
         } catch (Exception e) {
             showMessage("Cannot open face setup: " + e.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void onToggleNewPassword() {
+        showingNew = !showingNew;
+        if (showingNew) {
+            tfNewVisible.setText(pfNew.getText());
+            tfNewVisible.setVisible(true);  tfNewVisible.setManaged(true);
+            pfNew.setVisible(false);         pfNew.setManaged(false);
+            btnShowNew.setText("Hide");
+        } else {
+            pfNew.setText(tfNewVisible.getText());
+            pfNew.setVisible(true);          pfNew.setManaged(true);
+            tfNewVisible.setVisible(false);  tfNewVisible.setManaged(false);
+            btnShowNew.setText("Show");
+        }
+    }
+
+    private void updateStrengthMeter(String password) {
+        if (pwBar1 == null) return;
+        int score = 0;
+        if (password.length() >= 8)                              score++;
+        if (password.matches(".*[A-Z].*"))                       score++;
+        if (password.matches(".*[0-9].*"))                       score++;
+        if (password.matches(".*[!@#%^&*()_+=\\[\\]-].*"))  score++;
+
+        String[] colors = {"#e5e7eb","#e5e7eb","#e5e7eb","#e5e7eb"};
+        String label = ""; String labelColor = "#9ca3af";
+        switch (score) {
+            case 1 -> { colors[0] = "#ef4444"; label = "Weak";   labelColor = "#ef4444"; }
+            case 2 -> { colors[0] = "#f59e0b"; colors[1] = "#f59e0b"; label = "Fair";   labelColor = "#f59e0b"; }
+            case 3 -> { colors[0] = "#3b82f6"; colors[1] = "#3b82f6"; colors[2] = "#3b82f6"; label = "Good"; labelColor = "#3b82f6"; }
+            case 4 -> { colors[0] = "#22c55e"; colors[1] = "#22c55e"; colors[2] = "#22c55e"; colors[3] = "#22c55e"; label = "Strong"; labelColor = "#22c55e"; }
+        }
+        Rectangle[] bars = {pwBar1, pwBar2, pwBar3, pwBar4};
+        for (int i = 0; i < 4; i++) bars[i].setFill(javafx.scene.paint.Color.web(colors[i]));
+        if (lblPwStrength != null) {
+            lblPwStrength.setText(password.isEmpty() ? "" : label);
+            lblPwStrength.setStyle("-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" + labelColor + ";");
         }
     }
 }

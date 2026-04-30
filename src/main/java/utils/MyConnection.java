@@ -43,7 +43,9 @@ public class MyConnection {
         String[] migrations = {
             "ALTER TABLE user ADD COLUMN IF NOT EXISTS profile_picture VARCHAR(500) NULL DEFAULT NULL",
             "ALTER TABLE user ADD COLUMN IF NOT EXISTS totp_enabled TINYINT(1) NOT NULL DEFAULT 0",
-            "ALTER TABLE user ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) NULL DEFAULT NULL"
+            "ALTER TABLE user ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) NULL DEFAULT NULL",
+            "ALTER TABLE user ADD COLUMN IF NOT EXISTS face_token VARCHAR(255) NULL DEFAULT NULL",
+            "ALTER TABLE user ADD COLUMN IF NOT EXISTS country_code VARCHAR(5) NULL DEFAULT NULL"
         };
         try (Statement st = cnx.createStatement()) {
             for (String sql : migrations) {

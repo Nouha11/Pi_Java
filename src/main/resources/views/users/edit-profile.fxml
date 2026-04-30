@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
@@ -136,8 +137,20 @@
                             </VBox>
                             <VBox spacing="7" GridPane.columnIndex="1">
                                 <Label text="NEW PASSWORD" styleClass="field-label"/>
-                                <PasswordField fx:id="pfNew" promptText="Min 8 characters" styleClass="form-field"/>
-                            </VBox>
+                                <StackPane>
+                                    <PasswordField fx:id="pfNew" promptText="Min 8 characters" styleClass="form-field" style="-fx-padding:10 36 10 12;"/>
+                                    <TextField fx:id="tfNewVisible" promptText="Min 8 characters" styleClass="form-field" visible="false" managed="false" style="-fx-padding:10 36 10 12;"/>
+                                    <Button fx:id="btnShowNew" text="Show" onAction="#onToggleNewPassword" StackPane.alignment="CENTER_RIGHT" style="-fx-background-color:transparent;-fx-text-fill:#64748b;-fx-font-size:11px;-fx-cursor:hand;-fx-padding:0 10 0 0;"/>
+                                </StackPane>
+                                <HBox spacing="4">
+                                    <HBox.hgrow>ALWAYS</HBox.hgrow>
+                                    <Rectangle fx:id="pwBar1" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb"/>
+                                    <Rectangle fx:id="pwBar2" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb"/>
+                                    <Rectangle fx:id="pwBar3" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb"/>
+                                    <Rectangle fx:id="pwBar4" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb"/>
+                                </HBox>
+                                <Label fx:id="lblPwStrength" text="" style="-fx-font-size:11px;-fx-font-weight:bold;"/>
+</VBox>
                             <VBox spacing="7" GridPane.columnIndex="2">
                                 <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
                                 <PasswordField fx:id="pfConfirm" promptText="Repeat new password" styleClass="form-field"/>

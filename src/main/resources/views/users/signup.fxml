@@ -4,6 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import java.lang.String?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.shape.Rectangle?>
 
 <HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="controllers.users.SignupController"
@@ -90,14 +91,37 @@
                     <ColumnConstraints hgrow="ALWAYS" percentWidth="50"/>
                 </columnConstraints>
                 <VBox spacing="6" GridPane.columnIndex="0">
-                    <Label text="PASSWORD" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px;"/>
-                    <PasswordField fx:id="pfPassword" promptText="Min 8 chars"
-                                   style="-fx-padding: 10; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1; -fx-background-color: #f8fafc;"/>
+                    <Label text="PASSWORD" style="-fx-font-weight:bold;-fx-text-fill:#475569;-fx-font-size:12px;"/>
+                    <StackPane>
+                        <PasswordField fx:id="pfPassword" promptText="Min 8 chars"
+                                       style="-fx-padding:10 40 10 10;-fx-background-radius:8;-fx-border-radius:8;-fx-border-color:#cbd5e1;-fx-background-color:#f8fafc;"/>
+                        <TextField fx:id="tfPasswordVisible" promptText="Min 8 chars"
+                                   visible="false" managed="false"
+                                   style="-fx-padding:10 40 10 10;-fx-background-radius:8;-fx-border-radius:8;-fx-border-color:#cbd5e1;-fx-background-color:#f8fafc;"/>
+                        <Button fx:id="btnShowPassword" text="Show" onAction="#onTogglePassword"
+                                StackPane.alignment="CENTER_RIGHT"
+                                style="-fx-background-color:transparent;-fx-text-fill:#64748b;-fx-font-size:11px;-fx-cursor:hand;-fx-padding:0 10 0 0;"/>
+                    </StackPane>
+                    <HBox spacing="4" maxWidth="Infinity">
+                        <Rectangle fx:id="bar1" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb" HBox.hgrow="ALWAYS"/>
+                        <Rectangle fx:id="bar2" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb" HBox.hgrow="ALWAYS"/>
+                        <Rectangle fx:id="bar3" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb" HBox.hgrow="ALWAYS"/>
+                        <Rectangle fx:id="bar4" width="60" height="4" arcWidth="4" arcHeight="4" fill="#e5e7eb" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <Label fx:id="lblStrength" text="" style="-fx-font-size:11px;-fx-font-weight:bold;"/>
                 </VBox>
                 <VBox spacing="6" GridPane.columnIndex="1">
-                    <Label text="CONFIRM" style="-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px;"/>
-                    <PasswordField fx:id="pfConfirm" promptText="Repeat password"
-                                   style="-fx-padding: 10; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1; -fx-background-color: #f8fafc;"/>
+                    <Label text="CONFIRM" style="-fx-font-weight:bold;-fx-text-fill:#475569;-fx-font-size:12px;"/>
+                    <StackPane>
+                        <PasswordField fx:id="pfConfirm" promptText="Repeat password"
+                                       style="-fx-padding:10 40 10 10;-fx-background-radius:8;-fx-border-radius:8;-fx-border-color:#cbd5e1;-fx-background-color:#f8fafc;"/>
+                        <TextField fx:id="tfConfirmVisible" promptText="Repeat password"
+                                   visible="false" managed="false"
+                                   style="-fx-padding:10 40 10 10;-fx-background-radius:8;-fx-border-radius:8;-fx-border-color:#cbd5e1;-fx-background-color:#f8fafc;"/>
+                        <Button fx:id="btnShowConfirm" text="Show" onAction="#onToggleConfirm"
+                                StackPane.alignment="CENTER_RIGHT"
+                                style="-fx-background-color:transparent;-fx-text-fill:#64748b;-fx-font-size:11px;-fx-cursor:hand;-fx-padding:0 10 0 0;"/>
+                    </StackPane>
                 </VBox>
             </GridPane>
 

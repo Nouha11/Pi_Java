@@ -83,4 +83,15 @@ public class User {
     private String faceToken = null;
     public String getFaceToken()                  { return faceToken; }
     public void   setFaceToken(String faceToken)  { this.faceToken = faceToken; }
+
+    private String countryCode = null;
+    public String getCountryCode()                    { return countryCode; }
+    public void   setCountryCode(String countryCode)  { this.countryCode = countryCode; }
+
+    private double lastLat = 0;
+    private double lastLon = 0;
+    public double getLastLat()             { return lastLat; }
+    public void   setLastLat(double lat)   { this.lastLat = lat; }
+    public double getLastLon()             { return lastLon; }
+    public void   setLastLon(double lon)   { this.lastLon = lon; }
 }

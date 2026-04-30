@@ -24,6 +24,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import models.users.User;
 import org.mindrot.jbcrypt.BCrypt;
+import services.api.GeoLocationService;
+import services.users.UserService;
 import utils.MyConnection;
 
 import java.io.IOException;
@@ -167,6 +169,19 @@ public class LoginController implements Initializable {
             if (!user.isActive()) { showError("Account inactive. Contact an administrator."); return; }
 
             utils.UserSession.getInstance().setLoggedInUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
+            // Detect and save user location in background
+            final User finalUser = user;
+            new Thread(() -> {
+                try {
+                    GeoLocationService.GeoInfo geo = new GeoLocationService().fetchCurrentLocation();
+                    if (geo != null && geo.countryCode != null) {
+                        new UserService().updateLocation(finalUser.getId(), geo.countryCode, geo.lat, geo.lon);
+                        finalUser.setCountryCode(geo.countryCode);
+                        finalUser.setLastLat(geo.lat);
+                        finalUser.setLastLon(geo.lon);
+                    }
+                } catch (Exception ignored) {}
+            }, "GeoDetect").start();
             routeUserBasedOnRole(user);
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());
@@ -209,6 +224,8 @@ public class LoginController implements Initializable {
             try { u.setProfilePicture(rs.getString("profile_picture")); } catch (Exception ignored) {}
             try { u.setTotpEnabled(rs.getBoolean("totp_enabled")); }     catch (Exception ignored) {}
             try { u.setTotpSecret(rs.getString("totp_secret")); }        catch (Exception ignored) {}
+            try { u.setFaceToken(rs.getString("face_token")); }    catch (Exception ignored) {}
+            try { u.setCountryCode(rs.getString("country_code")); } catch (Exception ignored) {}
             return u;
         }
     }

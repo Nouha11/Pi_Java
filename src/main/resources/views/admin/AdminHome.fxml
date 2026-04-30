@@ -27,6 +27,30 @@
             </VBox>
             <Pane fx:id="particlePane" mouseTransparent="true" style="-fx-background-color: transparent;"/>
         </StackPane>
+        <!-- IPGeolocation + RestCountries Widget -->
+        <HBox fx:id="geoWidget" spacing="0"
+              style="-fx-background-color:white;-fx-background-radius:12;-fx-border-color:#e5e7eb;-fx-border-radius:12;-fx-border-width:1;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.04),8,0,0,3);">
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                  style="-fx-padding:16 20;-fx-border-color:transparent #f1f5f9 transparent transparent;-fx-border-width:0 1 0 0;">
+                <Label text="LOCATION" style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;"/>
+                <Label fx:id="lblGeoLocation" text="Detecting..." style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#0f172a;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                  style="-fx-padding:16 20;-fx-border-color:transparent #f1f5f9 transparent transparent;-fx-border-width:0 1 0 0;">
+                <Label text="TIMEZONE" style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;"/>
+                <Label fx:id="lblGeoTimezone" text="..." style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#0f172a;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                  style="-fx-padding:16 20;-fx-border-color:transparent #f1f5f9 transparent transparent;-fx-border-width:0 1 0 0;">
+                <Label text="IP ADDRESS" style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;"/>
+                <Label fx:id="lblGeoIp" text="..." style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#64748b;"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="4" HBox.hgrow="ALWAYS"
+                  style="-fx-padding:16 20;">
+                <Label text="CURRENCY" style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:#94a3b8;"/>
+                <Label fx:id="lblGeoCurrency" text="..." style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#0f172a;"/>
+            </VBox>
+        </HBox>
 
         <HBox fx:id="statsRow1" spacing="20">
             <VBox fx:id="cardUsers" HBox.hgrow="ALWAYS" spacing="12" style="-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 10, 0, 0, 4);">

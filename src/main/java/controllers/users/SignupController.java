@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -41,6 +42,14 @@ public class SignupController implements Initializable {
     @FXML private ComboBox<String> cbRole;
     @FXML private Label         lblError;
     @FXML private Button        btnSignup;
+    @FXML private TextField  tfPasswordVisible;
+    @FXML private TextField  tfConfirmVisible;
+    @FXML private Button     btnShowPassword;
+    @FXML private Button     btnShowConfirm;
+    @FXML private javafx.scene.shape.Rectangle bar1, bar2, bar3, bar4;
+    @FXML private Label      lblStrength;
+    private boolean showingPassword = false;
+    private boolean showingConfirm  = false;
 
     private final UserService userService = new UserService();
 
@@ -52,6 +61,11 @@ public class SignupController implements Initializable {
 
         playEntranceAnimation();
         createBackgroundParticles();
+
+        // Wire password strength meter listener
+        pfPassword.textProperty().addListener((obs, oldVal, newVal) -> updateStrengthMeter(newVal));
+        if (tfPasswordVisible != null)
+            tfPasswordVisible.textProperty().addListener((obs, oldVal, newVal) -> updateStrengthMeter(newVal));
     }
 
     // Exact copy of LoginController animation
@@ -181,6 +195,69 @@ public class SignupController implements Initializable {
             stage.centerOnScreen();
         } catch (Exception e) {
             lblError.setText("Navigation error: " + e.getMessage());
+        }
+    }
+
+    // â”€â”€ Show/hide password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    @FXML
+    private void onTogglePassword() {
+        showingPassword = !showingPassword;
+        if (showingPassword) {
+            tfPasswordVisible.setText(pfPassword.getText());
+            tfPasswordVisible.setVisible(true);  tfPasswordVisible.setManaged(true);
+            pfPassword.setVisible(false);         pfPassword.setManaged(false);
+            btnShowPassword.setText("Hide");
+        } else {
+            pfPassword.setText(tfPasswordVisible.getText());
+            pfPassword.setVisible(true);          pfPassword.setManaged(true);
+            tfPasswordVisible.setVisible(false);  tfPasswordVisible.setManaged(false);
+            btnShowPassword.setText("Show");
+        }
+    }
+
+    @FXML
+    private void onToggleConfirm() {
+        showingConfirm = !showingConfirm;
+        if (showingConfirm) {
+            tfConfirmVisible.setText(pfConfirm.getText());
+            tfConfirmVisible.setVisible(true);  tfConfirmVisible.setManaged(true);
+            pfConfirm.setVisible(false);         pfConfirm.setManaged(false);
+            btnShowConfirm.setText("Hide");
+        } else {
+            pfConfirm.setText(tfConfirmVisible.getText());
+            pfConfirm.setVisible(true);          pfConfirm.setManaged(true);
+            tfConfirmVisible.setVisible(false);  tfConfirmVisible.setManaged(false);
+            btnShowConfirm.setText("Show");
+        }
+    }
+
+    // â”€â”€ Password strength meter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private void updateStrengthMeter(String password) {
+        if (bar1 == null) return;
+        int score = 0;
+        if (password.length() >= 8)                          score++;
+        if (password.matches(".*[A-Z].*"))                   score++;
+        if (password.matches(".*[0-9].*"))                   score++;
+        if (password.matches(".*[!@#%^&*()_+=\\[\\]-].*")) score++;
+
+        String[] colors = {"#e5e7eb","#e5e7eb","#e5e7eb","#e5e7eb"};
+        String label = "";
+        String labelColor = "#9ca3af";
+
+        switch (score) {
+            case 1 -> { colors[0] = "#ef4444"; label = "Weak";   labelColor = "#ef4444"; }
+            case 2 -> { colors[0] = "#f59e0b"; colors[1] = "#f59e0b"; label = "Fair";   labelColor = "#f59e0b"; }
+            case 3 -> { colors[0] = "#3b82f6"; colors[1] = "#3b82f6"; colors[2] = "#3b82f6"; label = "Good"; labelColor = "#3b82f6"; }
+            case 4 -> { colors[0] = "#22c55e"; colors[1] = "#22c55e"; colors[2] = "#22c55e"; colors[3] = "#22c55e"; label = "Strong"; labelColor = "#22c55e"; }
+        }
+
+        Rectangle[] bars = {bar1, bar2, bar3, bar4};
+        for (int i = 0; i < 4; i++) {
+            bars[i].setFill(javafx.scene.paint.Color.web(colors[i]));
+        }
+        if (lblStrength != null) {
+            lblStrength.setText(password.isEmpty() ? "" : label);
+            lblStrength.setStyle("-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" + labelColor + ";");
         }
     }
 }
