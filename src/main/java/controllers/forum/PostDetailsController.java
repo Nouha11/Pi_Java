@@ -14,6 +14,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -28,8 +31,8 @@ import services.forum.PostService;
 import services.forum.ReportService;
 import services.api.GeminiService;
 import services.api.ReactionService;
+import services.forum.PollService;
 
-import javafx.scene.layout.Region;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -55,6 +58,9 @@ public class PostDetailsController {
     @FXML private VBox commentsContainer;
     @FXML private Button saveButton;
 
+    // 🔥 POLL CONTAINER
+    @FXML private VBox pollContainer;
+
     // VOTE & REACTION UI ELEMENTS
     @FXML private HBox voteBox;
     @FXML private Label upArrowBtn;
@@ -68,6 +74,7 @@ public class PostDetailsController {
     private GeminiService geminiService = new GeminiService();
     private ReportService reportService = new ReportService();
     private ReactionService reactionService = new ReactionService();
+    private PollService pollService = new PollService();
 
     private String selectedCommentFileName = null;
     private String selectedCommentFilePath = null;
@@ -85,7 +92,6 @@ public class PostDetailsController {
             commentArea.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4;");
         });
 
-        // Report button hover effect
         if(reportPostBtn != null) {
             reportPostBtn.setOnMouseEntered(e -> reportPostBtn.setStyle("-fx-background-color: #ffe4e6; -fx-border-color: transparent; -fx-text-fill: #e11d48; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 7 14; -fx-background-radius: 6;"));
             reportPostBtn.setOnMouseExited(e -> reportPostBtn.setStyle("-fx-background-color: transparent; -fx-border-color: #fecdd3; -fx-border-radius: 6; -fx-text-fill: #e11d48; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 7 14; -fx-background-radius: 6;"));
@@ -147,6 +153,7 @@ public class PostDetailsController {
             }
         }
 
+        // 🔥 YOUR RESTORED LOGIC FOR EDIT/DELETE/REPORT VISIBILITY
         if (reportPostBtn != null) {
             if (post.getAuthorId() == currentUserId) {
                 reportPostBtn.setVisible(false);
@@ -182,14 +189,88 @@ public class PostDetailsController {
             Platform.runLater(() -> renderReactions(counts, myReact));
         }).start();
 
+        loadPoll();
         loadComments();
     }
 
-    // ==========================================
-    // 🔥 REACTION & VOTING ENGINE 🔥
-    // ==========================================
+    // 🔥 BEAUTIFUL MODERN POLL ENGINE
+    private void loadPoll() {
+        if (pollContainer == null) return;
+        pollContainer.getChildren().clear();
 
-    // API Call to fetch Emojis from CDN
+        new Thread(() -> {
+            Map<String, Object> poll = pollService.getPollForPost(currentPost.getId());
+            if (poll == null) return;
+
+            int pollId = (int) poll.get("id");
+            String question = (String) poll.get("question");
+            List<Map<String, Object>> options = (List<Map<String, Object>>) poll.get("options");
+            Integer userVote = pollService.getUserVote(currentUserId, pollId);
+
+            Platform.runLater(() -> {
+                pollContainer.setVisible(true);
+                pollContainer.setManaged(true);
+                pollContainer.setSpacing(12);
+                pollContainer.setStyle("-fx-background-color: white; -fx-padding: 20; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-border-width: 1;");
+
+                Label qLbl = new Label("📊 " + question);
+                qLbl.setStyle("-fx-font-weight: 900; -fx-font-size: 16px; -fx-text-fill: #0f172a;");
+                pollContainer.getChildren().add(qLbl);
+
+                int totalVotes = options.stream().mapToInt(o -> (int) o.get("votes")).sum();
+
+                for (Map<String, Object> opt : options) {
+                    int optId = (int) opt.get("id");
+                    String text = (String) opt.get("text");
+                    int votes = (int) opt.get("votes");
+
+                    if (userVote == null) {
+                        Button b = new Button(text);
+                        b.setMaxWidth(Double.MAX_VALUE);
+                        b.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 12; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #334155; -fx-alignment: center-left; -fx-font-size: 14px;");
+                        b.setOnMouseEntered(e -> b.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #94a3b8; -fx-border-radius: 6; -fx-padding: 12; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-alignment: center-left; -fx-font-size: 14px;"));
+                        b.setOnMouseExited(e -> b.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 12; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #334155; -fx-alignment: center-left; -fx-font-size: 14px;"));
+                        b.setOnAction(e -> { pollService.castVote(currentUserId, pollId, optId); loadPoll(); });
+                        pollContainer.getChildren().add(b);
+                    } else {
+                        double pct = totalVotes == 0 ? 0 : (double) votes / totalVotes;
+
+                        StackPane optionBar = new StackPane();
+                        optionBar.setAlignment(Pos.CENTER_LEFT);
+                        optionBar.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: " + (userVote == optId ? "#3b82f6" : "#e2e8f0") + "; -fx-border-width: " + (userVote == optId ? "2" : "1") + ";");
+
+                        Region fill = new Region();
+                        fill.setStyle("-fx-background-color: " + (userVote == optId ? "#dbeafe" : "#e2e8f0") + "; -fx-background-radius: 4;");
+                        fill.setMaxWidth(pct * 550);
+                        fill.setPrefHeight(40);
+
+                        HBox textOverlay = new HBox();
+                        textOverlay.setAlignment(Pos.CENTER_LEFT);
+                        textOverlay.setPadding(new Insets(0, 15, 0, 15));
+
+                        Label optText = new Label(text);
+                        optText.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 13px;");
+
+                        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                        Label pctText = new Label((int)(pct*100) + "%");
+                        pctText.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 13px;");
+
+                        if (userVote == optId) {
+                            Label check = new Label(" ✓"); check.setStyle("-fx-text-fill: #2563eb; -fx-font-weight: 900; -fx-font-size: 14px;");
+                            textOverlay.getChildren().addAll(optText, check, spacer, pctText);
+                        } else {
+                            textOverlay.getChildren().addAll(optText, spacer, pctText);
+                        }
+
+                        optionBar.getChildren().addAll(fill, textOverlay);
+                        pollContainer.getChildren().add(optionBar);
+                    }
+                }
+            });
+        }).start();
+    }
+
     private String getEmojiApiUrl(String emoji) {
         String hex = switch (emoji) {
             case "👍" -> "1f44d";
@@ -238,7 +319,6 @@ public class PostDetailsController {
             HBox pill = new HBox(6);
             pill.setAlignment(Pos.CENTER);
 
-            // 🔥 IMAGE API USAGE HERE 🔥
             ImageView emojiIcon = new ImageView(new Image(getEmojiApiUrl(emoji), true));
             emojiIcon.setFitWidth(18);
             emojiIcon.setFitHeight(18);
@@ -255,7 +335,7 @@ public class PostDetailsController {
                     "-fx-background-color: #f1f5f9; -fx-border-color: transparent; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 6 13; -fx-cursor: hand;";
             String hoverStyle = isActive ?
                     "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 5 12; -fx-cursor: hand;" :
-                    "-fx-background-color: #e2e8f0; -fx-border-color: transparent; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 6 13; -fx-cursor: hand;";
+                    "-fx-background-color: #e2e8f0; -fx-border-color: transparent; -fx-border-radius: 20; -background-radius: 20; -fx-padding: 6 13; -fx-cursor: hand;";
 
             pill.setStyle(baseStyle);
             pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
@@ -274,8 +354,8 @@ public class PostDetailsController {
             reactionBarContainer.getChildren().add(pill);
         }
     }
-    // ==========================================
 
+    // 🔥 YOUR RESTORED LOGIC FOR COMMENTS (Including Edit/Delete Buttons for the Author)
     private void loadComments() {
         commentsContainer.getChildren().clear();
 

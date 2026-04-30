@@ -21,7 +21,6 @@ public class PostService {
     }
 
     public void ajouter(Post p) {
-        // 1. Sanitize text
         String originalTitle = p.getTitle();
         String sanitizedTitle = moderationPipeline.sanitize(originalTitle);
         p.setTitle(sanitizedTitle);
@@ -32,7 +31,6 @@ public class PostService {
 
         boolean wasFlagged = !originalTitle.equals(sanitizedTitle) || !originalContent.equals(sanitizedContent);
 
-        // 2. Save to database
         String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, image_name, link) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -58,7 +56,6 @@ public class PostService {
 
             ps.executeUpdate();
 
-            // 3. Get Real ID and Trigger Report
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 int newPostId = rs.getInt(1);
@@ -70,17 +67,68 @@ public class PostService {
                     moderationPipeline.triggerAutoReport(p.getAuthorId(), fullOriginal, "POST", newPostId);
                 }
             }
-
             System.out.println("Post ajouté avec succès ! ✅");
-
         } catch (SQLException e) {
             System.err.println("Erreur lors de l'ajout du post : " + e.getMessage());
         }
     }
 
+    // 🔥 NEW METHOD: Returns the generated ID so we can link the poll to it
+    public int ajouterAndGetId(Post p) {
+        String originalTitle = p.getTitle();
+        String sanitizedTitle = moderationPipeline.sanitize(originalTitle);
+        p.setTitle(sanitizedTitle);
+
+        String originalContent = p.getContent();
+        String sanitizedContent = moderationPipeline.sanitize(originalContent);
+        p.setContent(sanitizedContent);
+
+        boolean wasFlagged = !originalTitle.equals(sanitizedTitle) || !originalContent.equals(sanitizedContent);
+
+        String req = "INSERT INTO post (title, content, author_id, space_id, upvotes, is_locked, hot_score, created_at, image_name, link) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        int newPostId = -1;
+        try {
+            PreparedStatement ps = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, p.getTitle().trim());
+            ps.setString(2, p.getContent().trim());
+            ps.setInt(3, p.getAuthorId());
+
+            if (p.getSpaceId() != null) ps.setInt(4, p.getSpaceId());
+            else ps.setNull(4, Types.INTEGER);
+
+            ps.setInt(5, 0);
+            ps.setBoolean(6, false);
+            ps.setDouble(7, 0.0);
+            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
+
+            if (p.getImageName() != null) ps.setString(9, p.getImageName());
+            else ps.setNull(9, Types.VARCHAR);
+
+            if (p.getLink() != null) ps.setString(10, p.getLink());
+            else ps.setNull(10, Types.VARCHAR);
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                newPostId = rs.getInt(1);
+                p.setId(newPostId);
+                syncTags(newPostId, p.getTags());
+
+                if (wasFlagged) {
+                    String fullOriginal = "Title: " + originalTitle + " | Content: " + originalContent;
+                    moderationPipeline.triggerAutoReport(p.getAuthorId(), fullOriginal, "POST", newPostId);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'ajout du post : " + e.getMessage());
+        }
+        return newPostId;
+    }
+
     public List<Post> afficher() {
         List<Post> posts = new ArrayList<>();
-
         String req = "SELECT p.*, u.username AS author_name, s.name AS space_name, " +
                 "(SELECT GROUP_CONCAT(t.name SEPARATOR ',') FROM post_tags pt JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id = p.id) AS tags_string " +
                 "FROM post p " +

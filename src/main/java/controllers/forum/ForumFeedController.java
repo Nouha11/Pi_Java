@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -29,6 +30,7 @@ import services.forum.CommentService;
 import services.forum.PostService;
 import services.forum.SpaceService;
 import services.api.ReactionService;
+import services.forum.PollService;
 
 import java.io.File;
 import java.util.*;
@@ -61,6 +63,7 @@ public class ForumFeedController {
     private SpaceService spaceService = new SpaceService();
     private CommentService commentService = new CommentService();
     private ReactionService reactionService = new ReactionService();
+    private PollService pollService = new PollService();
 
     private List<Post> allPostsCache;
     private int currentUserId;
@@ -385,7 +388,6 @@ public class ForumFeedController {
         }
     }
 
-    // 🔥 HELPER TO UPDATE REACTIONS INSTANTLY WITHOUT RELOADING POST
     private void updateReactionBarUI(HBox reactionBar, Post post, Map<String, Integer> reactionCounts, String myReaction) {
         reactionBar.getChildren().clear();
         String[] allowedEmojis = {"👍", "❤️", "😂", "💡"};
@@ -409,11 +411,11 @@ public class ForumFeedController {
             if (count > 0) pill.getChildren().add(countLbl);
 
             String baseStyle = isActive ?
-                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
-                    "-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 4 12; -fx-cursor: hand;" :
+                    "-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 5 13; -fx-cursor: hand;";
             String hoverStyle = isActive ?
-                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
-                    "-fx-background-color: #e2e8f0; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
+                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 4 12; -fx-cursor: hand;" :
+                    "-fx-background-color: #e2e8f0; -fx-background-radius: 20; -fx-padding: 5 13; -fx-cursor: hand;";
 
             pill.setStyle(baseStyle);
             pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
@@ -421,7 +423,6 @@ public class ForumFeedController {
 
             pill.setOnMouseClicked(e -> {
                 e.consume();
-                // Save to DB in background, but immediately fetch updated numbers and refresh just THIS bar!
                 new Thread(() -> {
                     reactionService.reactToPost(currentUserId, post.getId(), emoji);
                     Map<String, Integer> updatedCounts = reactionService.getReactionsForPost(post.getId());
@@ -436,44 +437,16 @@ public class ForumFeedController {
 
     private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount, Map<String, Integer> reactionCounts, String myReaction) {
 
-        VBox voteBox = new VBox(4);
-        voteBox.setAlignment(Pos.TOP_CENTER);
-        voteBox.setPadding(new Insets(15, 12, 0, 12));
-        voteBox.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 12 0 0 12; -fx-border-color: transparent #e2e8f0 transparent transparent; -fx-border-width: 0 1 0 0;");
+        // 🔥 UPGRADED UI: Main card is now a single VBox (No more left sidebar)
+        VBox mainCard = new VBox(12);
+        mainCard.setPadding(new Insets(20, 25, 20, 25));
 
-        StackPane upArrowBtn = new StackPane();
-        upArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand;");
-        Label upArrow = new Label("▲");
-        upArrow.setStyle(post.getMyVote() == 1 ? "-fx-text-fill: #ef4444; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
-        upArrowBtn.getChildren().add(upArrow);
-        upArrowBtn.setOnMouseEntered(e -> upArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: #fee2e2;"));
-        upArrowBtn.setOnMouseExited(e -> upArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: transparent;"));
-
-        Label voteCount = new Label(String.valueOf(post.getUpvotes()));
-        voteCount.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
-
-        StackPane downArrowBtn = new StackPane();
-        downArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand;");
-        Label downArrow = new Label("▼");
-        downArrow.setStyle(post.getMyVote() == -1 ? "-fx-text-fill: #3b82f6; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
-        downArrowBtn.getChildren().add(downArrow);
-        downArrowBtn.setOnMouseEntered(e -> downArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: #e0f2fe;"));
-        downArrowBtn.setOnMouseExited(e -> downArrowBtn.setStyle("-fx-padding: 4; -fx-background-radius: 4; -fx-cursor: hand; -fx-background-color: transparent;"));
-
-        // 🔥 OPTIMISTIC UI: We pass the specific UI labels to handleVote so they update instantly
-        upArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, 1, upArrow, downArrow, voteCount); });
-        downArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, -1, upArrow, downArrow, voteCount); });
-        voteBox.getChildren().addAll(upArrowBtn, voteCount, downArrowBtn);
-
-        VBox contentBox = new VBox(8);
-        contentBox.setPadding(new Insets(15, 20, 15, 20));
-        HBox.setHgrow(contentBox, Priority.ALWAYS);
-
+        // 1. Header (Space Badge & Author)
         HBox headerRow = new HBox(8);
         headerRow.setAlignment(Pos.CENTER_LEFT);
 
         Label spaceBadge = new Label(post.getSpaceName() != null ? post.getSpaceName() : "General");
-        spaceBadge.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #475569; -fx-padding: 2 8; -fx-background-radius: 12; -fx-font-size: 10px; -fx-font-weight: bold;");
+        spaceBadge.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #475569; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;");
 
         final int finalAuthorId = post.getAuthorId();
         final String finalAuthorName = post.getAuthorName() != null ? post.getAuthorName() : "Unknown";
@@ -485,15 +458,99 @@ public class ForumFeedController {
 
         headerRow.getChildren().addAll(spaceBadge, authorLabel);
 
+        // 2. Title & Content
         String displayTitle = post.isLocked() ? "🔒 " + post.getTitle() : post.getTitle();
         Label titleLabel = new Label(displayTitle);
         titleLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 18px; -fx-font-weight: 900;");
+        titleLabel.setWrapText(true);
 
         Label contentLabel = new Label(post.getContent());
         contentLabel.setWrapText(true);
         contentLabel.setMaxHeight(60);
-        contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 2px;");
+        contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 4px;");
 
+        // 3. Poll Box
+        VBox pollBox = new VBox(8);
+        pollBox.setVisible(false);
+        pollBox.setManaged(false);
+
+        new Thread(() -> {
+            Map<String, Object> poll = pollService.getPollForPost(post.getId());
+            if (poll != null) {
+                int pollId = (int) poll.get("id");
+                String question = (String) poll.get("question");
+                List<Map<String, Object>> options = (List<Map<String, Object>>) poll.get("options");
+                Integer userVote = pollService.getUserVote(currentUserId, pollId);
+
+                Platform.runLater(() -> {
+                    pollBox.setVisible(true);
+                    pollBox.setManaged(true);
+                    pollBox.setStyle("-fx-background-color: white; -fx-padding: 15; -fx-border-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1;");
+
+                    Label qLbl = new Label("📊 " + question);
+                    qLbl.setStyle("-fx-font-weight: 900; -fx-text-fill: #0f172a; -fx-font-size: 14px;");
+                    pollBox.getChildren().add(qLbl);
+
+                    int totalVotes = options.stream().mapToInt(o -> (int) o.get("votes")).sum();
+
+                    for (Map<String, Object> opt : options) {
+                        int optId = (int) opt.get("id");
+                        String txt = (String) opt.get("text");
+                        int votes = (int) opt.get("votes");
+
+                        if (userVote == null) {
+                            Button b = new Button(txt);
+                            b.setMaxWidth(Double.MAX_VALUE);
+                            b.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #334155; -fx-alignment: center-left; -fx-font-size: 12px;");
+                            b.setOnMouseEntered(e -> b.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #94a3b8; -fx-border-radius: 6; -fx-padding: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-alignment: center-left; -fx-font-size: 12px;"));
+                            b.setOnMouseExited(e -> b.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-padding: 10; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #334155; -fx-alignment: center-left; -fx-font-size: 12px;"));
+                            b.setOnAction(e -> {
+                                e.consume();
+                                pollService.castVote(currentUserId, pollId, optId);
+                                refreshFeed();
+                            });
+                            pollBox.getChildren().add(b);
+                        } else {
+                            double pct = totalVotes == 0 ? 0 : (double) votes / totalVotes;
+
+                            StackPane optionBar = new StackPane();
+                            optionBar.setAlignment(Pos.CENTER_LEFT);
+                            optionBar.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: " + (userVote == optId ? "#3b82f6" : "#e2e8f0") + "; -fx-border-width: " + (userVote == optId ? "2" : "1") + ";");
+
+                            Region fill = new Region();
+                            fill.setStyle("-fx-background-color: " + (userVote == optId ? "#dbeafe" : "#e2e8f0") + "; -fx-background-radius: 4;");
+                            // Set maximum fill width dynamically based on layout if possible, but 450 is a safe average
+                            fill.setMaxWidth(pct * 600);
+                            fill.setPrefHeight(35);
+
+                            HBox textOverlay = new HBox();
+                            textOverlay.setAlignment(Pos.CENTER_LEFT);
+                            textOverlay.setPadding(new Insets(0, 10, 0, 10));
+
+                            Label optText = new Label(txt);
+                            optText.setStyle("-fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-font-size: 12px;");
+
+                            Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                            Label pctText = new Label((int)(pct*100) + "%");
+                            pctText.setStyle("-fx-font-weight: bold; -fx-text-fill: #475569; -fx-font-size: 12px;");
+
+                            if (userVote == optId) {
+                                Label check = new Label(" ✓"); check.setStyle("-fx-text-fill: #2563eb; -fx-font-weight: 900;");
+                                textOverlay.getChildren().addAll(optText, check, spacer, pctText);
+                            } else {
+                                textOverlay.getChildren().addAll(optText, spacer, pctText);
+                            }
+
+                            optionBar.getChildren().addAll(fill, textOverlay);
+                            pollBox.getChildren().add(optionBar);
+                        }
+                    }
+                });
+            }
+        }).start();
+
+        // 4. Attachments
         VBox attachmentBox = new VBox();
         if (post.getImageName() != null && !post.getImageName().trim().isEmpty()) {
             File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/posts/" + post.getImageName());
@@ -512,11 +569,41 @@ public class ForumFeedController {
             }
         }
 
-        HBox footerRow = new HBox(15);
+        // 5. Footer (Voting Pill + Reactions + Comments + Save)
+        HBox footerRow = new HBox(12);
         footerRow.setAlignment(Pos.CENTER_LEFT);
         footerRow.setPadding(new Insets(10, 0, 0, 0));
 
-        // 🔥 REACTION BAR using isolated helper method
+        // 🔥 HORIZONTAL VOTE PILL
+        HBox horizontalVoteBox = new HBox(10);
+        horizontalVoteBox.setAlignment(Pos.CENTER);
+        horizontalVoteBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 4 12;");
+
+        StackPane upArrowBtn = new StackPane();
+        upArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand;");
+        Label upArrow = new Label("▲");
+        upArrow.setStyle(post.getMyVote() == 1 ? "-fx-text-fill: #ef4444; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
+        upArrowBtn.getChildren().add(upArrow);
+        upArrowBtn.setOnMouseEntered(e -> upArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand; -fx-background-color: #fee2e2;"));
+        upArrowBtn.setOnMouseExited(e -> upArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand; -fx-background-color: transparent;"));
+
+        Label voteCount = new Label(String.valueOf(post.getUpvotes()));
+        voteCount.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #0f172a;");
+
+        StackPane downArrowBtn = new StackPane();
+        downArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand;");
+        Label downArrow = new Label("▼");
+        downArrow.setStyle(post.getMyVote() == -1 ? "-fx-text-fill: #3b82f6; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
+        downArrowBtn.getChildren().add(downArrow);
+        downArrowBtn.setOnMouseEntered(e -> downArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand; -fx-background-color: #e0f2fe;"));
+        downArrowBtn.setOnMouseExited(e -> downArrowBtn.setStyle("-fx-padding: 2 6; -fx-background-radius: 10; -fx-cursor: hand; -fx-background-color: transparent;"));
+
+        upArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, 1, upArrow, downArrow, voteCount); });
+        downArrowBtn.setOnMouseClicked(e -> { e.consume(); handleVote(post, -1, upArrow, downArrow, voteCount); });
+
+        horizontalVoteBox.getChildren().addAll(upArrowBtn, voteCount, downArrowBtn);
+
+        // Reactions
         HBox reactionBar = new HBox(8);
         reactionBar.setAlignment(Pos.CENTER_LEFT);
         updateReactionBarUI(reactionBar, post, reactionCounts, myReaction);
@@ -524,6 +611,7 @@ public class ForumFeedController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // Comments
         HBox commentsBtn = new HBox(6);
         commentsBtn.setAlignment(Pos.CENTER);
         commentsBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-background-color: #f1f5f9;");
@@ -531,6 +619,7 @@ public class ForumFeedController {
         commentsLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 12px; -fx-font-weight: bold;");
         commentsBtn.getChildren().add(commentsLabel);
 
+        // Save
         boolean isSaved = mySavedPosts.contains(post.getId());
         HBox saveBtn = new HBox(6);
         saveBtn.setAlignment(Pos.CENTER);
@@ -542,7 +631,6 @@ public class ForumFeedController {
         saveBtn.setOnMouseEntered(e -> { if (!mySavedPosts.contains(post.getId())) saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: #f1f5f9;"); });
         saveBtn.setOnMouseExited(e -> { saveBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand; -fx-background-color: " + (mySavedPosts.contains(post.getId()) ? "#eff6ff" : "transparent") + ";"); });
 
-        // 🔥 OPTIMISTIC UI: Save button updates instantly without redrawing entire feed
         saveBtn.setOnMouseClicked(e -> {
             e.consume();
             boolean currentlySaved = mySavedPosts.contains(post.getId());
@@ -561,12 +649,12 @@ public class ForumFeedController {
             }
         });
 
-        footerRow.getChildren().addAll(reactionBar, spacer, commentsBtn, saveBtn);
-        contentBox.getChildren().addAll(headerRow, titleLabel, contentLabel);
-        if(!attachmentBox.getChildren().isEmpty()) contentBox.getChildren().add(attachmentBox);
-        contentBox.getChildren().add(footerRow);
+        footerRow.getChildren().addAll(horizontalVoteBox, reactionBar, spacer, commentsBtn, saveBtn);
 
-        HBox mainCard = new HBox(voteBox, contentBox);
+        // Put it all together in the mainCard VBox
+        mainCard.getChildren().addAll(headerRow, titleLabel, contentLabel, pollBox);
+        if(!attachmentBox.getChildren().isEmpty()) mainCard.getChildren().add(attachmentBox);
+        mainCard.getChildren().add(footerRow);
 
         String baseStyle = "-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 10, 0, 0, 4); -fx-cursor: hand;";
         String hoverStyle = "-fx-background-color: #fcfcfc; -fx-background-radius: 12; -fx-border-color: #cbd5e1; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 15, 0, 0, 6); -fx-cursor: hand;";
@@ -591,7 +679,6 @@ public class ForumFeedController {
         return mainCard;
     }
 
-    // 🔥 OPTIMISTIC UI: Modifies the specific labels instantly instead of redrawing the feed
     private void handleVote(Post post, int type, Label up, Label down, Label voteCount) {
         if (post.getMyVote() == type) {
             postService.updateUpvotes(post.getId(), -type);
@@ -608,7 +695,6 @@ public class ForumFeedController {
             else { utils.ForumSession.downvotedPosts.add(post.getId()); utils.ForumSession.upvotedPosts.remove(post.getId()); }
         }
 
-        // Instant visual update
         voteCount.setText(String.valueOf(post.getUpvotes()));
         up.setStyle(post.getMyVote() == 1 ? "-fx-text-fill: #ef4444; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
         down.setStyle(post.getMyVote() == -1 ? "-fx-text-fill: #3b82f6; -fx-font-size: 16px;" : "-fx-text-fill: #94a3b8; -fx-font-size: 16px;");
