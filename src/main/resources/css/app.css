@@ -79,3 +79,9 @@
     -fx-background-radius: 4px;
     -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.2), 5, 0, 0, 2);
 }
+
+/* --- DYNAMIC THEME CLASSES (LIGHT) --- */
+.card-bg { -fx-background-color: white; -fx-border-color: #e2e8f0; }
+.text-primary { -fx-text-fill: #0f172a; }
+.text-secondary { -fx-text-fill: #64748b; }
+.bg-secondary { -fx-background-color: #f8fafc; }

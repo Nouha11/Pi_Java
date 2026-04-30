@@ -39,24 +39,10 @@ import java.util.stream.Collectors;
 public class ForumFeedController {
 
     @FXML private ScrollPane mainScrollPane;
-    @FXML private VBox postsContainer;
-    @FXML private VBox spacesContainer;
-    @FXML private VBox trendingTagsContainer;
-    @FXML private HBox paginationContainer;
-
-    @FXML private HBox btnHome;
-    @FXML private HBox btnPopular;
-    @FXML private HBox btnSaved;
-    @FXML private HBox btnSandbox;
-
-    @FXML private Label btnSortHot;
-    @FXML private Label btnSortNew;
-    @FXML private Label btnSortTop;
-
+    @FXML private VBox postsContainer, spacesContainer, trendingTagsContainer;
+    @FXML private HBox paginationContainer, btnHome, btnPopular, btnSaved, btnSandbox;
+    @FXML private Label btnSortHot, btnSortNew, btnSortTop, lblBannerTitle, lblBannerDesc;
     @FXML private TextField searchField;
-
-    @FXML private Label lblBannerTitle;
-    @FXML private Label lblBannerDesc;
     @FXML private Circle bannerIcon;
 
     private PostService postService = new PostService();
@@ -411,11 +397,11 @@ public class ForumFeedController {
             if (count > 0) pill.getChildren().add(countLbl);
 
             String baseStyle = isActive ?
-                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 4 12; -fx-cursor: hand;" :
-                    "-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 5 13; -fx-cursor: hand;";
+                    "-fx-background-color: #eff6ff; -fx-border-color: #bfdbfe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
             String hoverStyle = isActive ?
-                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 20; -fx-background-radius: 20; -fx-padding: 4 12; -fx-cursor: hand;" :
-                    "-fx-background-color: #e2e8f0; -fx-background-radius: 20; -fx-padding: 5 13; -fx-cursor: hand;";
+                    "-fx-background-color: #dbeafe; -fx-border-color: #93c5fd; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 4 10; -fx-cursor: hand;" :
+                    "-fx-background-color: #e2e8f0; -fx-background-radius: 12; -fx-padding: 5 11; -fx-cursor: hand;";
 
             pill.setStyle(baseStyle);
             pill.setOnMouseEntered(e -> pill.setStyle(hoverStyle));
@@ -437,11 +423,11 @@ public class ForumFeedController {
 
     private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount, Map<String, Integer> reactionCounts, String myReaction) {
 
-        // 🔥 UPGRADED UI: Main card is now a single VBox (No more left sidebar)
+        // 🔥 BEAUTIFUL WIDE LAYOUT (No more side voting bar squishing the content)
         VBox mainCard = new VBox(12);
         mainCard.setPadding(new Insets(20, 25, 20, 25));
 
-        // 1. Header (Space Badge & Author)
+        // 1. Header Row
         HBox headerRow = new HBox(8);
         headerRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -458,7 +444,7 @@ public class ForumFeedController {
 
         headerRow.getChildren().addAll(spaceBadge, authorLabel);
 
-        // 2. Title & Content
+        // 2. Title & Content (NO MAX HEIGHT!)
         String displayTitle = post.isLocked() ? "🔒 " + post.getTitle() : post.getTitle();
         Label titleLabel = new Label(displayTitle);
         titleLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 18px; -fx-font-weight: 900;");
@@ -466,7 +452,7 @@ public class ForumFeedController {
 
         Label contentLabel = new Label(post.getContent());
         contentLabel.setWrapText(true);
-        contentLabel.setMaxHeight(60);
+        // REMOVED setMaxHeight(60) so posts are fully readable without clicking!
         contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 4px;");
 
         // 3. Poll Box
@@ -519,8 +505,7 @@ public class ForumFeedController {
 
                             Region fill = new Region();
                             fill.setStyle("-fx-background-color: " + (userVote == optId ? "#dbeafe" : "#e2e8f0") + "; -fx-background-radius: 4;");
-                            // Set maximum fill width dynamically based on layout if possible, but 450 is a safe average
-                            fill.setMaxWidth(pct * 600);
+                            fill.setMaxWidth(pct * 600); // Expanding naturally
                             fill.setPrefHeight(35);
 
                             HBox textOverlay = new HBox();
@@ -560,7 +545,7 @@ public class ForumFeedController {
                 try {
                     Image img = new Image(imgFile.toURI().toString(), true);
                     ImageView iv = new ImageView(img);
-                    iv.setFitHeight(200);
+                    iv.setFitHeight(300);
                     iv.setFitWidth(600);
                     iv.setPreserveRatio(true);
                     attachmentBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 8; -fx-padding: 2;");

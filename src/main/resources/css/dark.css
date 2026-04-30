@@ -237,3 +237,10 @@
 .flow-pane, .h-box, .v-box, .border-pane, .grid-pane, .stack-pane, .anchor-pane {
     -fx-background-color: transparent;
 }
+
+
+/* --- DYNAMIC THEME CLASSES (DARK) --- */
+.card-bg { -fx-background-color: #1e1e2e; -fx-border-color: #2d2d4e; }
+.text-primary { -fx-text-fill: #e2e8f0; }
+.text-secondary { -fx-text-fill: #94a3b8; }
+.bg-secondary { -fx-background-color: #16162a; }
