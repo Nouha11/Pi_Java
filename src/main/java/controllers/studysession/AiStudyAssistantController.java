@@ -17,6 +17,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import models.ai.ChatMessage;
@@ -400,18 +401,28 @@ public class AiStudyAssistantController implements Initializable {
         boolean isUser = ChatMessage.ROLE_USER.equals(msg.getRole());
 
         // Outer HBox — alignment and margin
-        HBox outer = new HBox();
-        outer.setPadding(new Insets(2, 8, 2, 8));
-        HBox.setMargin(outer, new Insets(4, 0, 4, 0));
+        HBox outer = new HBox(8);
+        outer.setPadding(new Insets(2, 12, 2, 12));
+        outer.setMaxWidth(Double.MAX_VALUE);
         outer.setAlignment(isUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
 
         // Bubble VBox
         VBox bubble = new VBox(4);
-        bubble.setMaxWidth(260);
+        bubble.setMaxWidth(280);
+        bubble.setMinWidth(60);
         if (isUser) {
-            bubble.setStyle("-fx-background-color: #4A90D9; -fx-background-radius: 12; -fx-padding: 8 12;");
+            bubble.setStyle(
+                "-fx-background-color: #4A90D9;" +
+                "-fx-background-radius: 16 16 4 16;" +
+                "-fx-padding: 10 14;");
         } else {
-            bubble.setStyle("-fx-background-color: #2D2D2D; -fx-background-radius: 12; -fx-padding: 8 12;");
+            bubble.setStyle(
+                "-fx-background-color: #2D2D2D;" +
+                "-fx-background-radius: 16 16 16 4;" +
+                "-fx-padding: 10 14;" +
+                "-fx-border-color: #3A3A3A;" +
+                "-fx-border-radius: 16 16 16 4;" +
+                "-fx-border-width: 1;");
         }
 
         // Render message text with lightweight Markdown (Requirement 3.3)
@@ -443,7 +454,15 @@ public class AiStudyAssistantController implements Initializable {
             bubble.getChildren().add(btnFav);
         }
 
-        outer.getChildren().add(bubble);
+        // Add dot + bubble in correct order based on role
+        if (isUser) {
+            // Spacer pushes bubble to the right
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            outer.getChildren().addAll(spacer, bubble);
+        } else {
+            outer.getChildren().add(bubble);
+        }
         return outer;
     }
 
@@ -467,7 +486,7 @@ public class AiStudyAssistantController implements Initializable {
     private void renderMarkdown(String text, VBox container) {
         if (text == null || text.isEmpty()) {
             Label lbl = new Label("");
-            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
             container.getChildren().add(lbl);
             return;
         }
@@ -475,28 +494,27 @@ public class AiStudyAssistantController implements Initializable {
         String[] lines = text.split("\n", -1);
         for (String line : lines) {
             if (line.startsWith("- ")) {
-                // Bullet list item
                 Label lbl = new Label("  • " + line.substring(2));
-                lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+                lbl.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
                 lbl.setWrapText(true);
+                lbl.setMaxWidth(Double.MAX_VALUE);
                 container.getChildren().add(lbl);
             } else if (line.startsWith("**") && line.endsWith("**") && line.length() > 4) {
-                // Bold line
                 Label lbl = new Label(line.substring(2, line.length() - 2));
-                lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;");
+                lbl.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
                 lbl.setWrapText(true);
+                lbl.setMaxWidth(Double.MAX_VALUE);
                 container.getChildren().add(lbl);
             } else if (line.startsWith("`") && line.endsWith("`") && line.length() > 2) {
-                // Inline code block
                 Label lbl = new Label(line.substring(1, line.length() - 1));
                 lbl.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12px;"
                         + " -fx-font-family: monospace;"
                         + " -fx-background-color: #1A1A1A;"
                         + " -fx-padding: 2 4;");
                 lbl.setWrapText(true);
+                lbl.setMaxWidth(Double.MAX_VALUE);
                 container.getChildren().add(lbl);
             } else {
-                // Regular text — scan for inline bold/code segments
                 container.getChildren().addAll(parseInlineLine(line));
             }
         }
@@ -510,52 +528,42 @@ public class AiStudyAssistantController implements Initializable {
         List<Label> labels = new ArrayList<>();
         if (line == null || line.isEmpty()) {
             Label lbl = new Label(" ");
-            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
             labels.add(lbl);
             return labels;
         }
 
-        // Simple approach: check if the whole line contains **...** or `...`
-        // For a lightweight renderer, treat the whole line as one label
-        // but apply bold/code style if it contains those markers
         if (line.contains("**")) {
-            // Split on ** and alternate bold/normal
             String[] parts = line.split("\\*\\*", -1);
             for (int i = 0; i < parts.length; i++) {
                 if (parts[i].isEmpty()) continue;
                 Label lbl = new Label(parts[i]);
-                if (i % 2 == 1) {
-                    lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;");
-                } else {
-                    lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-                }
+                lbl.setStyle(i % 2 == 1
+                    ? "-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"
+                    : "-fx-text-fill: white; -fx-font-size: 13px;");
                 lbl.setWrapText(true);
+                lbl.setMaxWidth(Double.MAX_VALUE);
                 labels.add(lbl);
             }
         } else if (line.contains("`")) {
-            // Split on ` and alternate code/normal
             String[] parts = line.split("`", -1);
             for (int i = 0; i < parts.length; i++) {
                 if (parts[i].isEmpty()) continue;
                 Label lbl = new Label(parts[i]);
-                if (i % 2 == 1) {
-                    lbl.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12px;"
-                            + " -fx-font-family: monospace;"
-                            + " -fx-background-color: #1A1A1A;"
-                            + " -fx-padding: 2 4;");
-                } else {
-                    lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-                }
+                lbl.setStyle(i % 2 == 1
+                    ? "-fx-text-fill: #e2e8f0; -fx-font-size: 12px; -fx-font-family: monospace; -fx-background-color: #1A1A1A; -fx-padding: 2 4;"
+                    : "-fx-text-fill: white; -fx-font-size: 13px;");
                 lbl.setWrapText(true);
+                lbl.setMaxWidth(Double.MAX_VALUE);
                 labels.add(lbl);
             }
         } else {
             Label lbl = new Label(line);
-            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
             lbl.setWrapText(true);
+            lbl.setMaxWidth(Double.MAX_VALUE);
             labels.add(lbl);
         }
-
         return labels;
     }
 

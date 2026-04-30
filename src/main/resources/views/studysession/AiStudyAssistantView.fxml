@@ -91,11 +91,13 @@
             </HBox>
 
             <!-- ── Quick Prompt Suggestions ── -->
-            <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER"
+            <ScrollPane fitToWidth="false" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER"
+                        prefHeight="42"
+                        minHeight="42"
                         style="-fx-background-color: #252525; -fx-background: #252525;
-                               -fx-border-color: transparent; -fx-padding: 6 8;">
+                               -fx-border-color: transparent; -fx-padding: 0;">
                 <HBox fx:id="hboxQuickPrompts" spacing="6" alignment="CENTER_LEFT"
-                      style="-fx-padding: 2 0;"/>
+                      style="-fx-padding: 6 8;"/>
             </ScrollPane>
 
             <!-- ── Message List ── -->
@@ -107,8 +109,9 @@
                                -fx-background: #1E1E1E;
                                -fx-border-color: transparent;">
                 <VBox fx:id="vboxMessages"
-                      spacing="4"
-                      style="-fx-padding: 8 0; -fx-background-color: #1E1E1E;"/>
+                      spacing="8"
+                      fillWidth="true"
+                      style="-fx-padding: 12 8; -fx-background-color: #1E1E1E;"/>
             </ScrollPane>
 
             <!-- ── Typing Indicator ── -->
