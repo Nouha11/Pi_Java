@@ -79,6 +79,15 @@ public class CourseContentController implements Initializable {
     @FXML private Label lblDifficulty;
     @FXML private Label lblDuration;
 
+    // ── Energy bar FXML fields ────────────────────────────────────────────────
+    @FXML private javafx.scene.layout.StackPane energyTrack;
+    @FXML private javafx.scene.layout.Region    energyFill;
+    @FXML private Label lblEnergyValue;
+    @FXML private Label lblEnergyPct;
+    @FXML private Label lblEnergyRegen;
+    @FXML private Label lblEnergyTimer;
+    @FXML private Label lblEnergyWarn;
+
     // AI Study Assistant controller (injected via fx:include)
     @FXML private AiStudyAssistantController aiAssistantController;
 
@@ -89,6 +98,7 @@ public class CourseContentController implements Initializable {
     private final YouTubeService youTubeService = new YouTubeService();
     private final WikipediaService wikipediaService = new WikipediaService();
     private final EnrollmentService enrollmentService = new EnrollmentService();
+    private final services.gamification.EnergyService energyService = new services.gamification.EnergyService();
 
     // ── State ─────────────────────────────────────────────────────────────────
 
@@ -98,6 +108,11 @@ public class CourseContentController implements Initializable {
 
     // Pomodoro timer state (12.3)
     private Timeline timeline;
+    // Energy countdown state
+    private javafx.animation.Timeline energyCountdownTimer;
+    private int secondsUntilRegen = 0;
+    // Local energy value — updated on drain without hitting DB every second
+    private int currentEnergy = 100;
     private int remainingSeconds = 25 * 60;   // 1500 seconds = 25:00
     private boolean isFocusMode = true;
     private int cycleCount = 0;
@@ -202,10 +217,104 @@ public class CourseContentController implements Initializable {
         loadWikipediaSummary();
         loadPdfResources();
 
+        // Load energy bar
+        loadEnergyAsync();
+
         // Initialize AI assistant with course context (Requirements 2.1, 15.1, 15.3)
         if (aiAssistantController != null) {
             aiAssistantController.initData(course);
         }
+    }
+
+    // ── Energy bar ────────────────────────────────────────────────────────────
+
+    private void loadEnergyAsync() {
+        int uid = utils.SessionManager.getCurrentUserId();
+        if (uid <= 1) uid = userId;
+        if (uid <= 0) return;
+        final int finalUid = uid;
+        Thread t = new Thread(() -> {
+            try {
+                int[] snap = energyService.getEnergySnapshot(finalUid);
+                javafx.application.Platform.runLater(() -> {
+                    currentEnergy = snap[0];
+                    updateEnergyUI(snap[0], snap[1]);
+                });
+            } catch (Exception e) {
+                System.err.println("[Energy] " + e.getMessage());
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void updateEnergyUI(int energy, int secsUntilRegen) {
+        energy = Math.max(0, Math.min(100, energy));
+        secondsUntilRegen = secsUntilRegen;
+        double pct = energy / 100.0;
+
+        if (lblEnergyValue != null) {
+            lblEnergyValue.setText(energy + " / 100");
+            String col = energy > 50 ? "#27ae60" : energy > 20 ? "#d97706" : "#e53e3e";
+            String bg  = energy > 50 ? "#f0fff4" : energy > 20 ? "#fffbeb" : "#fff5f5";
+            lblEnergyValue.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:" + col +
+                                    ";-fx-background-color:" + bg + ";-fx-background-radius:20;-fx-padding:2 10;");
+        }
+        if (energyFill != null) {
+            // Bind to track width once it's laid out
+            if (energyTrack != null && energyTrack.getWidth() > 0) {
+                energyFill.setPrefWidth(energyTrack.getWidth() * pct);
+            } else if (energyTrack != null) {
+                final int finalEnergy = energy;
+                energyTrack.widthProperty().addListener((obs, o, n) -> {
+                    if (n.doubleValue() > 0) energyFill.setPrefWidth(n.doubleValue() * (finalEnergy / 100.0));
+                });
+            }
+            String gradient = energy > 50 ? "linear-gradient(to right,#43e97b,#38f9d7)"
+                            : energy > 20 ? "linear-gradient(to right,#f6d365,#fda085)"
+                            :               "linear-gradient(to right,#fc5c7d,#6a3093)";
+            energyFill.setStyle("-fx-background-color:" + gradient + ";-fx-background-radius:7;");
+        }
+        if (lblEnergyPct != null) lblEnergyPct.setText(energy + "%");
+        if (lblEnergyRegen != null) {
+            lblEnergyRegen.setText(energy >= 100 ? "Energy Full! Ready to study" : "\u27F3 +1 every 5 min");
+            lblEnergyRegen.setStyle("-fx-font-size:11px;-fx-text-fill:" + (energy >= 100 ? "#27ae60" : "#718096") + ";");
+        }
+        if (lblEnergyTimer != null) {
+            lblEnergyTimer.setText(energy >= 100 ? "" : "Next: " + formatEnergySeconds(secsUntilRegen));
+        }
+        if (lblEnergyWarn != null) {
+            boolean show = energy <= 20;
+            lblEnergyWarn.setVisible(show); lblEnergyWarn.setManaged(show);
+            if (show) {
+                lblEnergyWarn.setText(energy <= 0
+                    ? "\u26A0 Energy depleted! Play mini games to restore."
+                    : "\u26A0 Low energy! Play a mini game to restore it faster.");
+                lblEnergyWarn.setStyle("-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" +
+                                       (energy <= 0 ? "#e53e3e" : "#d97706") + ";");
+            }
+        }
+
+        // Start/restart countdown ticker
+        if (energyCountdownTimer != null) energyCountdownTimer.stop();
+        if (energy < 100 && secsUntilRegen > 0) {
+            energyCountdownTimer = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(1), e -> {
+                    if (secondsUntilRegen <= 0) { loadEnergyAsync(); return; }
+                    secondsUntilRegen--;
+                    if (lblEnergyTimer != null)
+                        lblEnergyTimer.setText("Next: " + formatEnergySeconds(secondsUntilRegen));
+                })
+            );
+            energyCountdownTimer.setCycleCount(javafx.animation.Timeline.INDEFINITE);
+            energyCountdownTimer.play();
+        }
+    }
+
+    private String formatEnergySeconds(int secs) {
+        if (secs <= 0) return "0s";
+        int m = secs / 60, s = secs % 60;
+        return m > 0 ? m + "m " + s + "s" : s + "s";
     }
 
     // ── 12.3 — Pomodoro Timer ─────────────────────────────────────────────────
@@ -260,6 +369,8 @@ public class CourseContentController implements Initializable {
             if (minuteCounter >= 60) {
                 minuteCounter = 0;
                 incrementStudyMinute();
+                // ── Drain 1 energy per minute of focus study (mirrors Pi_web depleteEnergy) ──
+                drainEnergyOnMinute();
             }
         }
 
@@ -270,6 +381,68 @@ public class CourseContentController implements Initializable {
                 onFocusSessionComplete();
             } else {
                 onBreakComplete();
+            }
+        }
+    }
+
+    /** Drain 1 energy point per study minute. Updates UI immediately, persists async. */
+    private void drainEnergyOnMinute() {
+        // Optimistic local update — no DB read needed
+        currentEnergy = Math.max(0, currentEnergy - 1);
+        // Update bar UI immediately on FX thread (we're already on it)
+        updateEnergyBarOnly(currentEnergy);
+        // Persist to DB on background thread
+        int uid = utils.SessionManager.getCurrentUserId();
+        if (uid <= 1) uid = userId;
+        final int finalUid = uid;
+        Thread t = new Thread(() -> {
+            try {
+                energyService.drainEnergy(finalUid, 1);
+            } catch (Exception e) {
+                System.err.println("[Energy] Drain failed: " + e.getMessage());
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * Update only the visual energy bar nodes without touching the countdown timer.
+     * Called on every drain tick so the bar animates smoothly.
+     */
+    private void updateEnergyBarOnly(int energy) {
+        energy = Math.max(0, Math.min(100, energy));
+        double pct = energy / 100.0;
+
+        if (lblEnergyValue != null) {
+            lblEnergyValue.setText(energy + " / 100");
+            String col = energy > 50 ? "#27ae60" : energy > 20 ? "#d97706" : "#e53e3e";
+            String bg  = energy > 50 ? "#f0fff4" : energy > 20 ? "#fffbeb" : "#fff5f5";
+            lblEnergyValue.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:" + col +
+                                    ";-fx-background-color:" + bg + ";-fx-background-radius:20;-fx-padding:2 10;");
+        }
+        if (energyFill != null && energyTrack != null && energyTrack.getWidth() > 0) {
+            energyFill.setPrefWidth(energyTrack.getWidth() * pct);
+            String gradient = energy > 50 ? "linear-gradient(to right,#43e97b,#38f9d7)"
+                            : energy > 20 ? "linear-gradient(to right,#f6d365,#fda085)"
+                            :               "linear-gradient(to right,#fc5c7d,#6a3093)";
+            energyFill.setStyle("-fx-background-color:" + gradient + ";-fx-background-radius:7;");
+        }
+        if (lblEnergyPct != null) lblEnergyPct.setText(energy + "%");
+        if (lblEnergyRegen != null) {
+            lblEnergyRegen.setText(energy >= 100 ? "Energy Full! Ready to study"
+                                                 : "\u27F3 +1 every 5 min (mini games restore faster)");
+            lblEnergyRegen.setStyle("-fx-font-size:11px;-fx-text-fill:" + (energy >= 100 ? "#27ae60" : "#718096") + ";");
+        }
+        if (lblEnergyWarn != null) {
+            boolean show = energy <= 20;
+            lblEnergyWarn.setVisible(show); lblEnergyWarn.setManaged(show);
+            if (show) {
+                lblEnergyWarn.setText(energy <= 0
+                    ? "\u26A0 Energy depleted! Play mini games to restore."
+                    : "\u26A0 Low energy! Play a mini game to restore it faster.");
+                lblEnergyWarn.setStyle("-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" +
+                                       (energy <= 0 ? "#e53e3e" : "#d97706") + ";");
             }
         }
     }

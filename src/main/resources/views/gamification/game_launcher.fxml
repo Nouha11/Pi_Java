@@ -15,6 +15,28 @@
         <Label text="Play Games"
                style="-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
         <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- Energy bar compact — always visible in toolbar -->
+        <HBox fx:id="energyBarBox" spacing="8" alignment="CENTER"
+              style="-fx-background-color:white;-fx-background-radius:20;-fx-border-color:#e4e8f0;-fx-border-radius:20;-fx-border-width:1;-fx-padding:6 14;">
+            <Label text="⚡" style="-fx-font-size:14px;"/>
+            <VBox spacing="2" alignment="CENTER_LEFT">
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <Label fx:id="lblEnergyValue" text="100"
+                           style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                    <Label text="/ 100" style="-fx-font-size:11px;-fx-text-fill:#a0aec0;"/>
+                </HBox>
+                <StackPane prefWidth="120" prefHeight="8"
+                           style="-fx-background-color:#e4e8f0;-fx-background-radius:4;">
+                    <Region fx:id="energyBarFill" prefHeight="8"
+                            style="-fx-background-color:linear-gradient(to right,#43e97b,#38f9d7);-fx-background-radius:4;"
+                            StackPane.alignment="CENTER_LEFT"/>
+                </StackPane>
+            </VBox>
+            <Label fx:id="lblRegenTimer" text=""
+                   style="-fx-font-size:10px;-fx-text-fill:#718096;"/>
+        </HBox>
+
         <TextField fx:id="searchField" promptText="Search games..."
                    styleClass="search-field" prefWidth="220" onKeyReleased="#handleSearch"/>
     </HBox>
@@ -88,8 +110,41 @@
                         <Label fx:id="lblMiniCount" text="0 mini-games"
                                style="-fx-background-color:rgba(255,255,255,0.2);-fx-text-fill:white;-fx-background-radius:20;-fx-padding:4 14;-fx-font-size:12px;-fx-font-weight:bold;"/>
                     </HBox>
+
+                    <!-- ── ENERGY BAR (large, in banner) ── -->
+                    <VBox spacing="6" style="-fx-padding:16 0 8 0;">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label text="⚡ Your Energy"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblEnergyBig" text="100 / 100"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#f6d365;"/>
+                        </HBox>
+                        <!-- Progress bar track -->
+                        <StackPane prefHeight="18"
+                                   style="-fx-background-color:rgba(0,0,0,0.25);-fx-background-radius:9;">
+                            <Region fx:id="energyBarBig" prefHeight="18"
+                                    style="-fx-background-color:linear-gradient(to right,#43e97b,#38f9d7);-fx-background-radius:9;"
+                                    StackPane.alignment="CENTER_LEFT"/>
+                            <Label fx:id="lblEnergyPct" text="100%"
+                                   style="-fx-font-size:10px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+                        </StackPane>
+                        <!-- Regen info row -->
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label fx:id="lblRegenInfo" text="⟳ +1 energy every 5 minutes"
+                                   style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.75);"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblNextRegen" text=""
+                                   style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.65);"/>
+                        </HBox>
+                        <!-- Low energy warning -->
+                        <Label fx:id="lblLowEnergyWarn" text="⚠ Low energy! Play a mini game to restore it faster."
+                               style="-fx-font-size:11px;-fx-text-fill:#fbd38d;-fx-font-weight:bold;"
+                               visible="false" managed="false"/>
+                    </VBox>
+
                     <!-- Energy explanation -->
-                    <HBox spacing="24" style="-fx-padding:12 0 0 0;">
+                    <HBox spacing="24" style="-fx-padding:4 0 0 0;">
                         <VBox spacing="2">
                             <Label text="Energy" style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:white;"/>
                             <Label text="Restored on completion" style="-fx-font-size:11px;-fx-text-fill:rgba(255,255,255,0.65);"/>
@@ -105,9 +160,119 @@
                         </VBox>
                     </HBox>
                 </VBox>
+                <!-- ── WELLNESS AI COACH — above mini games grid ── -->
+                <VBox fx:id="wellnessSection" spacing="0"
+                      style="-fx-padding:16 20 0 20;-fx-background-color:#f0f2f8;">
+
+                    <VBox spacing="12"
+                          style="-fx-background-color:white;-fx-background-radius:16;
+                                 -fx-border-color:#e4e8f0;-fx-border-radius:16;-fx-border-width:1;
+                                 -fx-padding:18 20;
+                                 -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);">
+
+                        <!-- Header row: icon + title + LIVE energy bar -->
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label text="&#x1F916;"
+                                   style="-fx-font-size:22px;"/>
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label text="Wellness AI Coach"
+                                       style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                                <Label text="Personalized advice based on your current energy"
+                                       style="-fx-font-size:11px;-fx-text-fill:#718096;"/>
+                            </VBox>
+                            <!-- Live energy display — always visible, updates with bar -->
+                            <VBox spacing="4" alignment="CENTER_RIGHT" minWidth="130">
+                                <HBox spacing="6" alignment="CENTER_RIGHT">
+                                    <Label text="&#x26A1;" style="-fx-font-size:13px;"/>
+                                    <Label fx:id="lblAIEnergyBadge" text="100 / 100"
+                                           style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#27ae60;"/>
+                                </HBox>
+                                <StackPane prefHeight="8" prefWidth="130"
+                                           style="-fx-background-color:#e4e8f0;-fx-background-radius:4;">
+                                    <Region fx:id="aiEnergyFill" prefHeight="8" prefWidth="130"
+                                            style="-fx-background-color:linear-gradient(to right,#43e97b,#38f9d7);-fx-background-radius:4;"
+                                            StackPane.alignment="CENTER_LEFT"/>
+                                </StackPane>
+                                <Label fx:id="lblAIEnergyStatus" text="Energy Full"
+                                       style="-fx-font-size:10px;-fx-text-fill:#27ae60;"/>
+                            </VBox>
+                        </HBox>
+
+                        <Separator/>
+
+                        <!-- Input row -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="wellnessInput"
+                                       promptText="How are you feeling? (optional — e.g. tired, headache, stressed...)"
+                                       style="-fx-font-size:13px;-fx-padding:9 14;-fx-background-radius:10;
+                                              -fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-border-width:1;"
+                                       HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnGetAdvice" text="Get Advice"
+                                    onAction="#handleGetWellnessAdvice"
+                                    style="-fx-background-color:linear-gradient(to right,#667eea,#764ba2);
+                                           -fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;
+                                           -fx-background-radius:10;-fx-padding:9 18;-fx-cursor:hand;"/>
+                        </HBox>
+
+                        <!-- AI Response area -->
+                        <VBox fx:id="wellnessResponse" spacing="10"
+                              visible="false" managed="false">
+
+                            <!-- Tip card -->
+                            <VBox fx:id="wellnessTipCard" spacing="6"
+                                  style="-fx-background-color:#f8f9ff;-fx-background-radius:10;
+                                         -fx-border-color:#c3c9f5;-fx-border-radius:10;-fx-border-width:1;
+                                         -fx-padding:12 16;">
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label fx:id="lblUrgencyIcon" text="&#x1F4A1;"
+                                           style="-fx-font-size:15px;"/>
+                                    <Label fx:id="lblUrgencyLabel" text="Wellness Tip"
+                                           style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#3b4fd8;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="lblUrgencyBadge" text="LOW"
+                                           style="-fx-background-color:#f0fff4;-fx-text-fill:#27ae60;
+                                                  -fx-font-size:10px;-fx-font-weight:bold;
+                                                  -fx-background-radius:20;-fx-padding:2 8;"/>
+                                </HBox>
+                                <Label fx:id="lblWellnessTip" text=""
+                                       wrapText="true"
+                                       style="-fx-font-size:13px;-fx-text-fill:#2d3748;-fx-line-spacing:2;"/>
+                            </VBox>
+
+                            <!-- Recommended game row -->
+                            <HBox spacing="12" alignment="CENTER_LEFT"
+                                  style="-fx-background-color:#f0fff4;-fx-background-radius:10;
+                                         -fx-border-color:#9ae6b4;-fx-border-radius:10;-fx-border-width:1;
+                                         -fx-padding:10 14;">
+                                <Label fx:id="lblRecommendedIcon" text="&#x1F3AE;"
+                                       style="-fx-font-size:20px;"/>
+                                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                    <Label fx:id="lblRecommendedGame" text="Recommended: Breathing"
+                                           style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;"/>
+                                    <Label fx:id="lblRecommendedReason" text=""
+                                           wrapText="true"
+                                           style="-fx-font-size:11px;-fx-text-fill:#718096;"/>
+                                </VBox>
+                                <Button fx:id="btnPlayRecommended" text="Play Now"
+                                        onAction="#handlePlayRecommended"
+                                        style="-fx-background-color:#27ae60;-fx-text-fill:white;
+                                               -fx-font-weight:bold;-fx-font-size:12px;
+                                               -fx-background-radius:8;-fx-padding:7 14;-fx-cursor:hand;"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Status label -->
+                        <Label fx:id="lblWellnessStatus" text=""
+                               style="-fx-font-size:11px;-fx-text-fill:#718096;"
+                               visible="false" managed="false"/>
+                    </VBox>
+                </VBox>
+
+                <!-- Mini games grid — below AI coach -->
                 <FlowPane fx:id="miniGamesPane" hgap="16" vgap="16"
-                          style="-fx-padding:20;-fx-background-color:#f0f2f8;"/>
-            </VBox>
+                          style="-fx-padding:16 20 24 20;-fx-background-color:#f0f2f8;"/>
+
+            </VBox><!-- end sectionMini -->
 
         </VBox>
     </ScrollPane>

@@ -125,6 +125,59 @@
                                    style="-fx-font-size: 11px; -fx-text-fill: #94a3b8;"/>
                         </VBox>
 
+                        <!-- ── Energy Card ── -->
+                        <VBox spacing="10"
+                              style="-fx-background-color: #f8f9fa; -fx-background-radius: 12;
+                                     -fx-border-color: #e2e8f0; -fx-border-radius: 12;
+                                     -fx-border-width: 1; -fx-padding: 20 16;
+                                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 8, 0, 0, 2);">
+
+                            <!-- Header row -->
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="⚡ Energy"
+                                       style="-fx-font-size: 13px; -fx-font-weight: bold;
+                                              -fx-text-fill: #1a237e;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="lblEnergyValue" text="100 / 100"
+                                       style="-fx-font-size: 12px; -fx-font-weight: bold;
+                                              -fx-text-fill: #27ae60;
+                                              -fx-background-color: #f0fff4;
+                                              -fx-background-radius: 20;
+                                              -fx-padding: 2 10;"/>
+                            </HBox>
+
+                            <!-- Energy bar track -->
+                            <StackPane fx:id="energyTrack" prefHeight="14"
+                                       style="-fx-background-color: #e2e8f0;
+                                              -fx-background-radius: 7;">
+                                <Region fx:id="energyFill" prefHeight="14"
+                                        style="-fx-background-color: linear-gradient(to right,#43e97b,#38f9d7);
+                                               -fx-background-radius: 7;"
+                                        StackPane.alignment="CENTER_LEFT"/>
+                                <Label fx:id="lblEnergyPct" text="100%"
+                                       style="-fx-font-size: 9px; -fx-font-weight: bold;
+                                              -fx-text-fill: white;"/>
+                            </StackPane>
+
+                            <!-- Regen info -->
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label fx:id="lblEnergyRegen"
+                                       text="⟳ +1 every 5 min"
+                                       style="-fx-font-size: 11px; -fx-text-fill: #718096;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="lblEnergyTimer" text=""
+                                       style="-fx-font-size: 11px; -fx-text-fill: #a0aec0;"/>
+                            </HBox>
+
+                            <!-- Low energy warning -->
+                            <Label fx:id="lblEnergyWarn"
+                                   text="⚠ Low energy! Play a mini game to restore."
+                                   wrapText="true"
+                                   style="-fx-font-size: 11px; -fx-text-fill: #d97706;
+                                          -fx-font-weight: bold;"
+                                   visible="false" managed="false"/>
+                        </VBox>
+
                     </VBox>
                 </ScrollPane>
             </VBox>

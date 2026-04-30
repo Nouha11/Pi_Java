@@ -16,9 +16,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import models.gamification.Game;
+import services.gamification.EnergyService;
 import services.gamification.FavoriteGameService;
 import services.gamification.GameRatingService;
 import services.gamification.GameService;
+import services.gamification.WellnessAIService;
 import utils.TwemojiUtil;
 import utils.UserSession;
 
@@ -41,12 +43,56 @@ public class GameLauncherController {
     @FXML private VBox     sectionFull;
     @FXML private VBox     sectionMini;
 
-    private final GameService        gameService   = new GameService();
-    private final FavoriteGameService favService   = new FavoriteGameService();
-    private final GameRatingService  ratingService = new GameRatingService();
+    // ── Energy bar FXML nodes ─────────────────────────────────────────────────
+    @FXML private HBox   energyBarBox;      // compact toolbar bar
+    @FXML private Label  lblEnergyValue;    // "100" in toolbar
+    @FXML private Region energyBarFill;     // fill region in toolbar
+    @FXML private Label  lblRegenTimer;     // "next in 3m" in toolbar
+    @FXML private Region energyBarBig;      // fill region in mini banner
+    @FXML private Label  lblEnergyBig;      // "100 / 100" in banner
+    @FXML private Label  lblEnergyPct;      // "100%" in banner
+    @FXML private Label  lblRegenInfo;      // regen text in banner
+    @FXML private Label  lblNextRegen;      // countdown in banner
+    @FXML private Label  lblLowEnergyWarn;  // warning label
+
+    // ── Wellness AI Coach FXML nodes ──────────────────────────────────────────
+    @FXML private VBox      wellnessSection;
+    @FXML private TextField wellnessInput;
+    @FXML private Button    btnGetAdvice;
+    @FXML private VBox      wellnessResponse;
+    @FXML private VBox      wellnessTipCard;
+    @FXML private Label     lblAIEnergyBadge;   // "100 / 100" live text
+    @FXML private Region    aiEnergyFill;        // mini fill bar
+    @FXML private Label     lblAIEnergyStatus;   // "Energy Full" / "Low energy"
+    @FXML private Label     lblUrgencyIcon;
+    @FXML private Label     lblUrgencyLabel;
+    @FXML private Label     lblUrgencyBadge;
+    @FXML private Label     lblWellnessTip;
+    @FXML private Label     lblRecommendedIcon;
+    @FXML private Label     lblRecommendedGame;
+    @FXML private Label     lblRecommendedReason;
+    @FXML private Button    btnPlayRecommended;
+    @FXML private Label     lblWellnessStatus;
+
+    private final GameService             gameService    = new GameService();
+    private final FavoriteGameService     favService     = new FavoriteGameService();
+    private final GameRatingService       ratingService  = new GameRatingService();
+    private final EnergyService           energyService  = new EnergyService();
+    private final WellnessAIService       wellnessAI     = new WellnessAIService();
+
+    private String recommendedGameType  = null;
+    // Auto-advice: re-generate when energy crosses a threshold boundary
+    private int    lastAutoAdviceEnergy = -1;
+
     private List<Game> allGames;
-    private StackPane contentArea;
-    private boolean showingFull = true;
+    private StackPane  contentArea;
+    private boolean    showingFull = true;
+
+    private Timeline energyRefreshTimer;
+    private Timeline regenCountdownTimer;
+    private int      secondsUntilRegen = 0;
+    // Cached energy for wellness AI
+    private int      lastKnownEnergy   = 100;
 
     public void setContentArea(StackPane ca) { this.contentArea = ca; }
 
@@ -68,6 +114,325 @@ public class GameLauncherController {
         } catch (Exception e) { allGames = List.of(); }
         renderAll(allGames);
         switchToFull();
+
+        // Load energy bar on background thread
+        loadEnergyAsync();
+
+        // Auto-refresh energy from DB every 30 seconds
+        energyRefreshTimer = new Timeline(new KeyFrame(Duration.seconds(30), e -> loadEnergyAsync()));
+        energyRefreshTimer.setCycleCount(Timeline.INDEFINITE);
+        energyRefreshTimer.play();
+
+        // Countdown ticker — every second
+        regenCountdownTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> tickCountdown()));
+        regenCountdownTimer.setCycleCount(Timeline.INDEFINITE);
+        regenCountdownTimer.play();
+    }
+
+    // ── Energy bar logic ──────────────────────────────────────────────────────
+
+    /** Fetch energy from DB on a background thread, then update UI. */
+    public void loadEnergyAsync() {
+        int userId = utils.SessionManager.getCurrentUserId();
+        if (userId <= 1) userId = utils.UserSession.getInstance().getUserId();
+        if (userId <= 0) return;
+        final int uid = userId;
+        Thread t = new Thread(() -> {
+            try {
+                int[] snap = energyService.getEnergySnapshot(uid); // [energy, secondsUntilRegen]
+                Platform.runLater(() -> updateEnergyUI(snap[0], snap[1]));
+            } catch (Exception e) {
+                System.err.println("[Energy] Load failed: " + e.getMessage());
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Update all energy bar nodes with the given energy value. */
+    private void updateEnergyUI(int energy, int secsUntilRegen) {
+        energy = Math.max(0, Math.min(100, energy));
+        lastKnownEnergy = energy;
+        secondsUntilRegen = secsUntilRegen;
+        double pct = energy / 100.0;
+
+        // ── Toolbar compact bar ───────────────────────────────────────────────
+        if (lblEnergyValue != null) lblEnergyValue.setText(String.valueOf(energy));
+        if (energyBarFill != null) {
+            energyBarFill.setPrefWidth(120 * pct);
+            energyBarFill.setStyle(energyFillStyle(energy, false));
+        }
+        if (lblRegenTimer != null) {
+            lblRegenTimer.setText(energy >= 100 ? "Full!" : "next in " + formatSeconds(secsUntilRegen));
+            lblRegenTimer.setStyle("-fx-font-size:10px;-fx-text-fill:" + (energy >= 100 ? "#27ae60" : "#718096") + ";");
+        }
+
+        // ── Banner large bar ──────────────────────────────────────────────────
+        if (lblEnergyBig != null) lblEnergyBig.setText(energy + " / 100");
+        if (energyBarBig != null) {
+            // Bind fill width to parent track width × percentage
+            javafx.scene.Node track = energyBarBig.getParent();
+            if (track instanceof StackPane sp) {
+                double trackW = sp.getWidth();
+                if (trackW > 0) {
+                    energyBarBig.setPrefWidth(trackW * pct);
+                } else {
+                    // Not laid out yet — bind once width is known
+                    final int finalEnergy = energy;
+                    sp.widthProperty().addListener((obs, o, n) -> {
+                        if (n.doubleValue() > 0) {
+                            energyBarBig.setPrefWidth(n.doubleValue() * (finalEnergy / 100.0));
+                        }
+                    });
+                }
+            }
+            energyBarBig.setStyle(energyFillStyle(energy, true));
+        }
+        if (lblEnergyPct != null) lblEnergyPct.setText(energy + "%");
+        if (lblRegenInfo != null) {
+            lblRegenInfo.setText(energy >= 100
+                ? "Energy Full! Ready to play"
+                : "\u27F3 +1 energy every 5 minutes");
+        }
+        if (lblNextRegen != null) {
+            lblNextRegen.setText(energy >= 100 ? "" : "Next: " + formatSeconds(secsUntilRegen));
+        }
+
+        // ── Low energy warning ────────────────────────────────────────────────
+        if (lblLowEnergyWarn != null) {
+            boolean low = energy <= 20 && energy > 0;
+            boolean depleted = energy <= 0;
+            lblLowEnergyWarn.setVisible(low || depleted);
+            lblLowEnergyWarn.setManaged(low || depleted);
+            if (depleted) {
+                lblLowEnergyWarn.setText("\u26A0 Energy depleted! Play mini games or wait for regeneration.");
+                lblLowEnergyWarn.setStyle("-fx-font-size:11px;-fx-text-fill:#fc5c7d;-fx-font-weight:bold;");
+            } else if (low) {
+                lblLowEnergyWarn.setText("\u26A0 Low energy! Play a mini game to restore it faster.");
+                lblLowEnergyWarn.setStyle("-fx-font-size:11px;-fx-text-fill:#fbd38d;-fx-font-weight:bold;");
+            }
+        }
+
+        // ── Wellness AI mini energy bar — always live ─────────────────────────
+        if (lblAIEnergyBadge != null) {
+            String col = energy > 50 ? "#27ae60" : energy > 20 ? "#d97706" : "#e53e3e";
+            lblAIEnergyBadge.setText(energy + " / 100");
+            lblAIEnergyBadge.setStyle("-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:" + col + ";");
+        }
+        if (aiEnergyFill != null) {
+            aiEnergyFill.setPrefWidth(130 * pct);
+            String gradient = energy > 50 ? "linear-gradient(to right,#43e97b,#38f9d7)"
+                            : energy > 20 ? "linear-gradient(to right,#f6d365,#fda085)"
+                            :               "linear-gradient(to right,#fc5c7d,#6a3093)";
+            aiEnergyFill.setStyle("-fx-background-color:" + gradient + ";-fx-background-radius:4;");
+        }
+        if (lblAIEnergyStatus != null) {
+            String statusText = energy >= 100 ? "Energy Full — great time to study!"
+                              : energy >= 80  ? "High energy — you're doing well"
+                              : energy >= 50  ? "Moderate energy — consider a break soon"
+                              : energy >= 20  ? "Low energy — a mini game will help"
+                              :                 "Critically low — take a break now!";
+            String statusCol  = energy >= 80 ? "#27ae60" : energy >= 50 ? "#d97706" : "#e53e3e";
+            lblAIEnergyStatus.setText(statusText);
+            lblAIEnergyStatus.setStyle("-fx-font-size:10px;-fx-text-fill:" + statusCol + ";");
+        }
+
+        // ── Auto-generate advice when energy crosses a threshold ──────────────
+        // Only auto-generate when energy is LOW (≤50) — not when it's high
+        int threshold = energy >= 80 ? 80 : energy >= 50 ? 50 : energy >= 20 ? 20 : 0;
+        if (threshold != lastAutoAdviceEnergy) {
+            lastAutoAdviceEnergy = threshold;
+            // Only auto-generate when energy is actually low enough to warrant advice
+            if (energy <= 50) {
+                autoGenerateAdvice(energy);
+            } else {
+                // High energy — just hide any stale advice and reset button
+                if (wellnessResponse != null) { wellnessResponse.setVisible(false); wellnessResponse.setManaged(false); }
+                if (btnGetAdvice != null) { btnGetAdvice.setDisable(false); btnGetAdvice.setText("Get Advice"); }
+                setWellnessStatus("", false);
+            }
+        }
+    }
+
+    /** Tick the countdown every second without hitting the DB. */
+    private void tickCountdown() {
+        if (secondsUntilRegen <= 0) return;
+        secondsUntilRegen--;
+        if (secondsUntilRegen <= 0) {
+            // Regen point just arrived — reload from DB
+            loadEnergyAsync();
+            return;
+        }
+        String timeStr = formatSeconds(secondsUntilRegen);
+        if (lblRegenTimer != null) {
+            String cur = lblRegenTimer.getText();
+            if (cur.startsWith("next in")) lblRegenTimer.setText("next in " + timeStr);
+        }
+        if (lblNextRegen != null) {
+            String cur = lblNextRegen.getText();
+            if (cur.startsWith("Next:")) lblNextRegen.setText("Next: " + timeStr);
+        }
+    }
+
+    private String energyFillStyle(int energy, boolean large) {
+        String gradient;
+        if (energy > 50)      gradient = "linear-gradient(to right,#43e97b,#38f9d7)";
+        else if (energy > 20) gradient = "linear-gradient(to right,#f6d365,#fda085)";
+        else                  gradient = "linear-gradient(to right,#fc5c7d,#6a3093)";
+        String radius = large ? "9" : "4";
+        return "-fx-background-color:" + gradient + ";-fx-background-radius:" + radius + ";";
+    }
+
+    private String formatSeconds(int secs) {
+        if (secs <= 0) return "0s";
+        int m = secs / 60, s = secs % 60;
+        return m > 0 ? m + "m " + s + "s" : s + "s";
+    }
+
+    /** Called by GamePlayController after a mini game completes to refresh the bar. */
+    public void refreshEnergyAfterMiniGame() {
+        loadEnergyAsync();
+    }
+
+    /** Stop timers when navigating away. */
+    public void stopTimers() {
+        if (energyRefreshTimer  != null) energyRefreshTimer.stop();
+        if (regenCountdownTimer != null) regenCountdownTimer.stop();
+    }
+
+    // ── Wellness AI Coach handlers ────────────────────────────────────────────
+
+    @FXML
+    private void handleGetWellnessAdvice() {
+        if (btnGetAdvice == null) return;
+        String feeling = wellnessInput != null ? wellnessInput.getText().trim() : "";
+        btnGetAdvice.setDisable(true);
+        btnGetAdvice.setText("Thinking...");
+        setWellnessStatus("Asking your AI wellness coach...", false);
+        if (wellnessResponse != null) { wellnessResponse.setVisible(false); wellnessResponse.setManaged(false); }
+        final int energy = lastKnownEnergy;
+        Thread t = new Thread(() -> {
+            try {
+                WellnessAIService.WellnessAdvice advice = wellnessAI.getAdvice(energy, feeling);
+                javafx.application.Platform.runLater(() -> showWellnessAdvice(advice));
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    setWellnessStatus("Could not reach AI. Check your API key.", true);
+                    btnGetAdvice.setDisable(false);
+                    btnGetAdvice.setText("Get Advice");
+                });
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Auto-generates advice silently when energy crosses a threshold. */
+    private void autoGenerateAdvice(int energy) {
+        if (btnGetAdvice != null) btnGetAdvice.setDisable(true);
+        setWellnessStatus("Updating wellness advice for your energy level...", false);
+        Thread t = new Thread(() -> {
+            try {
+                WellnessAIService.WellnessAdvice advice = wellnessAI.getAdvice(energy, "");
+                javafx.application.Platform.runLater(() -> {
+                    showWellnessAdvice(advice);
+                    setWellnessStatus("", false); // clear status after auto-update
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    setWellnessStatus("", false);
+                    if (btnGetAdvice != null) { btnGetAdvice.setDisable(false); btnGetAdvice.setText("Get Advice"); }
+                });
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void showWellnessAdvice(WellnessAIService.WellnessAdvice advice) {
+        String urgencyIcon, tipBg, tipBorder, urgencyColor, urgencyBg;
+        String urgencyText;
+        switch (advice.urgency) {
+            case "HIGH" -> {
+                urgencyIcon = "\u26A0"; tipBg = "#fff5f5"; tipBorder = "#fc5c7d";
+                urgencyColor = "#e53e3e"; urgencyBg = "#fff5f5"; urgencyText = "HIGH PRIORITY";
+            }
+            case "MEDIUM" -> {
+                urgencyIcon = "\u26A1"; tipBg = "#fffbeb"; tipBorder = "#f6d365";
+                urgencyColor = "#d97706"; urgencyBg = "#fffbeb"; urgencyText = "MODERATE";
+            }
+            default -> {
+                urgencyIcon = "\u2705"; tipBg = "#f0fff4"; tipBorder = "#9ae6b4";
+                urgencyColor = "#27ae60"; urgencyBg = "#f0fff4"; urgencyText = "ALL GOOD";
+            }
+        }
+
+        if (lblUrgencyIcon  != null) lblUrgencyIcon.setText(urgencyIcon);
+        if (lblUrgencyLabel != null) {
+            lblUrgencyLabel.setText("Wellness Tip");
+            lblUrgencyLabel.setStyle("-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:" + urgencyColor + ";");
+        }
+        if (lblUrgencyBadge != null) {
+            lblUrgencyBadge.setText(urgencyText);
+            lblUrgencyBadge.setStyle("-fx-background-color:" + urgencyBg + ";-fx-text-fill:" + urgencyColor +
+                                     ";-fx-font-size:10px;-fx-font-weight:bold;-fx-background-radius:20;-fx-padding:2 8;");
+        }
+        if (lblWellnessTip  != null) lblWellnessTip.setText(advice.tip);
+        if (wellnessTipCard != null)
+            wellnessTipCard.setStyle("-fx-background-color:" + tipBg + ";-fx-background-radius:10;" +
+                                     "-fx-border-color:" + tipBorder + ";-fx-border-radius:10;-fx-border-width:1;-fx-padding:12 16;");
+
+        String gameLabel = switch (advice.gameType) {
+            case "BREATHING"  -> "Breathing Exercise";
+            case "STRETCH"    -> "Quick Stretch";
+            case "EYE"        -> "Eye Rest";
+            case "HYDRATION"  -> "Hydration Break";
+            default           -> advice.gameType;
+        };
+        String gameIcon = switch (advice.gameType) {
+            case "BREATHING"  -> "\uD83C\uDF2C";
+            case "STRETCH"    -> "\uD83D\uDCAA";
+            case "EYE"        -> "\uD83D\uDC41";
+            case "HYDRATION"  -> "\uD83D\uDCA7";
+            default           -> "\uD83C\uDFAE";
+        };
+        if (lblRecommendedIcon   != null) lblRecommendedIcon.setText(gameIcon);
+        if (lblRecommendedGame   != null) lblRecommendedGame.setText("Recommended: " + gameLabel);
+        if (lblRecommendedReason != null) lblRecommendedReason.setText(advice.gameReason);
+
+        recommendedGameType = advice.gameType;
+
+        if (wellnessResponse != null) { wellnessResponse.setVisible(true); wellnessResponse.setManaged(true); }
+        if (btnGetAdvice != null) { btnGetAdvice.setDisable(false); btnGetAdvice.setText("Refresh Advice"); }
+    }
+
+    @FXML
+    private void handlePlayRecommended() {
+        if (recommendedGameType == null || allGames == null) return;
+        // Find a mini game matching the recommended type by name/description
+        String keyword = switch (recommendedGameType) {
+            case "BREATHING"  -> "breath";
+            case "STRETCH"    -> "stretch";
+            case "EYE"        -> "eye";
+            case "HYDRATION"  -> "hydrat";
+            default           -> "breath";
+        };
+        Game match = allGames.stream()
+            .filter(g -> "MINI_GAME".equals(g.getCategory()))
+            .filter(g -> g.getName().toLowerCase().contains(keyword) ||
+                         (g.getDescription() != null && g.getDescription().toLowerCase().contains(keyword)))
+            .findFirst()
+            // Fallback: any mini game
+            .orElse(allGames.stream().filter(g -> "MINI_GAME".equals(g.getCategory())).findFirst().orElse(null));
+        if (match != null) launchGame(match);
+    }
+
+    private void setWellnessStatus(String msg, boolean isError) {
+        if (lblWellnessStatus == null) return;
+        lblWellnessStatus.setText(msg);
+        lblWellnessStatus.setVisible(!msg.isEmpty());
+        lblWellnessStatus.setManaged(!msg.isEmpty());
+        lblWellnessStatus.setStyle("-fx-font-size:11px;-fx-text-fill:" + (isError ? "#e53e3e" : "#718096") + ";");
     }
 
     @FXML private void handleSearch() { applyFilters(); }

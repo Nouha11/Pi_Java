@@ -278,9 +278,9 @@ public class GamePlayController {
             ? faCircle(TwemojiUtil.TROPHY, 32, "linear-gradient(to bottom right,#f6d365,#fda085)", "white")
             : faCircle(TwemojiUtil.LOSE,   32, "linear-gradient(to bottom right,#fc5c7d,#6a3093)", "white");
         resultIcon.setPrefSize(80, 80); resultIcon.setMaxSize(80, 80);
-        Label result = new Label(passed ? "Well Done!" : "Time's Up!");
+        Label result = new Label(passed ? (isMiniGame ? "Exercise Complete!" : "Well Done!") : "Time's Up!");
         result.setStyle("-fx-font-size:22px;-fx-font-weight:bold;-fx-text-fill:" + (passed ? "#27ae60" : "#e53e3e") + ";");
-        Label scoreLabel = new Label(isMiniGame ? "Exercise Complete!" : "Final Score: " + score);
+        Label scoreLabel = new Label(isMiniGame ? "" : "Final Score: " + score);
         scoreLabel.setStyle("-fx-font-size:16px;-fx-text-fill:#2d3748;");
         overlayContent.getChildren().addAll(resultIcon, result, scoreLabel);
         if (passed) {
@@ -288,15 +288,17 @@ public class GamePlayController {
                 ? "+" + (game.getEnergyPoints() != null ? game.getEnergyPoints() : 0) + " Energy restored!"
                 : "+" + game.getRewardTokens() + " tokens  +" + game.getRewardXP() + " XP earned!";
             Label rl = new Label(rw);
-            rl.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#3b4fd8;");
+            rl.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:" +
+                        (isMiniGame ? "#27ae60" : "#3b4fd8") + ";");
             overlayContent.getChildren().add(rl);
 
-            // ── Star rating widget ────────────────────────────────────────────
+            // ── Star rating widget — shown for ALL games (full + mini) ────────
             int userId = utils.SessionManager.getCurrentUserId();
+            if (userId <= 1) userId = utils.UserSession.getInstance().getUserId();
             if (userId > 0) {
                 Separator rateSep = new Separator();
                 rateSep.setStyle("-fx-background-color:#e4e8f0;");
-                Label rateTitle = new Label("Rate this game");
+                Label rateTitle = new Label("Rate this " + (isMiniGame ? "exercise" : "game"));
                 rateTitle.setStyle("-fx-font-size:13px;-fx-text-fill:#718096;-fx-font-weight:bold;");
                 int existing = 0;
                 try { existing = new GameRatingService().getUserRating(userId, game.getId()); } catch (Exception ignored) {}
@@ -305,7 +307,8 @@ public class GamePlayController {
             }
         }
         Button playAgain = new Button(isMiniGame ? "Try Again" : "Play Again");
-        playAgain.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:14px;-fx-background-radius:10;-fx-padding:10 30;-fx-cursor:hand;");
+        playAgain.setStyle("-fx-background-color:" + (isMiniGame ? "linear-gradient(to right,#43e97b,#38f9d7)" : typeGradient(game.getType())) +
+                           ";-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:14px;-fx-background-radius:10;-fx-padding:10 30;-fx-cursor:hand;");
         playAgain.setOnAction(e -> { score = 0; secondsLeft = timeLimitFor(game.getDifficulty()); lblScore.setText("Score: 0"); progressBar.setProgress(1.0); startGame(); });
         Button backBtn = new Button("Back to Games");
         backBtn.setStyle("-fx-background-color:#f0f2f8;-fx-text-fill:#3b4fd8;-fx-font-weight:bold;-fx-font-size:13px;-fx-background-radius:10;-fx-padding:10 24;-fx-cursor:hand;-fx-border-color:#c3c9f5;-fx-border-radius:10;");
@@ -929,16 +932,84 @@ public class GamePlayController {
     // ── MINI GAME ROUTER ─────────────────────────────────────────────────────
     private void buildMiniGame() {
         String name = game.getName().toLowerCase();
-        if (name.contains("stretch") || name.contains("exercise")) buildStretchGame();
-        else if (name.contains("eye") || name.contains("vision"))  buildEyeRestGame();
-        else if (name.contains("hydrat") || name.contains("water")) buildHydrationGame();
-        else buildBreathingGame();
+        String desc = (game.getDescription() != null ? game.getDescription() : "").toLowerCase();
+        String combined = name + " " + desc;
+
+        // Check breathing FIRST — before exercise/stretch, since "Breathing Exercise" contains "exercise"
+        if (combined.contains("breath") || combined.contains("relax") || combined.contains("meditat"))
+            buildBreathingGame();
+        else if (combined.contains("stretch") || combined.contains("exercise") || combined.contains("yoga"))
+            buildStretchGame();
+        else if (combined.contains("eye") || combined.contains("vision") || combined.contains("sight"))
+            buildEyeRestGame();
+        else if (combined.contains("hydrat") || combined.contains("water") || combined.contains("drink"))
+            buildHydrationGame();
+        else
+            buildBreathingGame(); // default fallback
+    }
+
+    /**
+     * Floating emoji particles — fills the entire game area.
+     * Uses only simple single-codepoint emojis that JavaFX Label renders reliably.
+     */
+    private javafx.scene.layout.Pane buildFloatingParticles(String[] emojis, String[] colors) {
+        javafx.scene.layout.Pane pane = new javafx.scene.layout.Pane();
+        pane.setMouseTransparent(true);
+        // Fill the parent — bound in the StackPane
+        pane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        pane.setPrefSize(800, 600);
+
+        Random rnd = new Random();
+        int count = 18;
+        for (int i = 0; i < count; i++) {
+            String emoji = emojis[rnd.nextInt(emojis.length)];
+            String color = colors[rnd.nextInt(colors.length)];
+
+            Label lbl = new Label(emoji);
+            double size = 20 + rnd.nextInt(18); // 20–38px
+            lbl.setStyle("-fx-font-size:" + (int)size + "px;-fx-text-fill:" + color + ";");
+            lbl.setOpacity(0.0);
+
+            // Spread across full width and height
+            double startX = 20 + rnd.nextDouble() * 760;
+            double startY = 100 + rnd.nextDouble() * 500;
+            lbl.setLayoutX(startX);
+            lbl.setLayoutY(startY);
+            pane.getChildren().add(lbl);
+
+            double cycleDur = 5.0 + rnd.nextDouble() * 5.0; // 5–10s
+            double delay    = rnd.nextDouble() * 4.0;        // 0–4s stagger
+
+            // Float upward
+            TranslateTransition up = new TranslateTransition(Duration.seconds(cycleDur), lbl);
+            up.setByY(-(300 + rnd.nextDouble() * 200));
+            up.setByX((rnd.nextDouble() - 0.5) * 100);
+            up.setCycleCount(Timeline.INDEFINITE);
+            up.setInterpolator(javafx.animation.Interpolator.LINEAR);
+
+            // Fade in then out
+            FadeTransition fade = new FadeTransition(Duration.seconds(cycleDur), lbl);
+            fade.setFromValue(0.0);
+            fade.setToValue(0.55);
+            fade.setCycleCount(Timeline.INDEFINITE);
+            fade.setAutoReverse(true);
+
+            // Gentle rotation
+            RotateTransition rot = new RotateTransition(Duration.seconds(cycleDur * 1.3), lbl);
+            rot.setByAngle((rnd.nextBoolean() ? 1 : -1) * (15 + rnd.nextInt(25)));
+            rot.setCycleCount(Timeline.INDEFINITE);
+            rot.setAutoReverse(true);
+
+            ParallelTransition pt = new ParallelTransition(up, fade, rot);
+            pt.setDelay(Duration.seconds(delay));
+            pt.play();
+        }
+        return pane;
     }
 
     // ── BREATHING ────────────────────────────────────────────────────────────
     private void buildBreathingGame() {
         int cycles = 3;
-        int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 20;
         Circle outerRing = new Circle(90); outerRing.setFill(Color.TRANSPARENT); outerRing.setStroke(Color.web("#4facfe", 0.2)); outerRing.setStrokeWidth(2);
         Circle circle = new Circle(70); circle.setFill(Color.web("#4facfe", 0.15)); circle.setStroke(Color.web("#4facfe")); circle.setStrokeWidth(3);
         StackPane circlePane = new StackPane(outerRing, circle); circlePane.setPrefSize(200, 200);
@@ -948,11 +1019,27 @@ public class GamePlayController {
         ProgressBar bp = new ProgressBar(0); bp.setPrefWidth(340); bp.setStyle("-fx-accent:#4facfe;");
         VBox card = new VBox(20, circlePane, instrLbl, cycleLbl, bp, tipLbl);
         card.setAlignment(Pos.CENTER); card.setPadding(new Insets(40)); card.setMaxWidth(480);
-        card.setStyle("-fx-background-color:white;-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
-        VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(30));
-        gameContentArea.getChildren().add(wrapper);
+        card.setStyle("-fx-background-color:rgba(255,255,255,0.92);-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
+
+        // Simple single-codepoint emojis JavaFX renders reliably
+        javafx.scene.layout.Pane particles = buildFloatingParticles(
+            new String[]{"\u2728", "\u2744", "\u26AA", "\u2B50", "\u25CB", "\u25CF", "\u2022"},
+            new String[]{"#4facfe","#00f2fe","#a8d8ff","#c3e8ff","#667eea","#b8f0ff"}
+        );
+        StackPane scene = new StackPane();
+        scene.setStyle("-fx-background-color:linear-gradient(to bottom,#e8f4ff,#f0f8ff);");
+        scene.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        // particles fills the StackPane
+        StackPane.setAlignment(particles, Pos.TOP_LEFT);
+        scene.getChildren().addAll(particles, card);
+        VBox.setVgrow(scene, Priority.ALWAYS);
+        gameContentArea.setFillWidth(true);
+        gameContentArea.getChildren().add(scene);
+
         running = true;
         final int[] cyc = {0}; final String[] phases = {"Breathe In...", "Hold...", "Breathe Out..."}; final int[] pi = {0};
+        // Start immediately — no delay
+        instrLbl.setText(phases[0]);
         Timeline breathe = new Timeline(new KeyFrame(Duration.seconds(4), e -> {
             if (!running) return;
             pi[0] = (pi[0] + 1) % 3; if (pi[0] == 0) cyc[0]++;
@@ -988,9 +1075,21 @@ public class GamePlayController {
         ProgressBar bp = new ProgressBar(0); bp.setPrefWidth(340); bp.setStyle("-fx-accent:#43e97b;");
         VBox card = new VBox(18, exIcon, nameLbl, instrLbl, timerLbl, stepDots, progressTxt, bp);
         card.setAlignment(Pos.CENTER); card.setPadding(new Insets(36)); card.setMaxWidth(480);
-        card.setStyle("-fx-background-color:white;-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(67,233,123,0.2),20,0,0,6);");
-        VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(30));
-        gameContentArea.getChildren().add(wrapper);
+        card.setStyle("-fx-background-color:rgba(255,255,255,0.92);-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(67,233,123,0.2),20,0,0,6);");
+
+        // Simple emojis: stars, circles, dots
+        javafx.scene.layout.Pane particles = buildFloatingParticles(
+            new String[]{"\u2B50", "\u2728", "\u25CF", "\u25CB", "\u2022", "\u26AB", "\u2605"},
+            new String[]{"#43e97b","#38f9d7","#a8ffcb","#f6d365","#fda085","#27ae60"}
+        );
+        StackPane scene = new StackPane();
+        scene.setStyle("-fx-background-color:linear-gradient(to bottom,#e8fff4,#f0fff8);");
+        scene.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(particles, Pos.TOP_LEFT);
+        scene.getChildren().addAll(particles, card);
+        VBox.setVgrow(scene, Priority.ALWAYS);
+        gameContentArea.setFillWidth(true);
+        gameContentArea.getChildren().add(scene);
         running = true;
         final int[] exIdx = {0}; final int[] secs = {10};
         Timeline t = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
@@ -1022,38 +1121,45 @@ public class GamePlayController {
 
     // ── EYE REST ─────────────────────────────────────────────────────────────
     private void buildEyeRestGame() {
-        int ep = game.getEnergyPoints() != null ? game.getEnergyPoints() : 20;
         int duration = 20;
         StackPane eyeIco = faCircle("\uD83D\uDC41", 36, "linear-gradient(to bottom right,#4facfe,#00f2fe)", "white");
         eyeIco.setPrefSize(100, 100); eyeIco.setMaxSize(100, 100);
         ScaleTransition pulse = new ScaleTransition(Duration.seconds(2), eyeIco);
         pulse.setFromX(1); pulse.setToX(1.1); pulse.setFromY(1); pulse.setToY(1.1);
         pulse.setCycleCount(ScaleTransition.INDEFINITE); pulse.setAutoReverse(true); pulse.play();
-        Label instrLbl = new Label("Get Ready..."); instrLbl.setStyle("-fx-font-size:24px;-fx-font-weight:bold;-fx-text-fill:#4facfe;");
-        Label tipLbl = new Label("This helps reduce eye strain from screen time"); tipLbl.setStyle("-fx-text-fill:#718096;-fx-font-size:14px;");
+        Label instrLbl = new Label("Look Away From Screen"); instrLbl.setStyle("-fx-font-size:24px;-fx-font-weight:bold;-fx-text-fill:#4facfe;");
+        Label tipLbl = new Label("Focus on something far away..."); tipLbl.setStyle("-fx-text-fill:#718096;-fx-font-size:14px;");
         Label timerLbl = new Label(String.valueOf(duration)); timerLbl.setStyle("-fx-font-size:72px;-fx-font-weight:bold;-fx-text-fill:#4facfe;");
         ProgressBar bp = new ProgressBar(0); bp.setPrefWidth(340); bp.setStyle("-fx-accent:#4facfe;");
         Label tip2 = new Label("Every 20 min, look 20 feet away for 20 seconds"); tip2.setStyle("-fx-text-fill:#a0aec0;-fx-font-size:12px;");
         VBox card = new VBox(20, eyeIco, instrLbl, tipLbl, timerLbl, bp, tip2);
         card.setAlignment(Pos.CENTER); card.setPadding(new Insets(40)); card.setMaxWidth(480);
-        card.setStyle("-fx-background-color:white;-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
-        VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(30));
-        gameContentArea.getChildren().add(wrapper);
+        card.setStyle("-fx-background-color:rgba(255,255,255,0.92);-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
+
+        javafx.scene.layout.Pane particles = buildFloatingParticles(
+            new String[]{"\u2B50", "\u2728", "\u25CB", "\u26AA", "\u2022", "\u25C6", "\u2605"},
+            new String[]{"#4facfe","#00f2fe","#a8d8ff","#c3e8ff","#b8f0ff","#667eea"}
+        );
+        StackPane scene = new StackPane();
+        scene.setStyle("-fx-background-color:linear-gradient(to bottom,#e0f4ff,#f0faff);");
+        scene.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(particles, Pos.TOP_LEFT);
+        scene.getChildren().addAll(particles, card);
+        VBox.setVgrow(scene, Priority.ALWAYS);
+        gameContentArea.setFillWidth(true);
+        gameContentArea.getChildren().add(scene);
+
         running = true;
         final int[] secs = {duration};
-        PauseTransition delay = new PauseTransition(Duration.seconds(2));
-        delay.setOnFinished(ev -> {
-            instrLbl.setText("Look Away From Screen"); tipLbl.setText("Focus on something far away...");
-            Timeline t = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-                if (!running) return;
-                secs[0]--; timerLbl.setText(String.valueOf(secs[0]));
-                bp.setProgress((double)(duration - secs[0]) / duration);
-                if (secs[0] <= 5) timerLbl.setStyle("-fx-font-size:72px;-fx-font-weight:bold;-fx-text-fill:#27ae60;");
-                if (secs[0] <= 0) { running = false; pulse.stop(); endGame(true); }
-            }));
-            t.setCycleCount(duration + 1); t.play();
-        });
-        delay.play();
+        // Start immediately — no delay
+        Timeline t = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            if (!running) return;
+            secs[0]--; timerLbl.setText(String.valueOf(secs[0]));
+            bp.setProgress((double)(duration - secs[0]) / duration);
+            if (secs[0] <= 5) timerLbl.setStyle("-fx-font-size:72px;-fx-font-weight:bold;-fx-text-fill:#27ae60;");
+            if (secs[0] <= 0) { running = false; pulse.stop(); endGame(true); }
+        }));
+        t.setCycleCount(duration + 1); t.play();
     }
 
     // ── HYDRATION ────────────────────────────────────────────────────────────
@@ -1087,23 +1193,32 @@ public class GamePlayController {
         Label tip2 = new Label("Aim for 8 glasses of water per day"); tip2.setStyle("-fx-text-fill:#a0aec0;-fx-font-size:12px;");
         VBox card = new VBox(16, glass, instrLbl, tipLbl, pctLbl, timerLbl, drinkBtn, bp, tip2);
         card.setAlignment(Pos.CENTER); card.setPadding(new Insets(36)); card.setMaxWidth(480);
-        card.setStyle("-fx-background-color:white;-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
-        VBox wrapper = new VBox(card); wrapper.setAlignment(Pos.CENTER); wrapper.setPadding(new Insets(30));
-        gameContentArea.getChildren().add(wrapper);
+        card.setStyle("-fx-background-color:rgba(255,255,255,0.92);-fx-background-radius:20;-fx-effect:dropshadow(gaussian,rgba(79,172,254,0.2),20,0,0,6);");
+
+        javafx.scene.layout.Pane particles = buildFloatingParticles(
+            new String[]{"\u25CB", "\u2022", "\u26AA", "\u25CF", "\u2B24", "\u25C6", "\u2B50"},
+            new String[]{"#4facfe","#00f2fe","#a8d8ff","#43e97b","#38f9d7","#b8f0ff"}
+        );
+        StackPane scene = new StackPane();
+        scene.setStyle("-fx-background-color:linear-gradient(to bottom,#e0f8ff,#f0fcff);");
+        scene.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setAlignment(particles, Pos.TOP_LEFT);
+        scene.getChildren().addAll(particles, card);
+        VBox.setVgrow(scene, Priority.ALWAYS);
+        gameContentArea.setFillWidth(true);
+        gameContentArea.getChildren().add(scene);
+
         running = true;
         final int[] secs = {duration};
-        PauseTransition delay = new PauseTransition(Duration.seconds(2));
-        delay.setOnFinished(ev -> {
-            instrLbl.setText("Drink Water Now"); tipLbl.setText("Click the button as you drink");
-            Timeline t = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-                if (!running) return;
-                secs[0]--; timerLbl.setText(secs[0] + "s");
-                bp.setProgress((double)(duration - secs[0]) / duration);
-                if (secs[0] <= 0) { running = false; endGame(true); }
-            }));
-            t.setCycleCount(duration + 1); t.play();
-        });
-        delay.play();
+        // Start immediately — no delay
+        instrLbl.setText("Drink Water Now"); tipLbl.setText("Click the button as you drink");
+        Timeline t = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            if (!running) return;
+            secs[0]--; timerLbl.setText(secs[0] + "s");
+            bp.setProgress((double)(duration - secs[0]) / duration);
+            if (secs[0] <= 0) { running = false; endGame(true); }
+        }));
+        t.setCycleCount(duration + 1); t.play();
     }
 
     private void buildGeneric() {
@@ -1162,13 +1277,20 @@ public class GamePlayController {
             ctrl.setContentArea(contentArea);
             ctrl.setInitialTab(isMiniGame ? 1 : 0);
             if (contentArea != null) contentArea.getChildren().setAll(view);
+            // Refresh energy bar after returning from a mini game
+            if (isMiniGame) {
+                javafx.application.Platform.runLater(ctrl::loadEnergyAsync);
+            }
         } catch (Exception e) { e.printStackTrace(); }
     }
 
     private String instructionsFor(String type, String cat) {
         if ("MINI_GAME".equals(cat)) {
             String name = game.getName().toLowerCase();
-            if (name.contains("stretch")) return "Follow each stretching exercise for 10 seconds. Complete all 5 to finish.";
+            if (name.contains("breath") || name.contains("relax") || name.contains("meditat"))
+                return "Follow the breathing circle: inhale 4s · hold 4s · exhale 4s. Complete 3 cycles.";
+            if (name.contains("stretch") || name.contains("exercise") || name.contains("yoga"))
+                return "Follow each stretching exercise for 10 seconds. Complete all 5 to finish.";
             if (name.contains("eye") || name.contains("vision")) return "Look away from your screen at something far away for 20 seconds.";
             if (name.contains("hydrat") || name.contains("water")) return "Drink water and click the button as you sip. Complete in 30 seconds.";
             return "Follow the breathing circle: inhale 4s · hold 4s · exhale 4s. Complete 3 cycles.";
