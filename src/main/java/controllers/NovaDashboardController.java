@@ -556,10 +556,9 @@ setActiveButton(btnForum);
             URL resource = getClass().getResource(fxmlPath);
             if (resource == null) return;
             Parent view = FXMLLoader.load(resource);
+            ThemeManager.getInstance().applyToParent(view);
             staticContentArea.getChildren().clear();
             staticContentArea.getChildren().add(view);
-            view.sceneProperty().addListener((obs, old, scene) -> { if (scene != null) ThemeManager.getInstance().register(scene); });
-            if (view.getScene() != null) ThemeManager.getInstance().applyToScene(view.getScene());
         } catch (Exception e) {}
     }
 
@@ -584,9 +583,9 @@ setActiveButton(btnForum);
         }
         if (staticContentArea != null) {
             staticContentArea.getChildren().clear();
+            // Apply dark mode BEFORE adding to scene — fixes white cards
+            ThemeManager.getInstance().applyToParent(view);
             staticContentArea.getChildren().add(view);
-            view.sceneProperty().addListener((obs, old, scene) -> { if (scene != null) ThemeManager.getInstance().register(scene); });
-            if (view.getScene() != null) ThemeManager.getInstance().applyToScene(view.getScene());
             view.setOpacity(0);
             view.setTranslateY(30);
             FadeTransition fadeIn = new FadeTransition(Duration.millis(450), view);
@@ -759,5 +758,12 @@ setActiveButton(btnForum);
         boolean show = !schedulePane.isVisible();
         schedulePane.setVisible(show);
         schedulePane.setManaged(show);
+    }
+
+    /** Called by ThemeManager when mode changes — re-applies dark mode to current content view */
+    public void applyDarkModeToContentArea(boolean dark) {
+        if (staticContentArea == null || staticContentArea.getChildren().isEmpty()) return;
+        javafx.scene.Parent currentView = (javafx.scene.Parent) staticContentArea.getChildren().get(0);
+        utils.DarkModeApplier.applyToNode(currentView, dark);
     }
 }

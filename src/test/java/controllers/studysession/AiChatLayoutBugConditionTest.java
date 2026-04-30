@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import models.ai.ChatMessage;
 import models.studysession.Course;
 import net.jqwik.api.*;
+import net.jqwik.api.constraints.IntRange;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testfx.framework.junit5.ApplicationTest;

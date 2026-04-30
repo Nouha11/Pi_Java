@@ -79,4 +79,8 @@ public class User {
     public void    setTotpEnabled(boolean totpEnabled){ this.totpEnabled = totpEnabled; }
     public String  getTotpSecret()                    { return totpSecret; }
     public void    setTotpSecret(String totpSecret)   { this.totpSecret = totpSecret; }
+
+    private String faceToken = null;
+    public String getFaceToken()                  { return faceToken; }
+    public void   setFaceToken(String faceToken)  { this.faceToken = faceToken; }
 }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.FaceSetupController"
+            prefWidth="560" prefHeight="520"
+            style="-fx-background-color:#f8fafc;">
+
+    <stylesheets>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <top>
+        <HBox style="-fx-background-color:#1a1f36;-fx-padding:18 24;" alignment="CENTER_LEFT" spacing="12">
+            <Label text="Face Login Setup"
+                   style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblCurrentStatus" text="Face login: NOT SET UP"
+                   style="-fx-font-size:12px;-fx-font-weight:bold;-fx-text-fill:#ef4444;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox spacing="16" alignment="CENTER">
+            <padding><Insets top="20" right="28" bottom="16" left="28"/></padding>
+
+            <Label text="Position your face in the frame and click Register"
+                   style="-fx-font-size:13px;-fx-text-fill:#64748b;"/>
+
+            <!-- Webcam feed -->
+            <StackPane style="-fx-background-color:#1e293b;-fx-background-radius:10;-fx-border-color:#334155;-fx-border-radius:10;-fx-border-width:2;">
+                <ImageView fx:id="imgWebcam" fitWidth="400" fitHeight="260"
+                           preserveRatio="true" smooth="true"/>
+                <Label text="[ ]"
+                       style="-fx-font-size:90px;-fx-text-fill:rgba(79,142,247,0.35);-fx-font-weight:bold;"/>
+            </StackPane>
+
+            <!-- Status -->
+            <Label fx:id="lblStatus" text="" wrapText="true" textAlignment="CENTER"
+                   maxWidth="400" style="-fx-font-size:12px;-fx-font-weight:bold;"/>
+
+            <ProgressIndicator fx:id="spinner" prefWidth="32" prefHeight="32"
+                               style="-fx-progress-color:#4f8ef7;" visible="false" managed="false"/>
+
+            <!-- Buttons -->
+            <HBox spacing="12" alignment="CENTER">
+                <Button fx:id="btnRegister" text="Register Face" onAction="#onRegister"
+                        style="-fx-background-color:#22c55e;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;-fx-padding:10 24;-fx-background-radius:8;-fx-cursor:hand;"/>
+                <Button fx:id="btnRemove" text="Remove Face" onAction="#onRemove"
+                        style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13px;-fx-padding:10 24;-fx-background-radius:8;-fx-cursor:hand;"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_RIGHT">
+            <padding><Insets top="10" right="24" bottom="16" left="24"/></padding>
+            <Button fx:id="btnClose" text="Close" onAction="#onClose" styleClass="btn-cancel"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

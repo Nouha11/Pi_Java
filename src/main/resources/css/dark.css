@@ -1,18 +1,29 @@
 /* ══════════════════════════════════════════════════════════════
-   dark.css  —  NOVA Dark Theme
+   dark.css  —  NOVA Dark Theme (complete)
    Applied on top of app.css / users.css when dark mode is active
    ══════════════════════════════════════════════════════════════ */
 
-/* ── Root / backgrounds ── */
+/* ── JavaFX root defaults — kills ALL white backgrounds ── */
 .root {
-    -fx-base: #1e1e2e;
-    -fx-background: #1e1e2e;
-    -fx-control-inner-background: #2a2a3e;
-    -fx-control-inner-background-alt: #252535;
+    -fx-base:                      #1e1e2e;
+    -fx-background:                #13131f;
+    -fx-control-inner-background:  #252535;
+    -fx-control-inner-background-alt: #1e1e2e;
+    -fx-text-background-color:     #e2e8f0;
+    -fx-text-fill:                 #e2e8f0;
+    -fx-accent:                    #4f8ef7;
+    -fx-focus-color:               #4f8ef7;
+    -fx-faint-focus-color:         rgba(79,142,247,0.2);
+    -fx-selection-bar:             #1e2d4e;
+    -fx-selection-bar-non-focused: #252535;
 }
 
-.app-root, .content-area {
+/* ── Scene / pane backgrounds ── */
+.app-root, .content-area, .scroll-pane,
+.scroll-pane > .viewport, .split-pane,
+.split-pane > .split-pane-divider {
     -fx-background-color: #13131f;
+    -fx-background: #13131f;
 }
 
 /* ── Topbar ── */
@@ -28,14 +39,13 @@
 .sidebar       { -fx-background-color: #0d0d1a; }
 .sidebar-logo  { -fx-background-color: #080812; }
 
-/* ── Cards ── */
-.profile-card, .dash-card, .stat-card, .form-root {
+/* ── Cards / panels ── */
+.profile-card, .dash-card, .stat-card, .form-root,
+.profile-card-header, .dash-card-header {
     -fx-background-color: #1e1e2e;
     -fx-border-color: #2d2d4e;
 }
-.profile-card-header, .dash-card-header, .profile-avatar-panel {
-    -fx-background-color: #16162a;
-}
+.profile-avatar-panel { -fx-background-color: #16162a; }
 
 /* ── Stat cards ── */
 .stat-card-blue   { -fx-background-color: #1a2035; }
@@ -45,71 +55,185 @@
 .stat-card-orange { -fx-background-color: #251e15; }
 .stat-card-teal   { -fx-background-color: #152520; }
 .stat-card-dark   { -fx-background-color: #1a1a2e; }
-
 .stat-label { -fx-text-fill: #64748b; }
 .stat-value { -fx-text-fill: #e2e8f0; }
 .stat-hint  { -fx-text-fill: #475569; }
 
 /* ── Labels ── */
 .topbar-title, .dash-card-title, .profile-name,
-.profile-name-lg, .profile-section-title {
+.profile-name-lg, .profile-section-title,
+.form-header-title, .welcome-title {
     -fx-text-fill: #e2e8f0;
 }
 .field-label   { -fx-text-fill: #64748b; }
 .profile-value { -fx-text-fill: #cbd5e1; }
+.welcome-sub   { -fx-text-fill: #64748b; }
 
 /* ── Form fields ── */
-.form-field, .form-combo {
+.text-field, .password-field, .text-area,
+.form-field, .form-combo, .topbar-search {
     -fx-background-color: #252535;
     -fx-border-color: #3d3d5c;
     -fx-text-fill: #e2e8f0;
+    -fx-prompt-text-fill: #475569;
 }
-.form-field:focused, .form-combo:focused {
+.text-field:focused, .password-field:focused,
+.text-area:focused, .form-field:focused {
     -fx-border-color: #4f8ef7;
     -fx-background-color: #2a2a3e;
 }
 
-/* ── Table ── */
-.main-table {
+/* ── ComboBox ── */
+.combo-box, .combo-box-base {
+    -fx-background-color: #252535;
+    -fx-border-color: #3d3d5c;
+}
+.combo-box .list-cell, .combo-box-popup .list-cell {
+    -fx-background-color: #252535;
+    -fx-text-fill: #e2e8f0;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: #3d3d5c;
+}
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #2d2d4e;
+}
+
+/* ── Spinner ── */
+.spinner {
+    -fx-background-color: #252535;
+    -fx-border-color: #3d3d5c;
+}
+.spinner .text-field { -fx-background-color: #252535; -fx-text-fill: #e2e8f0; }
+
+/* ── TableView — kills white lines ── */
+.table-view, .tree-table-view {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: #2d2d4e;
+    -fx-table-cell-border-color: #252535;
+}
+.table-view .column-header-background,
+.tree-table-view .column-header-background {
+    -fx-background-color: #16162a;
+}
+.table-view .column-header,
+.tree-table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #2d2d4e transparent;
+}
+.table-view .column-header .label,
+.tree-table-view .column-header .label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: bold;
+}
+.table-row-cell {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: transparent transparent #252535 transparent;
+    -fx-cell-size: 40px;
+}
+.table-row-cell:odd  { -fx-background-color: #1a1a2e; }
+.table-row-cell:even { -fx-background-color: #1e1e2e; }
+.table-row-cell:selected { -fx-background-color: #1e2d4e; }
+.table-row-cell:selected .text { -fx-fill: #93c5fd; }
+.table-row-cell:hover { -fx-background-color: #252535; }
+.table-row-cell .text { -fx-fill: #cbd5e1; }
+/* Kill the white filler rows at the bottom */
+.table-view .filler,
+.table-view .corner {
     -fx-background-color: #1e1e2e;
     -fx-border-color: #2d2d4e;
 }
-.main-table .column-header-background { -fx-background-color: #16162a; }
-.main-table .column-header .label     { -fx-text-fill: #94a3b8; }
-.table-row-cell                        { -fx-background-color: #1e1e2e; -fx-border-color: transparent transparent #252535 transparent; }
-.table-row-cell:odd                    { -fx-background-color: #1a1a2e; }
-.table-row-cell:even                   { -fx-background-color: #1e1e2e; }
-.table-row-cell:selected               { -fx-background-color: #1e2d4e; }
-.table-row-cell:selected .text         { -fx-fill: #93c5fd; }
-.table-row-cell:hover                  { -fx-background-color: #252535; }
-.table-row-cell .text                  { -fx-fill: #cbd5e1; }
 
-/* ── Scroll pane ── */
-.scroll-pane, .scroll-pane > .viewport { -fx-background-color: #13131f; }
-.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb { -fx-background-color: #3d3d5c; }
+/* ── ListView ── */
+.list-view {
+    -fx-background-color: #1e1e2e;
+    -fx-border-color: #2d2d4e;
+}
+.list-cell {
+    -fx-background-color: #1e1e2e;
+    -fx-text-fill: #cbd5e1;
+}
+.list-cell:odd  { -fx-background-color: #1a1a2e; }
+.list-cell:even { -fx-background-color: #1e1e2e; }
+.list-cell:selected { -fx-background-color: #1e2d4e; -fx-text-fill: #93c5fd; }
+.list-cell:hover { -fx-background-color: #252535; }
+
+/* ── ScrollPane — kills white viewport ── */
+.scroll-pane { -fx-background-color: #13131f; -fx-background: #13131f; }
+.scroll-pane > .viewport { -fx-background-color: #13131f; }
+.scroll-pane > .corner { -fx-background-color: #1e1e2e; }
+.scroll-bar { -fx-background-color: #1e1e2e; }
+.scroll-bar .track { -fx-background-color: #1a1a2e; }
+.scroll-bar .thumb { -fx-background-color: #3d3d5c; -fx-background-radius: 4; }
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button { -fx-background-color: #1e1e2e; }
+
+/* ── TabPane ── */
+.tab-pane { -fx-background-color: #13131f; }
+.tab-pane .tab-header-area { -fx-background-color: #1a1a2e; }
+.tab-pane .tab-header-background { -fx-background-color: #1a1a2e; }
+.tab { -fx-background-color: #1a1a2e; }
+.tab:selected { -fx-background-color: #1e1e2e; }
+.tab .tab-label { -fx-text-fill: #94a3b8; }
+.tab:selected .tab-label { -fx-text-fill: #e2e8f0; }
+.tab-content-area { -fx-background-color: #1e1e2e; }
+
+/* ── Separator ── */
+.separator .line { -fx-border-color: #2d2d4e; -fx-background-color: #2d2d4e; }
+
+/* ── Buttons ── */
+.button { -fx-background-color: #252535; -fx-text-fill: #e2e8f0; }
+.button:hover { -fx-background-color: #2d2d4e; }
+.btn-icon { -fx-background-color: #252535; -fx-text-fill: #94a3b8; }
+.btn-icon:hover { -fx-background-color: #2d2d4e; }
+
+/* ── CheckBox / RadioButton ── */
+.check-box .box, .radio-button .radio {
+    -fx-background-color: #252535;
+    -fx-border-color: #3d3d5c;
+}
+.check-box:selected .box, .radio-button:selected .radio {
+    -fx-background-color: #4f8ef7;
+    -fx-border-color: #4f8ef7;
+}
+.check-box .label, .radio-button .label { -fx-text-fill: #cbd5e1; }
+
+/* ── ToggleButton ── */
+.toggle-button { -fx-background-color: #252535; -fx-text-fill: #94a3b8; }
+.toggle-button:selected { -fx-background-color: rgba(79,142,247,0.2); -fx-text-fill: #60a5fa; }
+
+/* ── Tooltip ── */
+.tooltip { -fx-background-color: #1e1e2e; -fx-text-fill: #e2e8f0; -fx-border-color: #3d3d5c; }
+
+/* ── Alert / Dialog ── */
+.dialog-pane { -fx-background-color: #1e1e2e; }
+.dialog-pane .content { -fx-text-fill: #e2e8f0; }
+.dialog-pane .header-panel { -fx-background-color: #16162a; }
+.dialog-pane .header-panel .label { -fx-text-fill: #e2e8f0; }
 
 /* ── Nav buttons (NovaDashboard) ── */
 .nav-btn       { -fx-text-fill: #94a3b8; }
 .nav-btn:hover { -fx-background-color: #252535; -fx-text-fill: #e2e8f0; }
 .nav-btn-active { -fx-background-color: #1e2d4e; -fx-text-fill: #93c5fd; }
-.nav-btn-hub   { -fx-background-color: #4f46e5; }
+.nav-btn-hub   { -fx-background-color: #4f46e5; -fx-text-fill: white; }
 
-/* ── Sidebar nav items ── */
-.nav-item:hover      { -fx-background-color: rgba(255,255,255,0.05); }
-.nav-item-active     { -fx-background-color: rgba(79,142,247,0.15); }
-.nav-label           { -fx-text-fill: #94a3b8; }
-.nav-label-active    { -fx-text-fill: #93c5fd; }
-
-/* ── Separators ── */
-.separator .line { -fx-border-color: #2d2d4e; }
+/* ── Sidebar nav ── */
+.nav-item:hover   { -fx-background-color: rgba(255,255,255,0.05); }
+.nav-item-active  { -fx-background-color: rgba(79,142,247,0.15); }
+.nav-label        { -fx-text-fill: #94a3b8; }
+.nav-label-active { -fx-text-fill: #93c5fd; }
 
 /* ── Welcome banner ── */
 .welcome-banner { -fx-background-color: linear-gradient(to right, #0d0d1a, #1a1a3e); }
-.welcome-title  { -fx-text-fill: #e2e8f0; }
-.welcome-sub    { -fx-text-fill: #64748b; }
 
 /* ── XP / availability chips ── */
 .xp-badge          { -fx-background-color: #2a2010; -fx-border-color: #78350f; }
 .xp-badge-text     { -fx-text-fill: #fbbf24; }
 .availability-chip { -fx-background-color: #0f2010; -fx-border-color: #166534; }
 .availability-text { -fx-text-fill: #4ade80; }
+
+/* ── FlowPane / HBox / VBox default ── */
+.flow-pane, .h-box, .v-box, .border-pane, .grid-pane, .stack-pane, .anchor-pane {
+    -fx-background-color: transparent;
+}

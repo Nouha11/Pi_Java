@@ -30,6 +30,13 @@ public class QuizPlayListController {
     @FXML private ComboBox<String> cmbSort;
     @FXML private ComboBox<String> cmbDesc;
 
+    // Pagination controls
+    @FXML private Button btnPrev;
+    @FXML private Button btnNext;
+    @FXML private Label  lblPage;
+
+    private static final int PAGE_SIZE = 12;
+
     private static final String SORT_AZ       = "Title A \u2192 Z";
     private static final String SORT_ZA       = "Title Z \u2192 A";
     private static final String SORT_MOST_Q   = "Most Questions";
@@ -41,6 +48,8 @@ public class QuizPlayListController {
 
     private final QuizService quizService = new QuizService();
     private List<Quiz> allQuizzes;
+    private List<Quiz> filteredQuizzes;
+    private int currentPage = 1;
 
     @FXML
     public void initialize() {
@@ -61,6 +70,7 @@ public class QuizPlayListController {
 
     @FXML
     private void handleFilterSort() {
+        currentPage = 1;
         applyFilterSort();
     }
 
@@ -71,7 +81,24 @@ public class QuizPlayListController {
         txtMaxQ.clear();
         cmbSort.setValue(SORT_AZ);
         cmbDesc.setValue(DESC_ANY);
+        currentPage = 1;
         applyFilterSort();
+    }
+
+    @FXML
+    private void handlePrev() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderCurrentPage();
+        }
+    }
+
+    @FXML
+    private void handleNext() {
+        if (currentPage < totalPages()) {
+            currentPage++;
+            renderCurrentPage();
+        }
     }
 
     private void applyFilterSort() {
@@ -80,17 +107,13 @@ public class QuizPlayListController {
         Integer maxQ  = parseIntOrNull(txtMaxQ.getText());
         String  desc  = cmbDesc.getValue();
 
-        List<Quiz> result = allQuizzes.stream()
-                // text search
+        filteredQuizzes = allQuizzes.stream()
                 .filter(q -> query.isEmpty()
                         || q.getTitle().toLowerCase().contains(query)
                         || (q.getDescription() != null
                             && q.getDescription().toLowerCase().contains(query)))
-                // min questions
                 .filter(q -> minQ == null || q.getQuestionCount() >= minQ)
-                // max questions
                 .filter(q -> maxQ == null || q.getQuestionCount() <= maxQ)
-                // description presence
                 .filter(q -> {
                     boolean hasDesc = q.getDescription() != null && !q.getDescription().isBlank();
                     if (DESC_YES.equals(desc)) return hasDesc;
@@ -99,61 +122,197 @@ public class QuizPlayListController {
                 })
                 .collect(Collectors.toList());
 
-        // sort
         String sort = cmbSort.getValue();
         if (SORT_ZA.equals(sort)) {
-            result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER).reversed());
+            filteredQuizzes.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER).reversed());
         } else if (SORT_MOST_Q.equals(sort)) {
-            result.sort(Comparator.comparingInt(Quiz::getQuestionCount).reversed());
+            filteredQuizzes.sort(Comparator.comparingInt(Quiz::getQuestionCount).reversed());
         } else if (SORT_FEWEST_Q.equals(sort)) {
-            result.sort(Comparator.comparingInt(Quiz::getQuestionCount));
+            filteredQuizzes.sort(Comparator.comparingInt(Quiz::getQuestionCount));
         } else {
-            result.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER));
+            filteredQuizzes.sort(Comparator.comparing(Quiz::getTitle, String.CASE_INSENSITIVE_ORDER));
         }
 
-        renderCards(result);
+        renderCurrentPage();
     }
 
-    private void renderCards(List<Quiz> quizzes) {
+    private void renderCurrentPage() {
+        int total      = filteredQuizzes.size();
+        int totalPages = totalPages();
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        int from = (currentPage - 1) * PAGE_SIZE;
+        int to   = Math.min(from + PAGE_SIZE, total);
+        List<Quiz> page = total == 0 ? List.of() : filteredQuizzes.subList(from, to);
+
         cardsPane.getChildren().clear();
-        for (Quiz quiz : quizzes) {
+        for (Quiz quiz : page) {
             cardsPane.getChildren().add(buildCard(quiz));
         }
-        lblStatus.setText(quizzes.size() + " quiz" + (quizzes.size() == 1 ? "" : "zes") + " available");
+
+        if (total == 0) {
+            lblStatus.setText("No quizzes available");
+        } else {
+            lblStatus.setText("Showing " + (from + 1) + "–" + to + " of " + total
+                    + " quiz" + (total == 1 ? "" : "zes"));
+        }
+
+        lblPage.setText(totalPages == 0 ? "Page 0 / 0" : "Page " + currentPage + " / " + totalPages);
+        btnPrev.setDisable(currentPage <= 1);
+        btnNext.setDisable(currentPage >= totalPages || totalPages == 0);
     }
 
+    private int totalPages() {
+        if (filteredQuizzes == null || filteredQuizzes.isEmpty()) return 0;
+        return (int) Math.ceil((double) filteredQuizzes.size() / PAGE_SIZE);
+    }
+
+    // ── Card builder ──────────────────────────────────────────
+
     private VBox buildCard(Quiz quiz) {
-        Label icon = new Label("?");
-        icon.getStyleClass().add("quiz-card-icon");
+        // ── Colour accent based on question count ─────────────
+        int qCount = quiz.getQuestionCount();
+        String accentColor, accentBg, accentBorder;
+        String diffLabel;
+        if (qCount >= 15) {
+            accentColor = "#e53e3e"; accentBg = "#fff5f5"; accentBorder = "#feb2b2";
+            diffLabel = "Hard";
+        } else if (qCount >= 8) {
+            accentColor = "#d97706"; accentBg = "#fffbeb"; accentBorder = "#fcd34d";
+            diffLabel = "Medium";
+        } else {
+            accentColor = "#27ae60"; accentBg = "#f0fff4"; accentBorder = "#9ae6b4";
+            diffLabel = "Easy";
+        }
 
-        Label title = new Label(quiz.getTitle());
-        title.getStyleClass().add("quiz-card-title");
-        title.setWrapText(true);
-        title.setTextAlignment(TextAlignment.CENTER);
-        title.setMaxWidth(200);
+        // ── Left accent strip ─────────────────────────────────
+        Region strip = new Region();
+        strip.setPrefWidth(5);
+        strip.setMinWidth(5);
+        strip.setMaxWidth(5);
+        strip.setStyle("-fx-background-color:" + accentColor + "; -fx-background-radius:12 0 0 12;");
 
+        // ── Icon circle ───────────────────────────────────────
+        Label iconLbl = new Label("?");
+        iconLbl.setStyle(
+                "-fx-font-size:20px; -fx-font-weight:bold;" +
+                "-fx-text-fill:" + accentColor + ";" +
+                "-fx-background-color:" + accentBg + ";" +
+                "-fx-background-radius:50%;" +
+                "-fx-border-color:" + accentBorder + ";" +
+                "-fx-border-radius:50%; -fx-border-width:2;" +
+                "-fx-min-width:48px; -fx-min-height:48px;" +
+                "-fx-max-width:48px; -fx-max-height:48px;" +
+                "-fx-alignment:center;");
+
+        // ── Title ─────────────────────────────────────────────
+        Label titleLbl = new Label(quiz.getTitle());
+        titleLbl.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1e2a5e;");
+        titleLbl.setWrapText(true);
+        titleLbl.setMaxWidth(Double.MAX_VALUE);
+
+        // ── Description ───────────────────────────────────────
         String descText = quiz.getDescription() != null && !quiz.getDescription().isBlank()
                 ? quiz.getDescription() : "No description provided.";
-        Label description = new Label(descText);
-        description.getStyleClass().add("quiz-card-desc");
-        description.setWrapText(true);
-        description.setTextAlignment(TextAlignment.CENTER);
-        description.setMaxWidth(200);
+        // Truncate long descriptions
+        if (descText.length() > 110) descText = descText.substring(0, 107) + "…";
+        Label descLbl = new Label(descText);
+        descLbl.setStyle("-fx-font-size:12px; -fx-text-fill:#718096;");
+        descLbl.setWrapText(true);
+        descLbl.setMaxWidth(Double.MAX_VALUE);
 
-        Label badge = new Label(quiz.getQuestionCount() + " question"
-                + (quiz.getQuestionCount() == 1 ? "" : "s"));
-        badge.getStyleClass().add("quiz-card-badge");
+        // ── Tags row: question count + difficulty ─────────────
+        Label qBadge = new Label("📝  " + qCount + " question" + (qCount == 1 ? "" : "s"));
+        qBadge.setStyle(
+                "-fx-font-size:11px; -fx-font-weight:bold;" +
+                "-fx-text-fill:#3b4fd8;" +
+                "-fx-background-color:#eef0fd;" +
+                "-fx-border-color:#c3c9f5;" +
+                "-fx-border-radius:20; -fx-background-radius:20;" +
+                "-fx-border-width:1; -fx-padding:3 10 3 10;");
 
-        Button btnPlay = new Button("\u25B6  Play Quiz");
-        btnPlay.getStyleClass().add("btn-play");
+        Label diffBadge = new Label(diffLabel);
+        diffBadge.setStyle(
+                "-fx-font-size:11px; -fx-font-weight:bold;" +
+                "-fx-text-fill:" + accentColor + ";" +
+                "-fx-background-color:" + accentBg + ";" +
+                "-fx-border-color:" + accentBorder + ";" +
+                "-fx-border-radius:20; -fx-background-radius:20;" +
+                "-fx-border-width:1; -fx-padding:3 10 3 10;");
+
+        HBox tagsRow = new HBox(8, qBadge, diffBadge);
+        tagsRow.setAlignment(Pos.CENTER_LEFT);
+
+        // ── Text block ────────────────────────────────────────
+        VBox textBlock = new VBox(6, titleLbl, descLbl, tagsRow);
+        textBlock.setAlignment(Pos.TOP_LEFT);
+        HBox.setHgrow(textBlock, Priority.ALWAYS);
+
+        // ── Play button ───────────────────────────────────────
+        Button btnPlay = new Button("▶  Play");
+        btnPlay.setStyle(
+                "-fx-background-color:linear-gradient(to bottom,#4a5ef7,#3b4fd8);" +
+                "-fx-text-fill:white; -fx-font-weight:bold;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 20 9 20; -fx-font-size:12px;" +
+                "-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.35),8,0,0,2);");
+        btnPlay.setOnMouseEntered(e -> btnPlay.setStyle(
+                "-fx-background-color:linear-gradient(to bottom,#5b6ef5,#4a5ef7);" +
+                "-fx-text-fill:white; -fx-font-weight:bold;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 20 9 20; -fx-font-size:12px;" +
+                "-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.5),10,0,0,3);"));
+        btnPlay.setOnMouseExited(e -> btnPlay.setStyle(
+                "-fx-background-color:linear-gradient(to bottom,#4a5ef7,#3b4fd8);" +
+                "-fx-text-fill:white; -fx-font-weight:bold;" +
+                "-fx-background-radius:8; -fx-cursor:hand;" +
+                "-fx-padding:9 20 9 20; -fx-font-size:12px;" +
+                "-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.35),8,0,0,2);"));
         btnPlay.setOnAction(e -> openPlay(quiz));
 
-        VBox card = new VBox(10, icon, title, description, badge, btnPlay);
-        card.getStyleClass().add("quiz-card");
-        card.setAlignment(Pos.TOP_CENTER);
-        card.setPadding(new Insets(20, 16, 20, 16));
-        card.setPrefWidth(232);
-        return card;
+        VBox actionCol = new VBox(btnPlay);
+        actionCol.setAlignment(Pos.CENTER);
+
+        // ── Inner HBox (icon + text + button) ─────────────────
+        HBox inner = new HBox(14, iconLbl, textBlock, actionCol);
+        inner.setAlignment(Pos.CENTER_LEFT);
+        inner.setPadding(new Insets(14, 16, 14, 14));
+        HBox.setHgrow(inner, Priority.ALWAYS);
+
+        // ── Outer card (strip + inner) ────────────────────────
+        HBox card = new HBox(strip, inner);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPrefWidth(380);
+        card.setMaxWidth(380);
+        card.setStyle(
+                "-fx-background-color:white;" +
+                "-fx-background-radius:12;" +
+                "-fx-border-color:#e8ecf8;" +
+                "-fx-border-radius:12;" +
+                "-fx-border-width:1;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);");
+        card.setOnMouseEntered(e -> card.setStyle(
+                "-fx-background-color:white;" +
+                "-fx-background-radius:12;" +
+                "-fx-border-color:#3b4fd8;" +
+                "-fx-border-radius:12;" +
+                "-fx-border-width:1.5;" +
+                "-fx-effect:dropshadow(gaussian,rgba(59,79,216,0.15),16,0,0,4);"));
+        card.setOnMouseExited(e -> card.setStyle(
+                "-fx-background-color:white;" +
+                "-fx-background-radius:12;" +
+                "-fx-border-color:#e8ecf8;" +
+                "-fx-border-radius:12;" +
+                "-fx-border-width:1;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),12,0,0,3);"));
+
+        // Wrap in VBox so FlowPane treats it as a block
+        VBox wrapper = new VBox(card);
+        wrapper.setPrefWidth(380);
+        wrapper.setMaxWidth(380);
+        return wrapper;
     }
 
     private void openPlay(Quiz quiz) {
@@ -168,7 +327,9 @@ public class QuizPlayListController {
             stage.setTitle("Playing \u2014 " + quiz.getTitle());
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
-            stage.setResizable(false);
+            stage.setResizable(true);
+            stage.setMinWidth(800);
+            stage.setMinHeight(560);
             stage.show();
         } catch (IOException e) {
             new Alert(Alert.AlertType.ERROR, "Could not open quiz: " + e.getMessage(),

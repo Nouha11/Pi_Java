@@ -4,55 +4,62 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="660" prefWidth="920" styleClass="module-pane"
+<VBox prefHeight="760" prefWidth="1240" styleClass="module-pane"
       stylesheets="@../../css/quiz.css"
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="controllers.quiz.QuizPlayListController">
 
-    <!-- TOOLBAR -->
-    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar">
-        <padding><Insets bottom="14" left="20" right="20" top="14"/></padding>
+    <!-- ══ TOOLBAR ══════════════════════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="toolbar">
+        <padding><Insets bottom="14" left="24" right="24" top="14"/></padding>
         <Label styleClass="toolbar-title" text="🎯  Smart Quizzes"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="txtSearch" promptText="🔍  Search…"
-                   styleClass="search-field" prefWidth="180"
+        <TextField fx:id="txtSearch" promptText="🔍  Search quizzes…"
+                   styleClass="search-field" prefWidth="220"
                    onKeyReleased="#handleFilterSort"/>
         <ComboBox fx:id="cmbSort" promptText="Sort by…"
-                  styleClass="sort-combo" prefWidth="155"
+                  styleClass="sort-combo" prefWidth="165"
                   onAction="#handleFilterSort"/>
     </HBox>
 
-    <!-- FILTER BAR -->
-    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="filter-bar">
-        <padding><Insets bottom="10" left="20" right="20" top="10"/></padding>
+    <!-- ══ FILTER BAR ═══════════════════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="filter-bar">
+        <padding><Insets bottom="10" left="24" right="24" top="10"/></padding>
         <Label styleClass="filter-label" text="Questions:"/>
         <TextField fx:id="txtMinQ" promptText="Min" styleClass="filter-num-field"
-                   prefWidth="56" onKeyReleased="#handleFilterSort"/>
+                   prefWidth="60" onKeyReleased="#handleFilterSort"/>
         <Label styleClass="filter-label" text="–"/>
         <TextField fx:id="txtMaxQ" promptText="Max" styleClass="filter-num-field"
-                   prefWidth="56" onKeyReleased="#handleFilterSort"/>
+                   prefWidth="60" onKeyReleased="#handleFilterSort"/>
+        <Separator orientation="VERTICAL" style="-fx-pref-height:18;"/>
         <Label styleClass="filter-label" text="Description:"/>
-        <ComboBox fx:id="cmbDesc" styleClass="sort-combo" prefWidth="100"
+        <ComboBox fx:id="cmbDesc" styleClass="sort-combo" prefWidth="130"
                   onAction="#handleFilterSort"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button onAction="#handleClearFilters" styleClass="btn-ghost-sm" text="✕  Clear"/>
+        <Button onAction="#handleClearFilters" styleClass="btn-ghost-sm" text="✕  Clear filters"/>
     </HBox>
 
-    <!-- CARD GRID -->
+    <!-- ══ CARD GRID ════════════════════════════════════════════ -->
     <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                 style="-fx-background-color:transparent;-fx-background:transparent;"
                 VBox.vgrow="ALWAYS">
         <VBox>
-            <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
-            <FlowPane fx:id="cardsPane" hgap="16" vgap="16" styleClass="cards-pane"/>
+            <padding><Insets bottom="24" left="24" right="24" top="20"/></padding>
+            <FlowPane fx:id="cardsPane" hgap="18" vgap="18" styleClass="cards-pane"/>
         </VBox>
     </ScrollPane>
 
-    <!-- STATUS BAR -->
-    <HBox styleClass="status-bar">
-        <padding><Insets bottom="8" left="20" right="20" top="8"/></padding>
+    <!-- ══ STATUS BAR + PAGINATION ══════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="status-bar">
+        <padding><Insets bottom="10" left="24" right="24" top="10"/></padding>
         <Label fx:id="lblStatus" styleClass="status-label" text=""/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnPrev" onAction="#handlePrev" styleClass="btn-page"
+                text="‹  Prev" disable="true"/>
+        <Label fx:id="lblPage" styleClass="page-label" text="Page 1 / 1"/>
+        <Button fx:id="btnNext" onAction="#handleNext" styleClass="btn-page"
+                text="Next  ›" disable="true"/>
     </HBox>
 
 </VBox>

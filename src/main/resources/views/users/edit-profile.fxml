@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.users.EditProfileController"
+            styleClass="app-root">
+
+    <stylesheets>
+        <String fx:value="/css/users.css"/>
+    </stylesheets>
+
+    <!-- Top bar -->
+    <top>
+        <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
+            <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
+            <Label text="Edit Profile" styleClass="topbar-title"/>
+            <Label text="/" styleClass="topbar-sep"/>
+            <Label text="Update your information" styleClass="topbar-sub"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cancel" onAction="#onCancel" styleClass="btn-icon"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="form-scroll">
+            <VBox spacing="20">
+                <padding><Insets top="28" right="120" bottom="28" left="120"/></padding>
+
+                <!-- Header -->
+                <VBox alignment="CENTER" spacing="6">
+                    <Label text="Edit Your Profile"
+                           style="-fx-font-size:22px;-fx-font-weight:bold;-fx-text-fill:#111827;"/>
+                    <Label text="Update your account information below"
+                           style="-fx-font-size:13px;-fx-text-fill:#6b7280;"/>
+                </VBox>
+
+                <!-- Form card -->
+                <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e7eb;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+
+                    <!-- Card header -->
+                    <HBox style="-fx-background-color:#f8fafc;-fx-background-radius:14 14 0 0;-fx-padding:16 24;-fx-border-color:transparent transparent #e5e7eb transparent;-fx-border-width:0 0 1 0;">
+                        <Label text="Account Information"
+                               style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#111827;"/>
+                    </HBox>
+
+                    <!-- Form body -->
+                    <VBox spacing="20">
+                        <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+                        <!-- Username -->
+                        <VBox spacing="7">
+                            <Label text="USERNAME" styleClass="field-label"/>
+                            <TextField fx:id="tfUsername" promptText="Enter username"
+                                       styleClass="form-field"/>
+                            <Label text="3-100 characters, letters, numbers and underscores only"
+                                   style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"/>
+                        </VBox>
+
+                        <!-- Email -->
+                        <VBox spacing="7">
+                            <Label text="EMAIL ADDRESS" styleClass="field-label"/>
+                            <TextField fx:id="tfEmail" promptText="Enter email address"
+                                       styleClass="form-field"/>
+                        </VBox>
+
+                        <!-- Role (read-only display) -->
+                        <VBox spacing="7">
+                            <Label text="ROLE" styleClass="field-label"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10"
+                                  style="-fx-background-color:#f8fafc;-fx-background-radius:8;-fx-border-color:#e5e7eb;-fx-border-radius:8;-fx-border-width:1.5;-fx-padding:10 14;">
+                                <Label fx:id="lblRoleDisplay" text="STUDENT"
+                                       style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#374151;"/>
+                                <Label text="(cannot be changed)"
+                                       style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Error / success message -->
+                        <Label fx:id="lblMessage" text="" wrapText="true"
+                               maxWidth="Infinity" visible="false" managed="false"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:10 14;-fx-background-radius:8;"/>
+
+                        <!-- Action buttons -->
+                        <HBox spacing="12" alignment="CENTER_RIGHT">
+                            <Button text="Cancel" onAction="#onCancel"
+                                    styleClass="btn-cancel"/>
+                            <Button fx:id="btnSave" text="Save Changes" onAction="#onSave"
+                                    styleClass="btn-save"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Face Login setup card -->
+                <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e7eb;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+                    <HBox alignment="CENTER_LEFT" spacing="12"
+                          style="-fx-background-color:#f8fafc;-fx-background-radius:14 14 0 0;-fx-padding:16 24;-fx-border-color:transparent transparent #e5e7eb transparent;-fx-border-width:0 0 1 0;">
+                        <Label text="Face Recognition Login"
+                               style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#111827;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblFaceStatus" text="Not set up"
+                               style="-fx-font-size:12px;-fx-text-fill:#ef4444;-fx-font-weight:bold;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="16">
+                        <padding><Insets top="16" right="24" bottom="16" left="24"/></padding>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Use your face to log in instead of a password"
+                                   style="-fx-font-size:13px;-fx-text-fill:#374151;"/>
+                            <Label text="Powered by Face++ API — requires webcam"
+                                   style="-fx-font-size:11px;-fx-text-fill:#9ca3af;"/>
+                        </VBox>
+                        <Button text="Setup Face Login" onAction="#onSetupFaceLogin"
+                                style="-fx-background-color:#4f8ef7;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 18;-fx-background-radius:8;-fx-cursor:hand;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Password change card -->
+                <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e7eb;-fx-border-radius:14;-fx-border-width:1;-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.06),10,0,0,3);">
+                    <HBox style="-fx-background-color:#f8fafc;-fx-background-radius:14 14 0 0;-fx-padding:16 24;-fx-border-color:transparent transparent #e5e7eb transparent;-fx-border-width:0 0 1 0;">
+                        <Label text="Change Password"
+                               style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#111827;"/>
+                    </HBox>
+                    <VBox spacing="20">
+                        <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+                        <GridPane hgap="20" vgap="0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33"/>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="34"/>
+                            </columnConstraints>
+                            <VBox spacing="7" GridPane.columnIndex="0">
+                                <Label text="CURRENT PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfCurrent" promptText="Current password" styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="7" GridPane.columnIndex="1">
+                                <Label text="NEW PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfNew" promptText="Min 8 characters" styleClass="form-field"/>
+                            </VBox>
+                            <VBox spacing="7" GridPane.columnIndex="2">
+                                <Label text="CONFIRM PASSWORD" styleClass="field-label"/>
+                                <PasswordField fx:id="pfConfirm" promptText="Repeat new password" styleClass="form-field"/>
+                            </VBox>
+                        </GridPane>
+                        <Label fx:id="lblPwdMsg" text="" wrapText="true"
+                               maxWidth="Infinity" visible="false" managed="false"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:10 14;-fx-background-radius:8;"/>
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Update Password" onAction="#onChangePassword"
+                                    styleClass="btn-save"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Danger zone card -->
+                <VBox spacing="0" style="-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#fecaca;-fx-border-radius:14;-fx-border-width:1;">
+                    <HBox style="-fx-background-color:#fff5f5;-fx-background-radius:14 14 0 0;-fx-padding:14 24;-fx-border-color:transparent transparent #fecaca transparent;-fx-border-width:0 0 1 0;">
+                        <Label text="Danger Zone"
+                               style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#dc2626;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="16">
+                        <padding><Insets top="16" right="24" bottom="16" left="24"/></padding>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Delete Account"
+                                   style="-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#374151;"/>
+                            <Label text="Permanently delete your account and all associated data. This cannot be undone."
+                                   wrapText="true"
+                                   style="-fx-font-size:12px;-fx-text-fill:#6b7280;"/>
+                        </VBox>
+                        <Button text="Delete Account" onAction="#onDeleteAccount"
+                                style="-fx-background-color:#dc2626;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 18;-fx-background-radius:8;-fx-cursor:hand;"/>
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

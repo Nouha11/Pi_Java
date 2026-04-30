@@ -197,6 +197,7 @@ public class UserService {
         u.setProfilePicture(rs.getString("profile_picture"));
         u.setTotpEnabled(rs.getBoolean("totp_enabled"));
         u.setTotpSecret(rs.getString("totp_secret"));
+        try { u.setFaceToken(rs.getString("face_token")); } catch (Exception ignored) {}
         Timestamp ca = rs.getTimestamp("created_at");
         if (ca != null) u.setCreatedAt(ca.toLocalDateTime());
         Timestamp ua = rs.getTimestamp("updated_at");
@@ -238,6 +239,15 @@ public class UserService {
         String sql = "UPDATE user SET totp_enabled=0, totp_secret=NULL, updated_at=NOW() WHERE id=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean updateFaceToken(int userId, String faceToken) throws SQLException {
+        String sql = "UPDATE user SET face_token=?, updated_at=NOW() WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, faceToken);
+            ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         }
     }
