@@ -28,6 +28,7 @@
                       prefWidth="140" styleClass="topbar-combo"/>
 
             <Button text="+ Add User" onAction="#onAddUser" styleClass="btn-success"/>
+            <Button text="Export CSV" onAction="#onExportCsv" style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
             <Button text="Refresh" onAction="#onRefresh" styleClass="btn-icon"/>
         </HBox>
     </top>

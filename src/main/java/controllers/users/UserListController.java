@@ -17,6 +17,11 @@ import javafx.stage.Stage;
 import models.users.User;
 import services.users.UserService;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import javafx.stage.FileChooser;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -210,5 +215,65 @@ public class UserListController implements Initializable {
             return new String(Character.toChars(base + Character.toUpperCase(code.charAt(0))))
                  + new String(Character.toChars(base + Character.toUpperCase(code.charAt(1))));
         } catch (Exception e) { return ""; }
+    }
+
+    // ── Export Users to CSV ───────────────────────────────────────────────────
+    @FXML
+    private void onExportCsv() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Users to CSV");
+        chooser.setInitialFileName("nova_users_" +
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv");
+        chooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        Stage stage = (Stage) tableUsers.getScene().getWindow();
+        File file = chooser.showSaveDialog(stage);
+        if (file == null) return;
+        try (PrintWriter pw = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            pw.print('\uFEFF'); // BOM for Excel
+            final String S = ";"; // semicolon works in all Excel locales
+            // Title block
+            pw.println("NOVA Platform - User Export");
+            pw.println("Generated" + S + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            pw.println("Total Users" + S + userList.size());
+            pw.println();
+            // Header
+            pw.println("ID" + S + "Username" + S + "Email" + S + "Role" + S + "Status" + S + "Verified" + S + "Banned" + S + "XP" + S + "Country" + S + "Member Since");
+            // Rows
+            for (User u : userList) {
+                String status   = u.isBanned() ? "Banned" : u.isActive() ? "Active" : "Inactive";
+                String verified = u.isVerified() ? "Yes" : "No";
+                String banned   = u.isBanned()   ? "Yes" : "No";
+                String country  = u.getCountryCode() != null ? u.getCountryCode() : "";
+                String joined   = u.getCreatedAt() != null ? u.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) : "";
+                pw.println(u.getId() + S + csv(u.getUsername()) + S + csv(u.getEmail()) + S +
+                    u.getRole().name().replace("ROLE_","") + S + status + S + verified + S +
+                    banned + S + u.getXp() + S + country + S + joined);
+            }
+            // Summary
+            pw.println();
+            pw.println("--- SUMMARY ---");
+            pw.println("Active"   + S + userList.stream().filter(u -> u.isActive() && !u.isBanned()).count());
+            pw.println("Banned"   + S + userList.stream().filter(User::isBanned).count());
+            pw.println("Verified" + S + userList.stream().filter(User::isVerified).count());
+            pw.println("Students" + S + userList.stream().filter(u -> u.getRole() == User.Role.ROLE_STUDENT).count());
+            pw.println("Tutors"   + S + userList.stream().filter(u -> u.getRole() == User.Role.ROLE_TUTOR).count());
+            pw.println("Admins"   + S + userList.stream().filter(u -> u.getRole() == User.Role.ROLE_ADMIN).count());
+            showInfo("Export Successful", "Saved to:\n" + file.getAbsolutePath());
+        } catch (IOException e) { showError("Export Failed", e.getMessage()); }
+    }
+
+    private String csv(String v) {
+        if (v == null) return "";
+        if (v.contains(";") || v.contains("\"") || v.contains("\n"))
+            return "\"" + v.replace("\"", "\"\"") + "\"";
+        return v;
+    }
+    private void showInfo(String title, String msg) {
+        javafx.application.Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
+            alert.setTitle(title); alert.setHeaderText(null); alert.showAndWait();
+        });
     }
 }

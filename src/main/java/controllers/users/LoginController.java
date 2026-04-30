@@ -398,4 +398,76 @@ public class LoginController implements Initializable {
             showError("Cannot load dashboard: " + e.getMessage());
         }
     }
+
+    // ── Google OAuth ──────────────────────────────────────────────────────────
+    @FXML
+    private void onGoogleLogin() {
+        showError("Opening Google login in browser...");
+        new OAuthService().loginWithGoogle(
+            user -> javafx.application.Platform.runLater(() -> handleOAuthUser(user)),
+            err  -> javafx.application.Platform.runLater(() -> showError(err))
+        );
+    }
+
+    // ── LinkedIn OAuth ────────────────────────────────────────────────────────
+    @FXML
+    private void onLinkedInLogin() {
+        showError("Opening LinkedIn login in browser...");
+        new OAuthService().loginWithLinkedIn(
+            user -> javafx.application.Platform.runLater(() -> handleOAuthUser(user)),
+            err  -> javafx.application.Platform.runLater(() -> showError(err))
+        );
+    }
+
+    // ── Handle OAuth user (find or create in DB) ──────────────────────────────
+    private void handleOAuthUser(OAuthService.OAuthUser oauthUser) {
+        try {
+            services.users.UserService us = new services.users.UserService();
+
+            // Try to find existing user by email
+            java.util.List<User> all = us.getAllUsers();
+            User existing = all.stream()
+                .filter(u -> oauthUser.email != null && oauthUser.email.equalsIgnoreCase(u.getEmail()))
+                .findFirst().orElse(null);
+
+            if (existing != null) {
+                // Existing user — log them in
+                if (existing.isBanned()) { showError("Account banned."); return; }
+                if (!existing.isActive()) { showError("Account inactive."); return; }
+                utils.UserSession.getInstance().setLoggedInUser(
+                    existing.getId(), existing.getUsername(), existing.getEmail(), existing.getRole().name());
+                captchaVerified = true; // skip CAPTCHA for OAuth
+                routeUserBasedOnRole(existing);
+            } else {
+                // New user — create account with ROLE_STUDENT
+                String username = generateUsername(oauthUser.name, oauthUser.email);
+                User newUser = new User();
+                newUser.setEmail(oauthUser.email);
+                newUser.setUsername(username);
+                newUser.setPassword(org.mindrot.jbcrypt.BCrypt.hashpw(
+                    java.util.UUID.randomUUID().toString(), org.mindrot.jbcrypt.BCrypt.gensalt(13)));
+                newUser.setRole(User.Role.ROLE_STUDENT);
+                newUser.setActive(true);
+                newUser.setVerified(true); // OAuth = email verified
+                newUser.setBanned(false);
+                newUser.setXp(0);
+                us.addUser(newUser);
+                utils.UserSession.getInstance().setLoggedInUser(
+                    newUser.getId(), newUser.getUsername(), newUser.getEmail(), newUser.getRole().name());
+                captchaVerified = true;
+                routeUserBasedOnRole(newUser);
+            }
+        } catch (Exception e) {
+            showError("OAuth login error: " + e.getMessage());
+        }
+    }
+
+    private String generateUsername(String name, String email) {
+        // Try name first, fall back to email prefix
+        String base = (name != null && !name.isBlank())
+            ? name.toLowerCase().replaceAll("[^a-z0-9]", "_")
+            : email.split("@")[0].replaceAll("[^a-z0-9]", "_");
+        if (base.length() > 20) base = base.substring(0, 20);
+        return base + "_" + (int)(Math.random() * 9000 + 1000);
+    }
 }

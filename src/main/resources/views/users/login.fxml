@@ -135,6 +135,24 @@
 
             <Region prefHeight="10"/>
 
+            <!-- OAuth buttons -->
+            <HBox spacing="10">
+                <Button text="Sign in with Google" onAction="#onGoogleLogin"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color:white;-fx-text-fill:#374151;-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:10;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:#e5e7eb;-fx-border-radius:8;-fx-border-width:1.5;"/>
+                <Button text="Sign in with LinkedIn" onAction="#onLinkedInLogin"
+                        maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color:#0077b5;-fx-text-fill:white;-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:10;-fx-background-radius:8;-fx-cursor:hand;"/>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="8">
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="─────" style="-fx-text-fill:#cbd5e1;"/>
+                <Label text="or" style="-fx-text-fill:#94a3b8;-fx-font-size:12px;"/>
+                <Label text="─────" style="-fx-text-fill:#cbd5e1;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+
             <!-- Face Login button -->
             <Button text="&#128247; Login with Face" onAction="#onFaceLogin"
                     maxWidth="Infinity"
