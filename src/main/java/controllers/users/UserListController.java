@@ -9,6 +9,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.beans.property.SimpleBooleanProperty;
+import java.util.stream.Collectors;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -38,6 +41,10 @@ public class UserListController implements Initializable {
     @FXML private TableColumn<User, String>  colStatus;
     @FXML private TableColumn<User, Integer> colXp;
     @FXML private TableColumn<User, Void>    colActions;
+    @FXML private TableColumn<User, Boolean> colSelect;
+    @FXML private javafx.scene.layout.HBox   bulkBar;
+    @FXML private Label                       lblSelectedCount;
+    private final java.util.Map<Integer, SimpleBooleanProperty> selectedMap = new java.util.HashMap<>();
 
     @FXML private TextField        tfSearch;
     @FXML private ComboBox<String> cbRoleFilter;
@@ -128,6 +135,8 @@ public class UserListController implements Initializable {
     }
 
     private void loadUsers() {
+        selectedMap.clear();
+        updateBulkBar();
         try { userList.setAll(userService.getAllUsers()); }
         catch (SQLException e) { showError("Database error", e.getMessage()); }
     }
@@ -275,5 +284,99 @@ public class UserListController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
             alert.setTitle(title); alert.setHeaderText(null); alert.showAndWait();
         });
+    }
+
+    // ── Bulk selection helpers ────────────────────────────────────────────────
+
+    private void updateBulkBar() {
+        long count = selectedMap.values().stream().filter(SimpleBooleanProperty::get).count();
+        javafx.application.Platform.runLater(() -> {
+            if (bulkBar != null) {
+                bulkBar.setVisible(count > 0);
+                bulkBar.setManaged(count > 0);
+            }
+            if (lblSelectedCount != null)
+                lblSelectedCount.setText(count + " user" + (count == 1 ? "" : "s") + " selected");
+        });
+    }
+
+    private java.util.List<User> getSelectedUsers() {
+        return userList.stream()
+            .filter(u -> selectedMap.containsKey(u.getId()) && selectedMap.get(u.getId()).get())
+            .collect(Collectors.toList());
+    }
+
+    @FXML
+    private void onClearSelection() {
+        selectedMap.values().forEach(p -> p.set(false));
+        updateBulkBar();
+    }
+
+    // ── Bulk actions ──────────────────────────────────────────────────────────
+
+    @FXML
+    private void onBulkActivate() {
+        java.util.List<User> selected = getSelectedUsers();
+        if (selected.isEmpty()) return;
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+            "Activate " + selected.size() + " user(s)?", ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Bulk Activate"); confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                int ok = 0;
+                for (User u : selected) {
+                    try { u.setActive(true); u.setBanned(false); userService.updateUser(u); ok++; }
+                    catch (Exception e) { System.err.println("Activate error: " + e.getMessage()); }
+                }
+                showError("Activated " + ok + " user(s).", false);
+                onClearSelection(); loadUsers(); refreshStats();
+            }
+        });
+    }
+
+    @FXML
+    private void onBulkBan() {
+        java.util.List<User> selected = getSelectedUsers();
+        if (selected.isEmpty()) return;
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+            "Ban " + selected.size() + " user(s)?", ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Bulk Ban"); confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                int ok = 0;
+                for (User u : selected) {
+                    try { u.setBanned(true); u.setBanReason("Bulk ban by admin"); userService.updateUser(u); ok++; }
+                    catch (Exception e) { System.err.println("Ban error: " + e.getMessage()); }
+                }
+                showError("Banned " + ok + " user(s).", false);
+                onClearSelection(); loadUsers(); refreshStats();
+            }
+        });
+    }
+
+    @FXML
+    private void onBulkDelete() {
+        java.util.List<User> selected = getSelectedUsers();
+        if (selected.isEmpty()) return;
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+            "Permanently delete " + selected.size() + " user(s)?\nThis cannot be undone.",
+            ButtonType.YES, ButtonType.NO);
+        confirm.setTitle("Bulk Delete"); confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.YES) {
+                int ok = 0;
+                for (User u : selected) {
+                    try { userService.deleteUser(u.getId()); ok++; }
+                    catch (Exception e) { System.err.println("Delete error: " + e.getMessage()); }
+                }
+                showError("Deleted " + ok + " user(s).", false);
+                onClearSelection(); loadUsers(); refreshStats();
+            }
+        });
+    }
+
+    private void showError(String msg, boolean isError) {
+        // Reuse existing showError or just print
+        System.out.println("[BulkAction] " + msg);
     }
 }

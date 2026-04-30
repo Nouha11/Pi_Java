@@ -7,85 +7,67 @@
             fx:controller="controllers.users.UserListController"
             styleClass="app-root">
 
-    <!-- â”€â”€ Top bar â”€â”€ -->
+    <!-- Top bar -->
     <top>
         <HBox styleClass="topbar" alignment="CENTER_LEFT" spacing="16">
             <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
-
             <Label text="User Management" styleClass="topbar-title"/>
             <Label text="/" styleClass="topbar-sep"/>
             <Label text="All Users" styleClass="topbar-sub"/>
-
             <Region HBox.hgrow="ALWAYS"/>
-
-            <TextField fx:id="tfSearch"
-                       promptText="Search username or email..."
-                       prefWidth="280" onAction="#onSearch"
-                       styleClass="topbar-search"/>
+            <TextField fx:id="tfSearch" promptText="Search username or email..."
+                       prefWidth="280" onAction="#onSearch" styleClass="topbar-search"/>
             <Button text="Search" onAction="#onSearch" styleClass="btn-primary"/>
-
-            <ComboBox fx:id="cbRoleFilter" onAction="#onFilter"
-                      prefWidth="140" styleClass="topbar-combo"/>
-
+            <ComboBox fx:id="cbRoleFilter" onAction="#onFilter" prefWidth="140" styleClass="topbar-combo"/>
             <Button text="+ Add User" onAction="#onAddUser" styleClass="btn-success"/>
-            <Button text="Export CSV" onAction="#onExportCsv" style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
+            <Button text="Export CSV" onAction="#onExportCsv"
+                    style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-font-size:13px;-fx-font-weight:bold;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
             <Button text="Refresh" onAction="#onRefresh" styleClass="btn-icon"/>
         </HBox>
     </top>
 
-    <!-- â”€â”€ Center content â”€â”€ -->
     <center>
         <VBox styleClass="content-area" spacing="16">
             <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
             <!-- Stats cards -->
             <HBox spacing="14">
-                <VBox styleClass="stat-card stat-card-blue" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="TOTAL USERS" styleClass="stat-label"/>
-                    <Label fx:id="lblTotal" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-green" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="ACTIVE" styleClass="stat-label"/>
-                    <Label fx:id="lblActive" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-red" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="BANNED" styleClass="stat-label"/>
-                    <Label fx:id="lblBanned" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-purple" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="VERIFIED" styleClass="stat-label"/>
-                    <Label fx:id="lblVerified" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-orange" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="STUDENTS" styleClass="stat-label"/>
-                    <Label fx:id="lblStudents" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-teal" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="TUTORS" styleClass="stat-label"/>
-                    <Label fx:id="lblTutors" text="0" styleClass="stat-value"/>
-                </VBox>
-                <VBox styleClass="stat-card stat-card-dark" HBox.hgrow="ALWAYS" spacing="4">
-                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
-                    <Label text="ADMINS" styleClass="stat-label"/>
-                    <Label fx:id="lblAdmins" text="0" styleClass="stat-value"/>
-                </VBox>
+                <VBox styleClass="stat-card stat-card-blue"   HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="TOTAL USERS" styleClass="stat-label"/><Label fx:id="lblTotal"    text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-green"  HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="ACTIVE"       styleClass="stat-label"/><Label fx:id="lblActive"   text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-red"    HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="BANNED"       styleClass="stat-label"/><Label fx:id="lblBanned"   text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-purple" HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="VERIFIED"     styleClass="stat-label"/><Label fx:id="lblVerified" text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-orange" HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="STUDENTS"     styleClass="stat-label"/><Label fx:id="lblStudents" text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-teal"   HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="TUTORS"       styleClass="stat-label"/><Label fx:id="lblTutors"   text="0" styleClass="stat-value"/></VBox>
+                <VBox styleClass="stat-card stat-card-dark"   HBox.hgrow="ALWAYS" spacing="4"><padding><Insets top="16" right="20" bottom="16" left="20"/></padding><Label text="ADMINS"       styleClass="stat-label"/><Label fx:id="lblAdmins"   text="0" styleClass="stat-value"/></VBox>
+            </HBox>
+
+            <!-- Bulk actions bar (hidden until rows selected) -->
+            <HBox fx:id="bulkBar" spacing="12" alignment="CENTER_LEFT"
+                  visible="false" managed="false"
+                  style="-fx-background-color:#1e2d4e;-fx-background-radius:10;-fx-padding:12 20;-fx-border-color:#3b5998;-fx-border-radius:10;-fx-border-width:1;">
+                <Label fx:id="lblSelectedCount" text="0 selected"
+                       style="-fx-text-fill:#93c5fd;-fx-font-weight:bold;-fx-font-size:13px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Activate Selected" onAction="#onBulkActivate"
+                        style="-fx-background-color:#22c55e;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
+                <Button text="Ban Selected" onAction="#onBulkBan"
+                        style="-fx-background-color:#f59e0b;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
+                <Button text="Delete Selected" onAction="#onBulkDelete"
+                        style="-fx-background-color:#ef4444;-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:12px;-fx-padding:8 16;-fx-background-radius:8;-fx-cursor:hand;"/>
+                <Button text="Clear Selection" onAction="#onClearSelection"
+                        style="-fx-background-color:rgba(255,255,255,0.1);-fx-text-fill:#94a3b8;-fx-font-size:12px;-fx-padding:8 14;-fx-background-radius:8;-fx-cursor:hand;-fx-border-color:rgba(255,255,255,0.2);-fx-border-radius:8;-fx-border-width:1;"/>
             </HBox>
 
             <!-- Table -->
             <TableView fx:id="tableUsers" VBox.vgrow="ALWAYS" styleClass="main-table">
                 <columns>
-                    <TableColumn fx:id="colUsername" text="Username" prefWidth="160"/>
-                    <TableColumn fx:id="colEmail"    text="Email"    prefWidth="240"/>
-                    <TableColumn fx:id="colRole"     text="Role"     prefWidth="110"/>
-                    <TableColumn fx:id="colStatus"   text="Status"   prefWidth="100"/>
-                    <TableColumn fx:id="colXp"       text="XP"       prefWidth="75"/>
-                    <TableColumn fx:id="colActions"  text="Actions"  prefWidth="160"/>
+                    <TableColumn fx:id="colSelect"   text=""         prefWidth="40"/>
+                    <TableColumn fx:id="colUsername" text="Username" prefWidth="150"/>
+                    <TableColumn fx:id="colEmail"    text="Email"    prefWidth="220"/>
+                    <TableColumn fx:id="colRole"     text="Role"     prefWidth="100"/>
+                    <TableColumn fx:id="colStatus"   text="Status"   prefWidth="90"/>
+                    <TableColumn fx:id="colXp"       text="XP"       prefWidth="65"/>
+                    <TableColumn fx:id="colActions"  text="Actions"  prefWidth="150"/>
                 </columns>
                 <placeholder>
                     <Label text="No users found." styleClass="table-placeholder"/>
