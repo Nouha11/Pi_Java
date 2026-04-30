@@ -62,6 +62,20 @@ public class LoanService {
     }
 
     /**
+     * Updates the start and end dates of a PENDING loan.
+     * Only allowed while the loan is still pending (not yet approved).
+     */
+    public void updateDates(int loanId, java.sql.Timestamp startAt, java.sql.Timestamp endAt) throws SQLException {
+        PreparedStatement ps = getCnx().prepareStatement(
+                "UPDATE loans SET start_at=?, end_at=? WHERE id=? AND status=?");
+        ps.setTimestamp(1, startAt);
+        ps.setTimestamp(2, endAt);
+        ps.setInt(3, loanId);
+        ps.setString(4, Loan.STATUS_PENDING);
+        ps.executeUpdate();
+    }
+
+    /**
      * Deletes a loan record permanently.
      */
     public void supprimer(int id) throws SQLException {
@@ -156,6 +170,23 @@ public class LoanService {
             System.out.println("LoanService.afficher() returned " + list.size() + " loans");
         } catch (SQLException e) {
             System.err.println("Error loading loans: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * Returns all loans for a specific user, ordered by most recent first.
+     */
+    public List<Loan> findByUser(int userId) {
+        List<Loan> list = new ArrayList<>();
+        try {
+            PreparedStatement ps = getCnx().prepareStatement(
+                    SELECT_BASE + "WHERE l.user_id=? ORDER BY l.requested_at DESC");
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(mapRow(rs));
+        } catch (SQLException e) {
+            System.err.println("Error loading user loans: " + e.getMessage());
         }
         return list;
     }

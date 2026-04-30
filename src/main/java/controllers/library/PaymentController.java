@@ -1,197 +1,143 @@
 package controllers.library;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
+import javafx.util.Duration;
 import models.library.Payment;
 import services.library.PaymentService;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class PaymentController implements Initializable {
 
-    // ── Payment Form ──
-    @FXML private TextField txtCardNumber;
-    @FXML private TextField txtCardHolder;
-    @FXML private TextField txtExpiry;
-    @FXML private TextField txtCvc;
-    @FXML private TextField txtAmount;
-    @FXML private ComboBox<String> cbMethod;
-    @FXML private Label lblResult;
-
-    // Per-field error labels
-    @FXML private Label errCardNumber;
-    @FXML private Label errCardHolder;
-    @FXML private Label errExpiry;
-    @FXML private Label errCvc;
-    @FXML private Label errAmount;
-
-    // ── Payment History Table ──
-    @FXML private TableView<Payment> paymentTable;
-    @FXML private TableColumn<Payment, Integer> colId;
-    @FXML private TableColumn<Payment, String>  colBook;
-    @FXML private TableColumn<Payment, Double>  colAmount;
-    @FXML private TableColumn<Payment, String>  colStatus;
-    @FXML private TableColumn<Payment, String>  colMethod;
-    @FXML private TableColumn<Payment, String>  colDate;
-
+    @FXML private VBox paymentsContainer;
     @FXML private Label statusLabel;
+    @FXML private Label statTotal, statCompleted, statFailed, statRevenue;
 
     private final PaymentService paymentService = new PaymentService();
-    private final ObservableList<Payment> paymentData = FXCollections.observableArrayList();
-
-    // Demo user ID — in a real app this comes from the session
-    private static final int DEMO_USER_ID = 1;
-    private static final int DEMO_BOOK_ID = 1;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        cbMethod.getItems().addAll("credit_card", "paypal");
-        cbMethod.setValue("credit_card");
-        cbMethod.valueProperty().addListener((obs, o, n) -> toggleCardFields());
-
-        setupTable();
         loadHistory();
-    }
-
-    private void setupTable() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colBook.setCellValueFactory(new PropertyValueFactory<>("bookTitle"));
-        colAmount.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        colMethod.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
-        colDate.setCellValueFactory(d ->
-                new SimpleStringProperty(d.getValue().getCreatedAt() != null
-                        ? d.getValue().getCreatedAt().toString().substring(0, 10) : ""));
-
-        // Color-code status
-        colStatus.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) { setText(null); setStyle(""); return; }
-                setText(status);
-                setStyle(switch (status) {
-                    case "COMPLETED" -> "-fx-text-fill: #27ae60; -fx-font-weight: bold;";
-                    case "FAILED"    -> "-fx-text-fill: #e74c3c; -fx-font-weight: bold;";
-                    case "PENDING"   -> "-fx-text-fill: #f39c12; -fx-font-weight: bold;";
-                    default -> "";
-                });
-            }
-        });
-
-        paymentTable.setItems(paymentData);
     }
 
     private void loadHistory() {
-        paymentData.setAll(paymentService.afficher());
-        setStatus("Showing " + paymentData.size() + " payment(s).", false);
+        List<Payment> payments = paymentService.afficher();
+        buildCards(payments);
+
+        long completed = payments.stream().filter(p -> "COMPLETED".equals(p.getStatus())).count();
+        long failed    = payments.stream().filter(p -> "FAILED".equals(p.getStatus())).count();
+        double revenue = payments.stream().filter(p -> "COMPLETED".equals(p.getStatus()))
+                .mapToDouble(Payment::getAmount).sum();
+
+        if (statTotal     != null) statTotal.setText(String.valueOf(payments.size()));
+        if (statCompleted != null) statCompleted.setText(String.valueOf(completed));
+        if (statFailed    != null) statFailed.setText(String.valueOf(failed));
+        if (statRevenue   != null) statRevenue.setText(String.format("$%.0f", revenue));
+        statusLabel.setText(payments.size() + " payment(s)");
     }
 
-    @FXML
-    private void handlePay() {
-        clearErrors();
-        if (!validateForm()) return;
-
-        Payment payment = new Payment();
-        payment.setUserId(DEMO_USER_ID);
-        payment.setBookId(DEMO_BOOK_ID);
-        payment.setAmount(Double.parseDouble(txtAmount.getText().trim()));
-        payment.setPaymentMethod(cbMethod.getValue());
-
-        String error;
-        if ("credit_card".equals(cbMethod.getValue())) {
-            error = paymentService.processerCarteBancaire(
-                    payment,
-                    txtCardNumber.getText(),
-                    txtCardHolder.getText(),
-                    txtExpiry.getText(),
-                    txtCvc.getText()
-            );
-        } else {
-            error = paymentService.processerPayPal(payment);
+    private void buildCards(List<Payment> payments) {
+        paymentsContainer.getChildren().clear();
+        if (payments.isEmpty()) {
+            VBox empty = new VBox(12); empty.setAlignment(Pos.CENTER);
+            empty.setStyle("-fx-padding: 60;");
+            Label icon = new Label("💳"); icon.setStyle("-fx-font-size: 48;");
+            Label msg = new Label("No payments yet");
+            msg.setStyle("-fx-font-size: 16; -fx-text-fill: #64748b;");
+            empty.getChildren().addAll(icon, msg);
+            paymentsContainer.getChildren().add(empty);
+            return;
         }
-
-        if (error == null) {
-            try {
-                paymentService.ajouter(payment);
-                lblResult.setText("✅ Payment successful! Transaction: " + payment.getTransactionId());
-                lblResult.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                loadHistory();
-            } catch (SQLException e) {
-                lblResult.setText("⚠ DB error: " + e.getMessage());
-                lblResult.setStyle("-fx-text-fill: #e74c3c;");
-            }
-        } else {
-            lblResult.setText("❌ " + error);
-            lblResult.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+        for (int i = 0; i < payments.size(); i++) {
+            HBox card = buildPaymentCard(payments.get(i));
+            card.setOpacity(0); card.setTranslateX(-16);
+            paymentsContainer.getChildren().add(card);
+            FadeTransition ft = new FadeTransition(Duration.millis(300), card);
+            ft.setDelay(Duration.millis(i * 40)); ft.setToValue(1);
+            TranslateTransition tt = new TranslateTransition(Duration.millis(300), card);
+            tt.setDelay(Duration.millis(i * 40)); tt.setToX(0);
+            tt.setInterpolator(Interpolator.EASE_OUT);
+            new ParallelTransition(ft, tt).play();
         }
     }
 
-    @FXML
-    private void handleRefresh() {
-        loadHistory();
+    private HBox buildPaymentCard(Payment payment) {
+        HBox card = new HBox(16);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle(
+            "-fx-background-color: white; -fx-background-radius: 12; " +
+            "-fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1; " +
+            "-fx-padding: 16 20; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);"
+        );
+
+        boolean completed = "COMPLETED".equals(payment.getStatus());
+        boolean failed    = "FAILED".equals(payment.getStatus());
+        String color = completed ? "#10b981" : failed ? "#ef4444" : "#f59e0b";
+        String statusIcon = completed ? "✅" : failed ? "❌" : "⏳";
+
+        // Left bar
+        Region bar = new Region();
+        bar.setPrefWidth(4); bar.setPrefHeight(56);
+        bar.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 2;");
+
+        // Method icon
+        boolean isCard = "credit_card".equals(payment.getPaymentMethod());
+        Label methodIcon = new Label(isCard ? "💳" : "🅿");
+        methodIcon.setStyle("-fx-font-size: 28;");
+
+        // Info
+        VBox info = new VBox(4);
+        HBox.setHgrow(info, Priority.ALWAYS);
+        Label bookTitle = new Label(payment.getBookTitle() != null ? payment.getBookTitle() : "Book #" + payment.getBookId());
+        bookTitle.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+        HBox meta = new HBox(16); meta.setAlignment(Pos.CENTER_LEFT);
+        Label user = new Label("👤 " + (payment.getUserName() != null ? payment.getUserName() : "User #" + payment.getUserId()));
+        user.setStyle("-fx-font-size: 12; -fx-text-fill: #64748b;");
+        Label method = new Label(isCard ? "Credit Card" : "PayPal");
+        method.setStyle("-fx-font-size: 12; -fx-text-fill: #64748b;");
+        meta.getChildren().addAll(user, method);
+
+        Label txId = new Label("TX: " + (payment.getTransactionId() != null ? payment.getTransactionId() : "—"));
+        txId.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
+
+        info.getChildren().addAll(bookTitle, meta, txId);
+
+        // Amount
+        Label amount = new Label(String.format("$%.2f", payment.getAmount()));
+        amount.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+
+        // Status badge
+        Label badge = new Label(statusIcon + " " + payment.getStatus());
+        badge.setStyle("-fx-background-color: " + color + "22; -fx-text-fill: " + color + "; " +
+                "-fx-font-weight: bold; -fx-padding: 5 14; -fx-background-radius: 20; -fx-font-size: 12;");
+
+        // Date
+        Label date = new Label(payment.getCreatedAt() != null
+                ? payment.getCreatedAt().toString().substring(0, 10) : "");
+        date.setStyle("-fx-font-size: 11; -fx-text-fill: #94a3b8;");
+
+        VBox right = new VBox(6); right.setAlignment(Pos.CENTER_RIGHT);
+        right.getChildren().addAll(amount, badge, date);
+
+        card.getChildren().addAll(bar, methodIcon, info, right);
+
+        card.setOnMouseEntered(e -> card.setStyle(card.getStyle()
+                .replace("-fx-border-color: #e2e8f0", "-fx-border-color: " + color)));
+        card.setOnMouseExited(e -> card.setStyle(card.getStyle()
+                .replace("-fx-border-color: " + color, "-fx-border-color: #e2e8f0")));
+
+        return card;
     }
 
-    // ─────────────────────────────────────────────
-    //  VALIDATION
-    // ─────────────────────────────────────────────
-
-    private boolean validateForm() {
-        boolean ok = true;
-
-        try {
-            double val = Double.parseDouble(txtAmount.getText().trim());
-            if (val <= 0) throw new NumberFormatException();
-            errAmount.setVisible(false);
-        } catch (NumberFormatException e) {
-            errAmount.setText("Must be a positive number."); errAmount.setVisible(true); ok = false;
-        }
-
-        if ("credit_card".equals(cbMethod.getValue())) {
-            if (!paymentService.validateCardNumber(txtCardNumber.getText())) {
-                errCardNumber.setText("Invalid card number (Luhn check failed).");
-                errCardNumber.setVisible(true); ok = false;
-            } else errCardNumber.setVisible(false);
-
-            if (!paymentService.validateCardHolder(txtCardHolder.getText())) {
-                errCardHolder.setText("Invalid cardholder name."); errCardHolder.setVisible(true); ok = false;
-            } else errCardHolder.setVisible(false);
-
-            if (!paymentService.validateExpiryDate(txtExpiry.getText())) {
-                errExpiry.setText("Invalid or expired date (MM/YY)."); errExpiry.setVisible(true); ok = false;
-            } else errExpiry.setVisible(false);
-
-            if (!paymentService.validateCVC(txtCvc.getText())) {
-                errCvc.setText("Invalid CVC (3-4 digits)."); errCvc.setVisible(true); ok = false;
-            } else errCvc.setVisible(false);
-        }
-
-        return ok;
-    }
-
-    private void toggleCardFields() {
-        boolean isCard = "credit_card".equals(cbMethod.getValue());
-        txtCardNumber.setDisable(!isCard);
-        txtCardHolder.setDisable(!isCard);
-        txtExpiry.setDisable(!isCard);
-        txtCvc.setDisable(!isCard);
-    }
-
-    private void clearErrors() {
-        errCardNumber.setVisible(false); errCardHolder.setVisible(false);
-        errExpiry.setVisible(false);     errCvc.setVisible(false);
-        errAmount.setVisible(false);
-        lblResult.setText("");
-    }
-
-    private void setStatus(String msg, boolean isError) {
-        statusLabel.setText(msg);
-        statusLabel.setStyle(isError ? "-fx-text-fill: #e74c3c;" : "-fx-text-fill: #27ae60;");
-    }
+    @FXML private void handleRefresh() { loadHistory(); }
 }

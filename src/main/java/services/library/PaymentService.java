@@ -244,9 +244,38 @@ public class PaymentService {
         return payments;
     }
 
-    // ─────────────────────────────────────────────
-    //  MAPPING
-    // ─────────────────────────────────────────────
+    /**
+     * Returns all books purchased by a specific user (COMPLETED payments only).
+     * Used for the "My Library" section.
+     */
+    public List<models.library.Book> findPurchasedBooks(int userId) {
+        List<models.library.Book> books = new ArrayList<>();
+        String sql = "SELECT b.*, p.created_at as purchased_at, p.transaction_id " +
+                "FROM payments p " +
+                "JOIN books b ON p.book_id = b.id " +
+                "WHERE p.user_id = ? AND p.status = 'COMPLETED' " +
+                "ORDER BY p.created_at DESC";
+        try {
+            PreparedStatement ps = getCnx().prepareStatement(sql);
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                models.library.Book b = new models.library.Book();
+                b.setId(rs.getInt("id"));
+                b.setTitle(rs.getString("title"));
+                b.setAuthor(rs.getString("author"));
+                b.setIsbn(rs.getString("isbn"));
+                b.setPrice(rs.getDouble("price"));
+                b.setType(rs.getBoolean("is_digital") ? "digital" : "physical");
+                b.setCoverImage(rs.getString("cover_image"));
+                b.setPdfUrl(rs.getString("pdf_url"));
+                books.add(b);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error loading purchased books: " + e.getMessage());
+        }
+        return books;
+    }
 
     /**
      * Maps a ResultSet row to a Payment object.
