@@ -377,9 +377,6 @@ public class NovaDashboardController {
 
     @FXML void handleShowHome(ActionEvent event) { setActiveButton(btnHome); loadPage("/views/home.fxml"); }
     @FXML void handleShowStudySessions(ActionEvent event) { setActiveButton(btnCourses); loadPage("/views/studysession/UserStudyDashboard.fxml"); }
-    @FXML void handleShowLibrary(ActionEvent event) { setActiveButton(btnLibrary); loadPage("/views/library/BookListView.fxml"); }
-    @FXML void handleShowForum(ActionEvent event) { setActiveButton(btnForum); loadPage("/views/forum/forum_feed.fxml"); }
-    @FXML void handleShowQuiz(ActionEvent event) { setActiveButton(btnQuiz); loadPage("/views/quiz/quiz_play_list.fxml"); }
     @FXML void handleShowRewards(ActionEvent event) { setActiveButton(btnRewards); loadPage("/views/gamification/user_rewards.fxml"); }
     @FXML void handleShowLeaderboard(ActionEvent event) { loadPage("/views/gamification/leaderboard.fxml"); }
     @FXML void handleShowLibrary(ActionEvent event) {
