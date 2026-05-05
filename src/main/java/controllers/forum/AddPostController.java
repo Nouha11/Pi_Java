@@ -76,6 +76,13 @@ public class AddPostController {
         spaceCombo.valueProperty().addListener((o, oldV, newV) -> clearError(spaceCombo, spaceError));
     }
 
+    // 🔥 NEW: Allows other controllers (like Sandbox) to pre-fill the text area
+    public void setPrefilledContent(String text) {
+        if (contentArea != null) {
+            contentArea.setText(text);
+        }
+    }
+
     // 🔥 NEW: Toggle Poll UI
     @FXML
     void handleTogglePoll(ActionEvent event) {

@@ -58,7 +58,7 @@ public class PostDetailsController {
     @FXML private VBox commentsContainer;
     @FXML private Button saveButton;
 
-    // 🔥 POLL CONTAINER
+    //  POLL
     @FXML private VBox pollContainer;
 
     // VOTE & REACTION UI ELEMENTS
