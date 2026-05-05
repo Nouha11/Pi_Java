@@ -1,0 +1,355 @@
+/* ═══════════════════════════════════════════════════════════════
+   NOVA Library — Stylesheet
+   Gradients, animations, spacing, cards
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root variables ─────────────────────────────────────────── */
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+}
+
+/* ── Page header gradient ───────────────────────────────────── */
+.lib-header {
+    -fx-background-color: linear-gradient(to right, #1a1a2e, #16213e, #0f3460);
+    -fx-padding: 24 32 24 32;
+}
+
+.lib-header-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.lib-header-sub {
+    -fx-font-size: 13px;
+    -fx-text-fill: rgba(255,255,255,0.6);
+    -fx-padding: 4 0 0 0;
+}
+
+/* ── Search bar ─────────────────────────────────────────────── */
+.lib-search-bar {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #e2e8f0;
+    -fx-padding: 14 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 12, 0, 0, 4);
+}
+
+.lib-search-field {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+    -fx-font-size: 13px;
+}
+
+.lib-search-field:focused {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.2), 8, 0, 0, 0);
+}
+
+/* ── Best sellers strip ─────────────────────────────────────── */
+.bestseller-strip {
+    -fx-background-color: linear-gradient(to right, #fef9c3, #fef3c7, #fde68a);
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #fbbf24;
+    -fx-padding: 16 20;
+    -fx-effect: dropshadow(gaussian, rgba(251,191,36,0.2), 10, 0, 0, 3);
+}
+
+.bestseller-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #92400e;
+}
+
+/* ── Book card (browse) ─────────────────────────────────────── */
+.book-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+.book-card:hover {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.25), 16, 0, 0, 6);
+    -fx-translate-y: -3;
+}
+
+.book-card-cover-digital {
+    -fx-background-color: linear-gradient(to bottom right, #6366f1, #8b5cf6, #a78bfa);
+    -fx-background-radius: 16 16 0 0;
+}
+
+.book-card-cover-physical {
+    -fx-background-color: linear-gradient(to bottom right, #0ea5e9, #38bdf8, #7dd3fc);
+    -fx-background-radius: 16 16 0 0;
+}
+
+.book-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.book-card-author {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+.book-card-price {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+}
+
+.badge-digital {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #5b21b6;
+    -fx-padding: 3 10;
+    -fx-background-radius: 20;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.badge-physical {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #14532d;
+    -fx-padding: 3 10;
+    -fx-background-radius: 20;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* ── Primary button ─────────────────────────────────────────── */
+.btn-primary {
+    -fx-background-color: linear-gradient(to right, #6366f1, #8b5cf6);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.35), 8, 0, 0, 3);
+}
+
+.btn-primary:hover {
+    -fx-background-color: linear-gradient(to right, #4f46e5, #7c3aed);
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.5), 12, 0, 0, 4);
+}
+
+.btn-success {
+    -fx-background-color: linear-gradient(to right, #059669, #10b981);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 22;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(5,150,105,0.3), 8, 0, 0, 3);
+}
+
+.btn-success:hover {
+    -fx-background-color: linear-gradient(to right, #047857, #059669);
+}
+
+.btn-danger {
+    -fx-background-color: linear-gradient(to right, #dc2626, #ef4444);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 10 22;
+    -fx-cursor: hand;
+}
+
+.btn-secondary {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-padding: 10 22;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+/* ── Admin book card ────────────────────────────────────────── */
+.admin-book-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-padding: 18 22;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 10, 0, 0, 3);
+}
+
+.admin-book-card:hover {
+    -fx-border-color: #6366f1;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.15), 14, 0, 0, 5);
+}
+
+/* ── Stat card ──────────────────────────────────────────────── */
+.stat-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 20 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 10, 0, 0, 3);
+}
+
+.stat-number {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748b;
+}
+
+/* ── My Library card ────────────────────────────────────────── */
+.my-lib-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+.my-lib-card:hover {
+    -fx-border-color: #8b5cf6;
+    -fx-effect: dropshadow(gaussian, rgba(139,92,246,0.25), 16, 0, 0, 6);
+    -fx-translate-y: -3;
+}
+
+.read-btn {
+    -fx-background-color: linear-gradient(to right, #6366f1, #8b5cf6);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 0 0 16 16;
+    -fx-padding: 11;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.read-btn:hover {
+    -fx-background-color: linear-gradient(to right, #4f46e5, #7c3aed);
+}
+
+/* ── Book detail ────────────────────────────────────────────── */
+.detail-header {
+    -fx-background-color: linear-gradient(to right, #1e1b4b, #312e81, #4338ca);
+    -fx-padding: 24 32;
+}
+
+.detail-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #e2e8f0;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 10, 0, 0, 3);
+}
+
+/* ── Payment form ───────────────────────────────────────────── */
+.payment-header {
+    -fx-background-color: linear-gradient(to right, #0f172a, #1e293b, #0f3460);
+    -fx-padding: 22 32;
+}
+
+.order-summary-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 4);
+}
+
+/* ── Loan form ──────────────────────────────────────────────── */
+.loan-header {
+    -fx-background-color: linear-gradient(to right, #0c4a6e, #0369a1, #0284c7);
+    -fx-padding: 22 32;
+}
+
+/* ── Libraries view ─────────────────────────────────────────── */
+.library-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-padding: 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
+}
+
+.library-card:hover {
+    -fx-border-color: #0284c7;
+    -fx-effect: dropshadow(gaussian, rgba(2,132,199,0.2), 12, 0, 0, 4);
+    -fx-translate-y: -2;
+}
+
+/* ── Purchase view ──────────────────────────────────────────── */
+.purchase-header {
+    -fx-background-color: linear-gradient(to right, #064e3b, #065f46, #047857);
+    -fx-padding: 22 32;
+}
+
+.payment-method-card {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 24;
+    -fx-cursor: hand;
+}
+
+.payment-method-card-selected {
+    -fx-background-color: #eff6ff;
+    -fx-border-color: #6366f1;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 24;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.15), 8, 0, 0, 2);
+}
+
+/* ── Scrollpane cleanup ─────────────────────────────────────── */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ── Table cleanup ──────────────────────────────────────────── */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8fafc;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fafafa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #1e293b;
+}

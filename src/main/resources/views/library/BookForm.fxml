@@ -76,12 +76,21 @@
                                GridPane.rowIndex="5" GridPane.columnIndex="1"
                                style="-fx-border-color: #dee2e6; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 10;"/>
 
-                    <!-- PDF URL -->
-                    <Label text="PDF URL" GridPane.rowIndex="6" GridPane.columnIndex="0"
+                    <!-- PDF File -->
+                    <Label text="PDF File" GridPane.rowIndex="6" GridPane.columnIndex="0"
                            style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
-                    <TextField fx:id="txtPdfUrl" promptText="uploads/pdfs/book.pdf"
-                               GridPane.rowIndex="6" GridPane.columnIndex="1"
-                               style="-fx-border-color: #dee2e6; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 10;"/>
+                    <HBox GridPane.rowIndex="6" GridPane.columnIndex="1" spacing="8" alignment="CENTER_LEFT">
+                        <TextField fx:id="txtPdfUrl" promptText="No file selected"
+                                   HBox.hgrow="ALWAYS" editable="false"
+                                   style="-fx-border-color: #dee2e6; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 10; -fx-background-color: #f8f9fa;"/>
+                        <Button text="📂 Browse" onAction="#handleBrowsePdf"
+                                style="-fx-background-color: #0d6efd; -fx-text-fill: white; -fx-font-weight: bold;
+                                       -fx-background-radius: 6; -fx-padding: 8 14; -fx-cursor: hand;"/>
+                        <Button fx:id="btnClearPdf" text="✕" onAction="#handleClearPdf"
+                                style="-fx-background-color: #dc3545; -fx-text-fill: white;
+                                       -fx-background-radius: 6; -fx-padding: 8 10; -fx-cursor: hand;"
+                                visible="false" managed="false"/>
+                    </HBox>
                 </GridPane>
             </VBox>
 

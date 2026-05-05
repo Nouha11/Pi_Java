@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.library.PdfViewerController"
+            style="-fx-background-color: #1e1e2e;">
+
+    <!-- Top toolbar -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="12"
+                  style="-fx-background-color: #2d2d44; -fx-padding: 10 20;
+                         -fx-border-color: #3d3d5c; -fx-border-width: 0 0 1 0;">
+                <Button text="Back" onAction="#handleBack"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 7 16; -fx-cursor: hand;
+                               -fx-font-weight: bold;"/>
+                <Separator orientation="VERTICAL"
+                           style="-fx-background-color: #3d3d5c;"/>
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblBookTitle" text="Book Title"
+                           style="-fx-font-size: 15; -fx-font-weight: bold; -fx-text-fill: #e2e8f0;"/>
+                    <Label fx:id="lblBookAuthor" text="Author"
+                           style="-fx-font-size: 11; -fx-text-fill: #94a3b8;"/>
+                </VBox>
+                <Label fx:id="lblStatus" text="Loading..."
+                       style="-fx-font-size: 12; -fx-text-fill: #94a3b8;
+                              -fx-background-color: #3d3d5c; -fx-background-radius: 6;
+                              -fx-padding: 4 10;"/>
+                <Button text="Reload" onAction="#handleReload"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 7 14; -fx-cursor: hand;"/>
+                <Button fx:id="btnToggleChat" text="AI Assistant" onAction="#handleToggleChat"
+                        style="-fx-background-color: linear-gradient(to right, #7c3aed, #6d28d9);
+                               -fx-text-fill: white; -fx-font-weight: bold;
+                               -fx-background-radius: 6; -fx-padding: 7 16; -fx-cursor: hand;
+                               -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.4), 8, 0, 0, 2);"/>
+            </HBox>
+
+            <!-- Navigation bar -->
+            <HBox alignment="CENTER_LEFT" spacing="12"
+                  style="-fx-background-color: #252535; -fx-padding: 7 20;
+                         -fx-border-color: #3d3d5c; -fx-border-width: 0 0 1 0;">
+                <Button text="Prev" onAction="#handlePrev"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 5 14; -fx-cursor: hand;"/>
+                <Label fx:id="lblPageInfo" text="Page 1 of 1"
+                       style="-fx-font-size: 12; -fx-text-fill: #94a3b8; -fx-font-weight: bold;"/>
+                <Button text="Next" onAction="#handleNext"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 5 14; -fx-cursor: hand;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblZoom" text="100%"
+                       style="-fx-font-size: 12; -fx-text-fill: #94a3b8;"/>
+                <Button text="-" onAction="#handleZoomOut"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 5 12; -fx-cursor: hand;"/>
+                <Button text="+" onAction="#handleZoomIn"
+                        style="-fx-background-color: #3d3d5c; -fx-text-fill: #e2e8f0;
+                               -fx-background-radius: 6; -fx-padding: 5 12; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox>
+            <HBox VBox.vgrow="ALWAYS">
+                <!-- PDF WebView -->
+                <WebView fx:id="pdfWebView" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS"/>
+
+                <!-- AI Chat Panel -->
+                <VBox fx:id="chatPanel" prefWidth="340" minWidth="340"
+                      visible="false" managed="false"
+                      style="-fx-background-color: #16162a;
+                             -fx-border-color: #3d3d5c; -fx-border-width: 0 0 0 1;">
+
+                    <!-- Chat header -->
+                    <HBox alignment="CENTER_LEFT" spacing="10"
+                          style="-fx-padding: 14 16; -fx-border-color: #3d3d5c;
+                                 -fx-border-width: 0 0 1 0;
+                                 -fx-background-color: linear-gradient(to right, #1e1b4b, #2d2d44);">
+                        <Label text="AI"
+                               style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: white;
+                                      -fx-background-color: #7c3aed; -fx-background-radius: 6;
+                                      -fx-padding: 4 10;"/>
+                        <VBox HBox.hgrow="ALWAYS" spacing="1">
+                            <Label text="Grok AI Assistant"
+                                   style="-fx-font-size: 13; -fx-font-weight: bold; -fx-text-fill: #e2e8f0;"/>
+                            <Label text="Select text from the PDF to explain"
+                                   style="-fx-font-size: 11; -fx-text-fill: #64748b;"/>
+                        </VBox>
+                        <Button text="X" onAction="#handleToggleChat"
+                                style="-fx-background-color: #3d3d5c; -fx-text-fill: #94a3b8;
+                                       -fx-cursor: hand; -fx-padding: 4 8; -fx-background-radius: 6;"/>
+                    </HBox>
+
+                    <!-- Selected text preview -->
+                    <VBox style="-fx-padding: 10 14; -fx-border-color: #3d3d5c;
+                                 -fx-border-width: 0 0 1 0; -fx-background-color: #1a1a2e;">
+                        <Label text="SELECTED TEXT"
+                               style="-fx-font-size: 10; -fx-text-fill: #7c3aed;
+                                      -fx-font-weight: bold; -fx-padding: 0 0 4 0;"/>
+                        <Label fx:id="lblSelectedText" text="Select text in the PDF..."
+                               wrapText="true" maxHeight="60"
+                               style="-fx-font-size: 12; -fx-text-fill: #94a3b8;
+                                      -fx-font-style: italic; -fx-padding: 4 0 0 0;"/>
+                    </VBox>
+
+                    <!-- Chat messages -->
+                    <ScrollPane fx:id="chatScroll" fitToWidth="true" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color: transparent;
+                                       -fx-background: #16162a; -fx-border-color: transparent;">
+                        <VBox fx:id="chatMessages" spacing="10" style="-fx-padding: 12;"/>
+                    </ScrollPane>
+
+                    <!-- Input area -->
+                    <VBox spacing="8"
+                          style="-fx-padding: 12 14; -fx-border-color: #3d3d5c;
+                                 -fx-border-width: 1 0 0 0; -fx-background-color: #1a1a2e;">
+                        <TextArea fx:id="txtUserMessage"
+                                  promptText="Ask about the selected text..."
+                                  prefRowCount="2" wrapText="true"
+                                  style="-fx-background-color: #252535; -fx-text-fill: #e2e8f0;
+                                         -fx-border-color: #3d3d5c; -fx-border-radius: 8;
+                                         -fx-background-radius: 8; -fx-font-size: 13; -fx-padding: 8;
+                                         -fx-prompt-text-fill: #64748b;"/>
+                        <HBox spacing="8">
+                            <Button text="Explain" onAction="#handleExplain"
+                                    HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                    style="-fx-background-color: linear-gradient(to right, #7c3aed, #6d28d9);
+                                           -fx-text-fill: white; -fx-font-weight: bold;
+                                           -fx-background-radius: 8; -fx-padding: 9; -fx-cursor: hand;"/>
+                            <Button text="Send" onAction="#handleSend"
+                                    style="-fx-background-color: linear-gradient(to right, #0d6efd, #0284c7);
+                                           -fx-text-fill: white; -fx-font-weight: bold;
+                                           -fx-background-radius: 8; -fx-padding: 9 16; -fx-cursor: hand;"/>
+                        </HBox>
+                        <Button text="Clear Chat" onAction="#handleClearChat"
+                                maxWidth="Infinity"
+                                style="-fx-background-color: transparent; -fx-text-fill: #64748b;
+                                       -fx-border-color: #3d3d5c; -fx-border-radius: 6;
+                                       -fx-background-radius: 6; -fx-padding: 6; -fx-cursor: hand;"/>
+                    </VBox>
+                </VBox>
+            </HBox>
+
+            <!-- Reading progress bar at the bottom -->
+            <HBox alignment="CENTER_LEFT" spacing="12"
+                  style="-fx-background-color: #2d2d44; -fx-padding: 8 20;
+                         -fx-border-color: #3d3d5c; -fx-border-width: 1 0 0 0;">
+                <Label text="Reading Progress"
+                       style="-fx-font-size: 11; -fx-text-fill: #94a3b8; -fx-font-weight: bold;"/>
+                <ProgressBar fx:id="readingProgress" prefWidth="220" prefHeight="10"
+                             progress="0"
+                             style="-fx-accent: #7c3aed; -fx-background-color: #3d3d5c;
+                                    -fx-background-radius: 5; -fx-border-radius: 5;"/>
+                <Label fx:id="lblReadPercent" text="0%"
+                       style="-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #7c3aed;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ProgressBar fx:id="progressBar" prefWidth="120" prefHeight="6"
+                             visible="false"
+                             style="-fx-accent: #0d6efd;"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>
