@@ -35,10 +35,7 @@ import services.forum.PollService;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class PostDetailsController {
 
@@ -57,11 +54,7 @@ public class PostDetailsController {
     @FXML private TextArea commentArea;
     @FXML private VBox commentsContainer;
     @FXML private Button saveButton;
-
-    //  POLL
     @FXML private VBox pollContainer;
-
-    // VOTE & REACTION UI ELEMENTS
     @FXML private HBox voteBox;
     @FXML private Label upArrowBtn;
     @FXML private Label voteCountLabel;
@@ -153,7 +146,6 @@ public class PostDetailsController {
             }
         }
 
-        // 🔥 YOUR RESTORED LOGIC FOR EDIT/DELETE/REPORT VISIBILITY
         if (reportPostBtn != null) {
             if (post.getAuthorId() == currentUserId) {
                 reportPostBtn.setVisible(false);
@@ -193,7 +185,6 @@ public class PostDetailsController {
         loadComments();
     }
 
-    // 🔥 BEAUTIFUL MODERN POLL ENGINE
     private void loadPoll() {
         if (pollContainer == null) return;
         pollContainer.getChildren().clear();
@@ -355,7 +346,7 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 YOUR RESTORED LOGIC FOR COMMENTS (Including Edit/Delete Buttons for the Author)
+    // 🔥 NEW: Loads, groups, and physically nests replies tightly under the parent comment!
     private void loadComments() {
         commentsContainer.getChildren().clear();
 
@@ -364,112 +355,212 @@ public class PostDetailsController {
         commentsContainer.getChildren().add(loadingLabel);
 
         new Thread(() -> {
-            List<Comment> comments = commentService.getCommentsByPost(currentPost.getId());
+            List<Comment> allComments = commentService.getCommentsByPost(currentPost.getId());
 
             Platform.runLater(() -> {
                 commentsContainer.getChildren().clear();
 
-                String replyCount = String.valueOf(comments.size());
+                String replyCount = String.valueOf(allComments.size());
                 if (repliesCountLabel != null) repliesCountLabel.setText("Replies (" + replyCount + ")");
                 if (statsRepliesLabel != null) statsRepliesLabel.setText("💬 Replies: " + replyCount);
                 if (topCommentBadgeLabel != null) topCommentBadgeLabel.setText("💬 " + replyCount + " Comments");
 
-                if (comments.isEmpty()) {
+                if (allComments.isEmpty()) {
                     Label emptyLabel = new Label("No comments yet. Be the first to share your thoughts!");
                     emptyLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-style: italic; -fx-font-size: 14px;");
                     commentsContainer.getChildren().add(emptyLabel);
                     return;
                 }
 
-                for (Comment c : comments) {
-                    boolean isCensored = c.getContent().equals("🚫 *[This comment was removed by a moderator for violating community guidelines]*");
+                // 1. Grouping Logic (Separate Parents from Nested Replies)
+                List<Comment> topLevelComments = new ArrayList<>();
+                Map<Integer, List<Comment>> nestedRepliesMap = new HashMap<>();
 
-                    VBox commentCard = new VBox(8);
-                    commentCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;");
-
-                    HBox headerBox = new HBox(10);
-                    Label author = new Label(c.getAuthorName() != null ? c.getAuthorName() : "Student");
-                    author.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
-                    Label time = new Label("• Reply");
-                    time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
-                    headerBox.getChildren().addAll(author, time);
-
-                    Label content = new Label(c.getContent());
-                    content.setWrapText(true);
-
-                    if (isCensored) {
-                        content.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px; -fx-font-style: italic;");
+                for (Comment c : allComments) {
+                    String content = c.getContent();
+                    // Intercept our hidden tag
+                    if (content != null && content.startsWith("[REPLY_TO:")) {
+                        int closeIdx = content.indexOf("]");
+                        try {
+                            int parentId = Integer.parseInt(content.substring(10, closeIdx));
+                            nestedRepliesMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(c);
+                        } catch (Exception e) {
+                            topLevelComments.add(c); // fallback if parse fails
+                        }
                     } else {
-                        content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
+                        topLevelComments.add(c);
                     }
+                }
 
-                    VBox imageBox = new VBox();
-                    if (!isCensored && c.getImageName() != null && !c.getImageName().isEmpty()) {
-                        File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
-                        if (imgFile.exists()) {
-                            try {
-                                ImageView commentImgView = new ImageView(new Image(imgFile.toURI().toString(), true));
-                                commentImgView.setFitWidth(350);
-                                commentImgView.setPreserveRatio(true);
-                                imageBox.setStyle("-fx-padding: 10 0 5 0;");
-                                imageBox.getChildren().add(commentImgView);
-                            } catch (Exception e) {}
+                // 2. Rendering Logic (Cohesive Threads)
+                for (Comment parent : topLevelComments) {
+                    // This container holds the parent AND its replies tightly together to eliminate huge gaps
+                    VBox threadBox = new VBox(0);
+                    threadBox.setStyle("-fx-background-color: transparent;");
+
+                    VBox parentNode = createCommentNode(parent, false, null);
+                    threadBox.getChildren().add(parentNode);
+
+                    // Render nested replies directly under this parent, indented nicely!
+                    if (nestedRepliesMap.containsKey(parent.getId())) {
+                        VBox repliesContainer = new VBox(8); // Small spacing between replies
+                        repliesContainer.setStyle("-fx-padding: 10 0 0 45;"); // Indent the block of replies
+
+                        for (Comment reply : nestedRepliesMap.get(parent.getId())) {
+                            VBox replyNode = createCommentNode(reply, true, parent);
+
+                            // Visual threaded line connector
+                            HBox threadedReply = new HBox();
+                            Region line = new Region();
+                            line.setPrefWidth(3);
+                            line.setStyle("-fx-background-color: #cbd5e1; -fx-background-radius: 3;");
+                            HBox.setMargin(line, new Insets(5, 12, 5, 0));
+
+                            HBox.setHgrow(replyNode, Priority.ALWAYS);
+                            threadedReply.getChildren().addAll(line, replyNode);
+
+                            repliesContainer.getChildren().add(threadedReply);
                         }
+                        threadBox.getChildren().add(repliesContainer);
                     }
-
-                    HBox actionsBox = new HBox(10);
-                    actionsBox.setAlignment(Pos.CENTER_RIGHT);
-
-                    if (!isCensored) {
-                        if (c.getAuthorId() == currentUserId) {
-                            Button editBtn = new Button("Edit");
-                            editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
-                            editBtn.setOnAction(e -> handleEditComment(c));
-
-                            Button deleteBtn = new Button("Delete");
-                            deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
-                            deleteBtn.setOnAction(e -> handleDeleteComment(c));
-
-                            actionsBox.getChildren().addAll(editBtn, deleteBtn);
-                        } else {
-                            Button reportBtn = new Button("🚩 Report");
-                            reportBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
-                            reportBtn.setOnAction(e -> showReportDialog("COMMENT", c.getId()));
-                            actionsBox.getChildren().add(reportBtn);
-                        }
-                    }
-
-                    commentCard.getChildren().addAll(headerBox, content, imageBox);
-                    if (!actionsBox.getChildren().isEmpty()) commentCard.getChildren().add(actionsBox);
-
-                    commentsContainer.getChildren().add(commentCard);
+                    commentsContainer.getChildren().add(threadBox);
                 }
 
                 if (scrollToBottomFlag && mainScrollPane != null) {
                     scrollToBottomFlag = false;
-
                     PauseTransition waitBeforeScroll = new PauseTransition(Duration.millis(250));
-                    waitBeforeScroll.setOnFinished(ev -> {
-                        mainScrollPane.setVvalue(mainScrollPane.getVmax());
-
-                        if (!commentsContainer.getChildren().isEmpty()) {
-                            Node lastNode = commentsContainer.getChildren().get(commentsContainer.getChildren().size() - 1);
-
-                            String baseStyle = "-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;";
-                            String flashStyle = "-fx-background-color: #eff6ff; -fx-border-color: #3b82f6; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 15, 0, 0, 0);";
-
-                            lastNode.setStyle(flashStyle);
-
-                            PauseTransition revert = new PauseTransition(Duration.seconds(2.5));
-                            revert.setOnFinished(e -> lastNode.setStyle(baseStyle));
-                            revert.play();
-                        }
-                    });
+                    waitBeforeScroll.setOnFinished(ev -> mainScrollPane.setVvalue(mainScrollPane.getVmax()));
                     waitBeforeScroll.play();
                 }
             });
         }).start();
     }
+
+    // Helper method to create each comment visually
+    private VBox createCommentNode(Comment c, boolean isNested, Comment parentComment) {
+        VBox commentCard = new VBox(8);
+
+        // Styling differences for parents vs nested replies
+        if (isNested) {
+            commentCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12 16;");
+        } else {
+            commentCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 5, 0, 0, 2);");
+        }
+
+        HBox headerBox = new HBox(10);
+        Label author = new Label(c.getAuthorName() != null ? c.getAuthorName() : "Student");
+        author.setStyle("-fx-font-weight: bold; -fx-text-fill: #0f172a;");
+
+        Label time = new Label("• Reply");
+        time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
+        headerBox.getChildren().addAll(author, time);
+
+        // Clean up the text (remove hidden tags or old legacy quote strings so they don't look ugly)
+        String rawContent = c.getContent();
+        if (rawContent.startsWith("[REPLY_TO:")) {
+            int closeIdx = rawContent.indexOf("]");
+            rawContent = rawContent.substring(closeIdx + 1).trim();
+        } else if (rawContent.startsWith("> Replying to @")) {
+            rawContent = rawContent.replaceAll("> Replying to @.*?\n\n", "").trim();
+        }
+
+        boolean isCensored = rawContent.equals("🚫 *[This comment was removed by a moderator for violating community guidelines]*");
+
+        Label content = new Label(rawContent);
+        content.setWrapText(true);
+        if (isCensored) {
+            content.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14px; -fx-font-style: italic;");
+        } else {
+            content.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px;");
+        }
+
+        VBox imageBox = new VBox();
+        if (!isCensored && c.getImageName() != null && !c.getImageName().isEmpty()) {
+            File imgFile = new File("C:/xampp/htdocs/projet dev/Pi_web/public/uploads/comments/" + c.getImageName());
+            if (imgFile.exists()) {
+                try {
+                    ImageView commentImgView = new ImageView(new Image(imgFile.toURI().toString(), true));
+                    commentImgView.setFitWidth(350);
+                    commentImgView.setPreserveRatio(true);
+                    imageBox.setStyle("-fx-padding: 10 0 5 0;");
+                    imageBox.getChildren().add(commentImgView);
+                } catch (Exception e) {}
+            }
+        }
+
+        HBox actionsBox = new HBox(10);
+        actionsBox.setAlignment(Pos.CENTER_RIGHT);
+
+        if (!isCensored && !currentPost.isLocked()) {
+            // 🔥 INLINE REPLY BUTTON
+            Button replyBtn = new Button("↩ Reply");
+            replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #10b981; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+            replyBtn.setOnAction(e -> {
+                // Prevent opening multiple boxes under the same comment
+                if (commentCard.getChildren().stream().anyMatch(n -> "inline-box".equals(n.getId()))) return;
+
+                VBox inlineBox = new VBox(8);
+                inlineBox.setId("inline-box");
+                inlineBox.setStyle("-fx-padding: 10 0 0 0;");
+
+                TextArea inlineInput = new TextArea();
+                inlineInput.setPromptText("Reply to @" + author.getText() + "...");
+                inlineInput.setPrefRowCount(2);
+                inlineInput.setStyle("-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6;");
+
+                HBox buttons = new HBox(8);
+                buttons.setAlignment(Pos.CENTER_RIGHT);
+
+                Button cancel = new Button("Cancel");
+                cancel.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-cursor: hand;");
+                cancel.setOnAction(ev -> commentCard.getChildren().remove(inlineBox));
+
+                Button submit = new Button("Post");
+                submit.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 6 12;");
+                submit.setOnAction(ev -> {
+                    String text = inlineInput.getText().trim();
+                    if(text.length() < 2) return;
+
+                    // If we are replying to a reply, attach to the root parent so the thread doesn't push infinitely right
+                    int targetParentId = (isNested && parentComment != null) ? parentComment.getId() : c.getId();
+                    String finalContent = "[REPLY_TO:" + targetParentId + "]" + text;
+
+                    Comment newComment = new Comment(finalContent, currentPost.getId(), currentUserId, null);
+                    commentService.ajouter(newComment);
+                    loadComments(); // Reload everything to show the new nested reply!
+                });
+
+                buttons.getChildren().addAll(cancel, submit);
+                inlineBox.getChildren().addAll(inlineInput, buttons);
+                commentCard.getChildren().add(inlineBox);
+                inlineInput.requestFocus();
+            });
+            actionsBox.getChildren().add(replyBtn);
+
+            if (c.getAuthorId() == currentUserId) {
+                Button editBtn = new Button("Edit");
+                editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                editBtn.setOnAction(e -> handleEditComment(c));
+
+                Button deleteBtn = new Button("Delete");
+                deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                deleteBtn.setOnAction(e -> handleDeleteComment(c));
+
+                actionsBox.getChildren().addAll(editBtn, deleteBtn);
+            } else {
+                Button reportBtn = new Button("🚩 Report");
+                reportBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
+                reportBtn.setOnAction(e -> showReportDialog("COMMENT", c.getId()));
+                actionsBox.getChildren().add(reportBtn);
+            }
+        }
+
+        commentCard.getChildren().addAll(headerBox, content, imageBox);
+        if (!actionsBox.getChildren().isEmpty()) commentCard.getChildren().add(actionsBox);
+
+        return commentCard;
+    }
+
 
     @FXML
     void handleReportPost(ActionEvent event) {
@@ -730,7 +821,15 @@ public class PostDetailsController {
         Label title = new Label("✏ Edit Your Reply");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: #0f172a;");
 
-        TextArea textArea = new TextArea(c.getContent());
+        // Clean out hidden tags from the edit view
+        String textToEdit = c.getContent();
+        if (textToEdit.startsWith("[REPLY_TO:")) {
+            textToEdit = textToEdit.substring(textToEdit.indexOf("]") + 1);
+        } else if (textToEdit.startsWith("> Replying to @")) {
+            textToEdit = textToEdit.replaceAll("> Replying to @.*?\n\n", "").trim();
+        }
+
+        TextArea textArea = new TextArea(textToEdit);
         textArea.setWrapText(true);
         textArea.setPrefRowCount(4);
         textArea.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-font-size: 14px; -fx-padding: 5;");
@@ -745,7 +844,13 @@ public class PostDetailsController {
         saveBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;");
         saveBtn.setOnAction(e -> {
             String newContent = textArea.getText().trim();
-            if (!newContent.isEmpty() && !newContent.equals(c.getContent())) {
+            if (!newContent.isEmpty()) {
+                // Restore hidden tag if it was a nested reply
+                String oldContent = c.getContent();
+                if(oldContent.startsWith("[REPLY_TO:")) {
+                    String tag = oldContent.substring(0, oldContent.indexOf("]") + 1);
+                    newContent = tag + newContent;
+                }
                 c.setContent(newContent);
                 commentService.modifier(c);
                 loadComments();

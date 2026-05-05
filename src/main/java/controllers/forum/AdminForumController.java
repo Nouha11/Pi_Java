@@ -104,7 +104,6 @@ public class AdminForumController {
         btnEdit.setOnMouseExited(e -> btnEdit.setStyle("-fx-cursor: hand; -fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; -fx-padding: 6 12; -fx-background-radius: 6; -fx-font-weight: bold; -fx-font-size: 12px;"));
         btnEdit.setOnMouseClicked(e -> {
             try {
-                // 🔥 MAKE SURE THIS PATH MATCHES YOUR PROJECT STRUCTURE! 🔥
                 javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/views/forum/student/add_post.fxml"));
                 javafx.scene.Parent root = loader.load();
 
