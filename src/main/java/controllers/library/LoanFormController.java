@@ -83,7 +83,7 @@ public class LoanFormController {
 
         try {
             Loan loan = new Loan();
-            loan.setUserId(DEMO_USER_ID);
+            loan.setUserId(utils.SessionManager.getCurrentUserId());
             loan.setBookId(book.getId());
             loan.setLibraryId(library.getId());
             loan.setBookTitle(book.getTitle());
@@ -93,7 +93,13 @@ public class LoanFormController {
             loan.setEndAt(java.sql.Timestamp.valueOf(returnDate.getValue().atStartOfDay()));
             loanService.ajouter(loan);
 
-            new Alert(Alert.AlertType.INFORMATION, "Loan request submitted! Awaiting admin approval.").showAndWait();
+            utils.SuccessDialog.show(
+                utils.SuccessDialog.Type.SUCCESS,
+                "OK",
+                "Loan Request Submitted!",
+                "Your request for \"" + book.getTitle() + "\" has been sent.\nAwaiting admin approval.",
+                "Back to Books"
+            );
             NovaDashboardController.loadPage("/views/library/BookListView.fxml");
         } catch (SQLException e) {
             showError("Database error: " + e.getMessage());

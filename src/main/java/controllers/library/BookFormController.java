@@ -3,10 +3,12 @@ package controllers.library;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.library.Book;
 import services.library.BookService;
 
+import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
@@ -23,6 +25,7 @@ public class BookFormController implements Initializable {
     @FXML private TextField txtPdfUrl;
     @FXML private Label     lblError;
     @FXML private Button    btnSave;
+    @FXML private Button    btnClearPdf;
 
     // Per-field error labels
     @FXML private Label errTitle;
@@ -63,6 +66,10 @@ public class BookFormController implements Initializable {
             cbType.setValue(b.getType());
             txtCoverImage.setText(b.getCoverImage());
             txtPdfUrl.setText(b.getPdfUrl());
+            if (b.getPdfUrl() != null && !b.getPdfUrl().isBlank()) {
+                btnClearPdf.setVisible(true);
+                btnClearPdf.setManaged(true);
+            }
         }
     }
 
@@ -89,6 +96,28 @@ public class BookFormController implements Initializable {
             lblError.setText("⚠ Database error: " + e.getMessage());
             lblError.setVisible(true);
         }
+    }
+
+    @FXML
+    private void handleBrowsePdf() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select PDF File");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+        );
+        File file = chooser.showOpenDialog(btnSave.getScene().getWindow());
+        if (file != null) {
+            txtPdfUrl.setText(file.getAbsolutePath());
+            btnClearPdf.setVisible(true);
+            btnClearPdf.setManaged(true);
+        }
+    }
+
+    @FXML
+    private void handleClearPdf() {
+        txtPdfUrl.clear();
+        btnClearPdf.setVisible(false);
+        btnClearPdf.setManaged(false);
     }
 
     @FXML

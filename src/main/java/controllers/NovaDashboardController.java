@@ -377,11 +377,35 @@ public class NovaDashboardController {
 
     @FXML void handleShowHome(ActionEvent event) { setActiveButton(btnHome); loadPage("/views/home.fxml"); }
     @FXML void handleShowStudySessions(ActionEvent event) { setActiveButton(btnCourses); loadPage("/views/studysession/UserStudyDashboard.fxml"); }
-    @FXML void handleShowLibrary(ActionEvent event) { setActiveButton(btnLibrary); loadPage("/views/library/BookListView.fxml"); }
-    @FXML void handleShowForum(ActionEvent event) { setActiveButton(btnForum); loadPage("/views/forum/forum_feed.fxml"); }
-    @FXML void handleShowQuiz(ActionEvent event) { setActiveButton(btnQuiz); loadPage("/views/quiz/quiz_play_list.fxml"); }
     @FXML void handleShowRewards(ActionEvent event) { setActiveButton(btnRewards); loadPage("/views/gamification/user_rewards.fxml"); }
     @FXML void handleShowLeaderboard(ActionEvent event) { loadPage("/views/gamification/leaderboard.fxml"); }
+    @FXML void handleShowLibrary(ActionEvent event) {
+        setActiveButton(btnLibrary);
+        // Show dropdown with Browse Books + My Library
+        ContextMenu menu = new ContextMenu();
+        menu.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-radius: 8;");
+
+        MenuItem itemBrowse = new MenuItem("📚  Browse Books");
+        itemBrowse.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
+        itemBrowse.setOnAction(e -> loadPage("/views/library/BookListView.fxml"));
+
+        MenuItem itemMyLibrary = new MenuItem("🗂  My Library");
+        itemMyLibrary.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
+        itemMyLibrary.setOnAction(e -> loadPage("/views/library/MyLibrary.fxml"));
+
+        menu.getItems().addAll(itemBrowse, itemMyLibrary);
+        menu.show(btnLibrary, javafx.geometry.Side.BOTTOM, 0, 4);
+    }
+
+    @FXML void handleShowForum(ActionEvent event) {
+        setActiveButton(btnForum);
+        loadPage("/views/forum/forum_feed.fxml");
+    }
+
+    @FXML void handleShowQuiz(ActionEvent event) {
+        setActiveButton(btnQuiz);
+        loadPage("/views/quiz/quiz_play_list.fxml");
+    }
 
     @FXML void handleShowGamification(ActionEvent event) {
         setActiveButton(btnGames);

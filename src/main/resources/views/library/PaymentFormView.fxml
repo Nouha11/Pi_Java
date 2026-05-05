@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.library.PaymentFormController"
@@ -8,7 +9,7 @@
 
     <top>
         <VBox style="-fx-background-color: #cfe2ff; -fx-padding: 20 24 20 24;">
-            <Label fx:id="lblHeader" text="💳 Complete Payment"
+            <Label fx:id="lblHeader" text="Complete Payment"
                    style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
             <Label text="Home › Books › Purchase › Payment"
                    style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
@@ -18,106 +19,40 @@
     <center>
         <HBox spacing="24" style="-fx-padding: 24;" alignment="TOP_LEFT">
 
-            <!-- LEFT: Payment form -->
-            <VBox spacing="16" HBox.hgrow="ALWAYS">
-                <VBox style="-fx-background-color: white; -fx-background-radius: 8;
-                             -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-padding: 24;
-                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);"
-                      spacing="14">
+            <!-- LEFT: Stripe embedded form in WebView -->
+            <VBox spacing="12" HBox.hgrow="ALWAYS">
 
-                    <Label fx:id="lblMethodTitle" text="💳 Credit Card Payment"
-                           style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #212529;
-                                  -fx-padding: 0 0 8 0; -fx-border-color: #dee2e6; -fx-border-width: 0 0 1 0;"/>
+                <!-- Status label shown while connecting to Stripe -->
+                <Label fx:id="lblStatus" text="Connecting to Stripe..."
+                       style="-fx-font-size: 13; -fx-text-fill: #6c757d;" visible="false" managed="false"/>
 
-                    <!-- Credit card fields (shown for credit_card) -->
-                    <VBox fx:id="cardFields" spacing="14">
-                        <VBox spacing="4">
-                            <Label text="Card Number *"
-                                   style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
-                            <TextField fx:id="txtCardNumber" promptText="1234 5678 9012 3456"
-                                       style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
-                                              -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                            <Label fx:id="errCardNumber" text="Invalid card number"
-                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
-                        </VBox>
+                <!-- Stripe.js card form renders here -->
+                <WebView fx:id="stripeWebView" prefHeight="420" VBox.vgrow="ALWAYS"/>
 
-                        <VBox spacing="4">
-                            <Label text="Name on Card *"
-                                   style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
-                            <TextField fx:id="txtCardHolder" promptText="John Doe"
-                                       style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
-                                              -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                            <Label fx:id="errCardHolder" text="Name must be at least 3 letters (no numbers)"
-                                   style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
-                        </VBox>
-
-                        <HBox spacing="16">
-                            <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                <Label text="Expiry Date *"
-                                       style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
-                                <TextField fx:id="txtExpiry" promptText="MM/YY"
-                                           style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
-                                                  -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                                <Label fx:id="errExpiry" text="Invalid or expired date (use MM/YY)"
-                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
-                            </VBox>
-                            <VBox spacing="4" prefWidth="130">
-                                <Label text="CVC *"
-                                       style="-fx-font-weight: bold; -fx-text-fill: #495057; -fx-font-size: 13;"/>
-                                <TextField fx:id="txtCvc" promptText="123"
-                                           style="-fx-border-color: #dee2e6; -fx-border-radius: 6;
-                                                  -fx-background-radius: 6; -fx-padding: 8 10;"/>
-                                <Label fx:id="errCvc" text="CVC must be 3 or 4 digits"
-                                       style="-fx-text-fill: #dc3545; -fx-font-size: 11;" visible="false" managed="false"/>
-                            </VBox>
-                        </HBox>
-                    </VBox>
-
-                    <!-- PayPal message (shown for paypal) -->
-                    <VBox fx:id="paypalFields" alignment="CENTER" spacing="12"
-                          style="-fx-padding: 20;" visible="false" managed="false">
-                        <Label text="🅿" style="-fx-font-size: 60; -fx-text-fill: #0070ba;"/>
-                        <Label text="You will be redirected to PayPal to complete your payment"
-                               style="-fx-font-size: 14; -fx-text-fill: #212529;" wrapText="true"/>
-                        <Label text="Click the button below to proceed with PayPal payment"
-                               style="-fx-font-size: 13; -fx-text-fill: #6c757d;" wrapText="true"/>
-                    </VBox>
-
-                    <!-- Security notice -->
-                    <HBox spacing="12" alignment="CENTER_LEFT"
-                          style="-fx-background-color: #cff4fc; -fx-border-color: #9eeaf9;
-                                 -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 12 16;">
-                        <Label text="🔒" style="-fx-font-size: 18;"/>
-                        <Label text="Your payment info is encrypted. We only store the last 4 digits."
-                               style="-fx-font-size: 12; -fx-text-fill: #055160;" wrapText="true"
-                               HBox.hgrow="ALWAYS"/>
-                    </HBox>
-
-                    <!-- Error banner -->
-                    <Label fx:id="lblError" text="" wrapText="true"
-                           style="-fx-text-fill: #842029; -fx-background-color: #f8d7da;
-                                  -fx-border-color: #f5c2c7; -fx-border-radius: 6;
-                                  -fx-background-radius: 6; -fx-padding: 10 14; -fx-font-size: 13;"
-                           visible="false" managed="false"/>
-
-                    <!-- Buttons -->
-                    <HBox spacing="12">
-                        <Button fx:id="btnPay" text="🔒 Complete Payment" onAction="#handlePay"
-                                style="-fx-background-color: #0d6efd; -fx-text-fill: white;
-                                       -fx-font-weight: bold; -fx-font-size: 14; -fx-background-radius: 6;
-                                       -fx-padding: 12 24; -fx-cursor: hand;"/>
-                        <Button text="← Back" onAction="#handleBack"
-                                style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057;
-                                       -fx-border-color: #dee2e6; -fx-border-radius: 6;
-                                       -fx-background-radius: 6; -fx-padding: 12 16; -fx-cursor: hand;"/>
-                    </HBox>
+                <!-- PayPal fallback panel (hidden by default) -->
+                <VBox fx:id="paypalFields" alignment="CENTER" spacing="16"
+                      style="-fx-background-color: white; -fx-background-radius: 12;
+                             -fx-border-color: #dee2e6; -fx-border-radius: 12; -fx-padding: 40;"
+                      visible="false" managed="false">
+                    <Label text="PayPal" style="-fx-font-size: 48;"/>
+                    <Label text="Click below to complete your PayPal payment"
+                           style="-fx-font-size: 14; -fx-text-fill: #212529;" wrapText="true"/>
+                    <Button text="Pay with PayPal" onAction="#handlePayPal"
+                            style="-fx-background-color: #0070ba; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-font-size: 14; -fx-background-radius: 8;
+                                   -fx-padding: 12 32; -fx-cursor: hand;"/>
                 </VBox>
+
+                <Button text="Back" onAction="#handleBack"
+                        style="-fx-background-color: #f8f9fa; -fx-text-fill: #495057;
+                               -fx-border-color: #dee2e6; -fx-border-radius: 6;
+                               -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"/>
             </VBox>
 
             <!-- RIGHT: Order summary -->
             <VBox prefWidth="260" spacing="0"
-                  style="-fx-background-color: white; -fx-background-radius: 8;
-                         -fx-border-color: #dee2e6; -fx-border-radius: 8;
+                  style="-fx-background-color: white; -fx-background-radius: 10;
+                         -fx-border-color: #dee2e6; -fx-border-radius: 10;
                          -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);">
 
                 <Label text="Order Summary"
@@ -155,7 +90,6 @@
 
                     <Separator/>
 
-                    <!-- Payment method badge -->
                     <HBox spacing="10" alignment="CENTER_LEFT"
                           style="-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-background-radius: 6;">
                         <Label fx:id="sideMethodIcon" text="💳" style="-fx-font-size: 20;"/>
@@ -165,6 +99,14 @@
                                    style="-fx-font-weight: bold; -fx-font-size: 13; -fx-text-fill: #212529;"/>
                         </VBox>
                     </HBox>
+
+                    <!-- Stripe badge -->
+                    <VBox alignment="CENTER" style="-fx-padding: 8 0 0 0;">
+                        <Label text="Powered by Stripe"
+                               style="-fx-font-size: 11; -fx-text-fill: #adb5bd;"/>
+                        <Label text="🔒 256-bit SSL encryption"
+                               style="-fx-font-size: 11; -fx-text-fill: #adb5bd;"/>
+                    </VBox>
                 </VBox>
             </VBox>
         </HBox>

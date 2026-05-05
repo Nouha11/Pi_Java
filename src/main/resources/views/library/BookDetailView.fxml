@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.library.BookDetailController"
-            style="-fx-background-color: #f8f9fa;">
+            style="-fx-background-color: #f0f4f8;">
+    <stylesheets>
+        <URL value="@../../css/library.css"/>
+    </stylesheets>
 
-    <!-- Header / breadcrumb -->
     <top>
-        <VBox style="-fx-background-color: #cfe2ff; -fx-padding: 20 24 20 24;">
+        <VBox style="-fx-background-color: linear-gradient(to right, #1e1b4b, #312e81, #4338ca);
+                     -fx-padding: 22 32 22 32;" spacing="4">
             <Label fx:id="lblTitle" text="Book Title"
-                   style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #212529;"/>
+                   style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: white;"/>
             <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label text="Home › Books ›" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                <Label text="Home › Books ›" style="-fx-font-size: 12; -fx-text-fill: rgba(255,255,255,0.6);"/>
                 <Label fx:id="lblBreadcrumb" text="Book"
-                       style="-fx-font-size: 12; -fx-text-fill: #0d6efd;"/>
+                       style="-fx-font-size: 12; -fx-text-fill: rgba(255,255,255,0.9);"/>
             </HBox>
         </VBox>
     </top>

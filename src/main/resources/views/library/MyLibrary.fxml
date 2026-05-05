@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.library.MyLibraryController"
+            style="-fx-background-color: #f0f4f8;">
+    <stylesheets>
+        <URL value="@../../css/library.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox style="-fx-background-color: linear-gradient(to right, #1a1a2e, #16213e, #0f3460);
+                     -fx-padding: 24 32 0 32;" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox HBox.hgrow="ALWAYS" spacing="4">
+                    <Label text="My Library"
+                           style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                    <Label fx:id="lblCount" text="0 books"
+                           style="-fx-font-size: 13; -fx-text-fill: rgba(255,255,255,0.55);"/>
+                </VBox>
+                <TextField fx:id="searchField" promptText="Search your books..."
+                           prefWidth="240"
+                           style="-fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 10;
+                                  -fx-background-radius: 10; -fx-padding: 9 14;
+                                  -fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white;
+                                  -fx-prompt-text-fill: rgba(255,255,255,0.4);"/>
+                <Button text="Browse Store" onAction="#handleBrowse"
+                        style="-fx-background-color: linear-gradient(to right, #6366f1, #8b5cf6);
+                               -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;
+                               -fx-padding: 10 22; -fx-cursor: hand;
+                               -fx-effect: dropshadow(gaussian, rgba(99,102,241,0.4), 8, 0, 0, 3);"/>
+            </HBox>
+
+            <!-- Tab bar -->
+            <HBox spacing="0">
+                <Button fx:id="tabBooks" text="📚 Purchased Books" onAction="#showBooks"
+                        style="-fx-background-color: rgba(255,255,255,0.15); -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-background-radius: 10 10 0 0;
+                               -fx-padding: 10 22; -fx-cursor: hand; -fx-font-size: 13;
+                               -fx-border-color: transparent;"/>
+                <Button fx:id="tabLoans" text="🔖 My Loans" onAction="#showLoans"
+                        style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.6);
+                               -fx-font-weight: bold; -fx-background-radius: 10 10 0 0;
+                               -fx-padding: 10 22; -fx-cursor: hand; -fx-font-size: 13;
+                               -fx-border-color: transparent;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane>
+            <!-- Books grid -->
+            <ScrollPane fx:id="scrollBooks" fitToWidth="true"
+                        style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                <FlowPane fx:id="booksGrid" hgap="22" vgap="22" style="-fx-padding: 28;"/>
+            </ScrollPane>
+
+            <!-- Loans list -->
+            <ScrollPane fx:id="scrollLoans" fitToWidth="true" visible="false" managed="false"
+                        style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                <VBox fx:id="loansContainer" spacing="12" style="-fx-padding: 28;"/>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

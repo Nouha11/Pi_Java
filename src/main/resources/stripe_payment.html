@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Payment</title>
+    <!-- Stripe.js — loads the secure card element -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 24px;
+        }
+        .amount-badge {
+            display: inline-block;
+            background: #d1e7dd;
+            color: #0a3622;
+            font-weight: 700;
+            font-size: 18px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        /* Stripe mounts its iframe into this div */
+        #card-element {
+            border: 1.5px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        #card-element.StripeElement--focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+        }
+        #card-element.StripeElement--invalid {
+            border-color: #dc3545;
+        }
+        #card-errors {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 8px;
+            min-height: 18px;
+        }
+        #submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: background 0.2s;
+        }
+        #submit-btn:hover { background: #0b5ed7; }
+        #submit-btn:disabled { background: #6c757d; cursor: not-allowed; }
+        .lock-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #cff4fc;
+            border: 1px solid #9eeaf9;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #055160;
+        }
+        #spinner { display: none; }
+        #submit-btn.loading #spinner { display: inline; }
+        #submit-btn.loading #btn-text { display: none; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2 id="book-title">Complete Payment</h2>
+    <p class="subtitle">Secure payment powered by Stripe</p>
+    <div class="amount-badge" id="amount-display">$0.00</div>
+
+    <form id="payment-form">
+        <label for="card-element">Card Details</label>
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>
+
+        <button id="submit-btn" type="submit">
+            <span id="spinner">⏳</span>
+            <span id="btn-text">🔒 Pay Now</span>
+        </button>
+    </form>
+
+    <div class="lock-note">
+        🔒 Your payment is encrypted and secure. We never store your card number.
+    </div>
+</div>
+
+<script>
+    // publishableKey and clientSecret are injected by Java before loading this page
+    var stripe = Stripe(window.PUBLISHABLE_KEY);
+    var elements = stripe.elements();
+
+    // Style the Stripe card element to match our UI
+    var cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '15px',
+                color: '#212529',
+                fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+                '::placeholder': { color: '#adb5bd' }
+            },
+            invalid: { color: '#dc3545' }
+        }
+    });
+    cardElement.mount('#card-element');
+
+    // Show inline validation errors as the user types
+    cardElement.on('change', function(event) {
+        document.getElementById('card-errors').textContent = event.error ? event.error.message : '';
+    });
+
+    // Set book title and amount from Java-injected variables
+    if (window.BOOK_TITLE) document.getElementById('book-title').textContent = window.BOOK_TITLE;
+    if (window.AMOUNT_DISPLAY) document.getElementById('amount-display').textContent = window.AMOUNT_DISPLAY;
+
+    document.getElementById('payment-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        // Confirm the payment using the client_secret from Java
+        var result = await stripe.confirmCardPayment(window.CLIENT_SECRET, {
+            payment_method: { card: cardElement }
+        });
+
+        if (result.error) {
+            // Show error to user
+            document.getElementById('card-errors').textContent = result.error.message;
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        } else if (result.paymentIntent.status === 'succeeded') {
+            // Payment succeeded — notify Java via the bridge object
+            if (window.JavaBridge) {
+                window.JavaBridge.onPaymentSuccess(result.paymentIntent.id);
+            }
+        }
+    });
+</script>
+</body>
+</html>

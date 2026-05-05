@@ -199,7 +199,27 @@ public class BookService {
         return null;
     }
 
-    // ── MAPPING ───────────────────────────────────────────────────────────────
+    /**
+     * Returns the top N best-selling books based on completed payment count.
+     */
+    public List<Book> findBestSellers(int limit) {
+        List<Book> list = new ArrayList<>();
+        String sql = "SELECT b.*, COUNT(p.id) as sales_count " +
+                "FROM books b " +
+                "JOIN payments p ON b.id = p.book_id AND p.status = 'COMPLETED' " +
+                "GROUP BY b.id " +
+                "ORDER BY sales_count DESC " +
+                "LIMIT ?";
+        try {
+            PreparedStatement ps = getCnx().prepareStatement(sql);
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(mapRow(rs));
+        } catch (SQLException e) {
+            System.err.println("Error loading best sellers: " + e.getMessage());
+        }
+        return list;
+    }
 
     /**
      * Maps a single ResultSet row to a Book object.
