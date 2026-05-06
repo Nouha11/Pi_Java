@@ -74,6 +74,18 @@ public class UserListController implements Initializable {
     }
 
     private void setupColumns() {
+        if (colSelect != null) {
+            colSelect.setCellValueFactory(c -> {
+                User u = c.getValue();
+                selectedMap.putIfAbsent(u.getId(), new SimpleBooleanProperty(false));
+                SimpleBooleanProperty prop = selectedMap.get(u.getId());
+                prop.addListener((obs, oldVal, newVal) -> updateBulkBar());
+                return prop;
+            });
+            colSelect.setCellFactory(CheckBoxTableCell.forTableColumn(colSelect));
+            colSelect.setEditable(true);
+            tableUsers.setEditable(true);
+        }
         // Show flag emoji + username
         colUsername.setCellValueFactory(c -> {
             User u = c.getValue();
