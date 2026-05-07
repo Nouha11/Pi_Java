@@ -169,6 +169,8 @@ public class ProfileController implements Initializable {
             showImageInAvatar(new Image(dest.toUri().toString(), 150, 150, true, true));
             if (lblGravatarInfo != null) lblGravatarInfo.setText("Custom photo");
             showMsg("Profile picture updated!", false);
+            // Refresh navbar avatar
+            controllers.NovaDashboardController.refreshNavAvatar(picPath);
         } catch (IOException | SQLException e) {
             showMsg("Upload failed: " + e.getMessage(), true);
         }
@@ -187,6 +189,7 @@ public class ProfileController implements Initializable {
             if (paneInitials != null) { paneInitials.setVisible(true); paneInitials.setManaged(true); }
             if (lblGravatarInfo != null) lblGravatarInfo.setText("No photo uploaded");
             showMsg("Profile picture removed.", false);
+            controllers.NovaDashboardController.refreshNavAvatar(null);
         } catch (SQLException e) {
             showMsg("Error: " + e.getMessage(), true);
         }
