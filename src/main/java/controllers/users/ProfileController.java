@@ -61,7 +61,7 @@ public class ProfileController implements Initializable {
 
     // Avatars stored in user home — works on every machine
     private static final String UPLOAD_DIR =
-        System.getProperty("user.home") + File.separator + "nova_avatars" + File.separator;
+            System.getProperty("user.home") + File.separator + "nova_avatars" + File.separator;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -111,11 +111,11 @@ public class ProfileController implements Initializable {
         lblRoleBadge.setText(currentUser.getRole().name().replace("ROLE_", ""));
         if (lblXp != null) lblXp.setText(String.valueOf(currentUser.getXp()));
         lblStatus.setText(currentUser.isBanned() ? "Banned"
-                        : currentUser.isActive()  ? "Active" : "Inactive");
+                : currentUser.isActive()  ? "Active" : "Inactive");
         lblVerified.setText(currentUser.isVerified() ? "Yes" : "No");
         if (currentUser.getCreatedAt() != null)
             lblCreatedAt.setText(currentUser.getCreatedAt()
-                .format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
+                    .format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
         else lblCreatedAt.setText("-");
         if (lblGravatarInfo   != null) lblGravatarInfo.setText("");
         if (lblGravatarStatus != null) lblGravatarStatus.setText("");
@@ -155,7 +155,7 @@ public class ProfileController implements Initializable {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Choose Profile Picture");
         chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"));
         Stage stage = (Stage) btnUploadPic.getScene().getWindow();
         File selected = chooser.showOpenDialog(stage);
         if (selected == null) return;
@@ -169,8 +169,10 @@ public class ProfileController implements Initializable {
             showImageInAvatar(new Image(dest.toUri().toString(), 150, 150, true, true));
             if (lblGravatarInfo != null) lblGravatarInfo.setText("Custom photo");
             showMsg("Profile picture updated!", false);
-            // Refresh navbar avatar
+
+            // Re-enabled: Immediately updates the Navbar avatar
             controllers.NovaDashboardController.refreshNavAvatar(picPath);
+
         } catch (IOException | SQLException e) {
             showMsg("Upload failed: " + e.getMessage(), true);
         }
@@ -189,7 +191,10 @@ public class ProfileController implements Initializable {
             if (paneInitials != null) { paneInitials.setVisible(true); paneInitials.setManaged(true); }
             if (lblGravatarInfo != null) lblGravatarInfo.setText("No photo uploaded");
             showMsg("Profile picture removed.", false);
+
+            // Re-enabled: Clears the Navbar avatar (falls back to Gravatar/Initials)
             controllers.NovaDashboardController.refreshNavAvatar(null);
+
         } catch (SQLException e) {
             showMsg("Error: " + e.getMessage(), true);
         }
@@ -224,14 +229,14 @@ public class ProfileController implements Initializable {
     private VBox buildFavoriteCard(Game game) {
         boolean isMini = "MINI_GAME".equals(game.getCategory());
         StackPane iconCircle = utils.TwemojiUtil.circle(
-            typeEmoji(game.getType()), 64, typeGradient(game.getType()), 38);
+                typeEmoji(game.getType()), 64, typeGradient(game.getType()), 38);
         iconCircle.setMaxSize(64, 64);
         Label title = new Label(game.getName());
         title.setStyle("-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1e2a5e;");
         title.setWrapText(true); title.setMaxWidth(180); title.setAlignment(Pos.CENTER);
         HBox badges = new HBox(6,
-            badge(game.getType(), typeBadgeBg(game.getType()), typeBadgeFg(game.getType())),
-            badge(game.getDifficulty(), diffBg(game.getDifficulty()), diffFg(game.getDifficulty())));
+                badge(game.getType(), typeBadgeBg(game.getType()), typeBadgeFg(game.getType())),
+                badge(game.getDifficulty(), diffBg(game.getDifficulty()), diffFg(game.getDifficulty())));
         badges.setAlignment(Pos.CENTER);
         HBox rewardRow;
         if (isMini) {
@@ -250,20 +255,20 @@ public class ProfileController implements Initializable {
         Button btnPlay = new Button("Play Now");
         btnPlay.setMaxWidth(Double.MAX_VALUE);
         btnPlay.setStyle("-fx-background-color:" + typeGradient(game.getType()) + ";-fx-text-fill:white;" +
-                         "-fx-font-weight:bold;-fx-font-size:13px;-fx-background-radius:8;-fx-padding:9 0;-fx-cursor:hand;");
+                "-fx-font-weight:bold;-fx-font-size:13px;-fx-background-radius:8;-fx-padding:9 0;-fx-cursor:hand;");
         btnPlay.setOnAction(e -> launchGame(game));
         Button btnRemove = new Button("Remove from Favorites");
         btnRemove.setMaxWidth(Double.MAX_VALUE);
         btnRemove.setStyle("-fx-background-color:#fff5f5;-fx-text-fill:#e53e3e;-fx-font-size:12px;" +
-                           "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
-                           "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;");
+                "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
+                "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;");
         btnRemove.setOnMouseEntered(e -> btnRemove.setStyle(
-            "-fx-background-color:#e53e3e;-fx-text-fill:white;-fx-font-size:12px;" +
-            "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;"));
+                "-fx-background-color:#e53e3e;-fx-text-fill:white;-fx-font-size:12px;" +
+                        "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;"));
         btnRemove.setOnMouseExited(e -> btnRemove.setStyle(
-            "-fx-background-color:#fff5f5;-fx-text-fill:#e53e3e;-fx-font-size:12px;" +
-            "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
-            "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;"));
+                "-fx-background-color:#fff5f5;-fx-text-fill:#e53e3e;-fx-font-size:12px;" +
+                        "-fx-font-weight:bold;-fx-background-radius:8;-fx-padding:7 0;-fx-cursor:hand;" +
+                        "-fx-border-color:#fed7d7;-fx-border-radius:8;-fx-border-width:1;"));
         btnRemove.setOnAction(e -> {
             try {
                 favService.removeFavorite(currentUser.getId(), game.getId());
@@ -281,12 +286,12 @@ public class ProfileController implements Initializable {
         card.setPadding(new Insets(18, 14, 18, 14));
         card.setPrefWidth(210);
         card.setStyle("-fx-background-color:white;-fx-background-radius:14;" +
-                      "-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;" +
-                      "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);");
+                "-fx-border-color:#e4e8f0;-fx-border-radius:14;-fx-border-width:1;" +
+                "-fx-effect:dropshadow(gaussian,rgba(0,0,0,0.07),10,0,0,3);");
         card.setOnMouseEntered(e -> card.setStyle(card.getStyle()
-            .replace("rgba(0,0,0,0.07)", "rgba(59,79,216,0.15)").replace("#e4e8f0", "#c3c9f5")));
+                .replace("rgba(0,0,0,0.07)", "rgba(59,79,216,0.15)").replace("#e4e8f0", "#c3c9f5")));
         card.setOnMouseExited(e -> card.setStyle(card.getStyle()
-            .replace("rgba(59,79,216,0.15)", "rgba(0,0,0,0.07)").replace("#c3c9f5", "#e4e8f0")));
+                .replace("rgba(59,79,216,0.15)", "rgba(0,0,0,0.07)").replace("#c3c9f5", "#e4e8f0")));
         return card;
     }
 
@@ -313,7 +318,7 @@ public class ProfileController implements Initializable {
     private void launchGame(models.gamification.Game game) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/views/gamification/game_play.fxml"));
+                    getClass().getResource("/views/gamification/game_play.fxml"));
             javafx.scene.Parent view = loader.load();
             controllers.gamification.GamePlayController ctrl = loader.getController();
             ctrl.setGame(game);
@@ -342,8 +347,8 @@ public class ProfileController implements Initializable {
         } else { currentOk = current.equals(storedHash); }
         if (!currentOk) { showMsg("Current password is incorrect.", true); return; }
         List<String> errors = ValidationUtil.validateUser(
-            currentUser.getEmail(), currentUser.getUsername(),
-            newPwd, currentUser.getRole().name(), true);
+                currentUser.getEmail(), currentUser.getUsername(),
+                newPwd, currentUser.getRole().name(), true);
         if (!errors.isEmpty()) { showMsg(errors.get(0), true); return; }
         if (!newPwd.equals(confirm)) { showMsg("New passwords do not match.", true); return; }
         try {
@@ -386,7 +391,7 @@ public class ProfileController implements Initializable {
                 mainLayout.setCenter(root);
             } else {
                 controllers.NovaDashboardController.setView(
-                    FXMLLoader.load(getClass().getResource("/views/studysession/UserStudyDashboard.fxml")));
+                        FXMLLoader.load(getClass().getResource("/views/studysession/UserStudyDashboard.fxml")));
             }
         } catch (Exception e) { showMsg("Navigation error: " + e.getMessage(), true); }
     }
@@ -397,7 +402,7 @@ public class ProfileController implements Initializable {
     private void onManage2FA() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/views/users/2fa-setup.fxml"));
+                    getClass().getResource("/views/users/2fa-setup.fxml"));
             javafx.scene.Parent root = loader.load();
             controllers.users.TwoFactorSetupController ctrl = loader.getController();
             ctrl.setCurrentUser(currentUser);
@@ -419,8 +424,8 @@ public class ProfileController implements Initializable {
     private void showMsg(String msg, boolean isError) {
         lblPwdMsg.setText(msg);
         lblPwdMsg.setStyle(isError
-            ? "-fx-text-fill:#dc2626;-fx-background-color:#fef2f2;-fx-padding:10 14;-fx-background-radius:8;"
-            : "-fx-text-fill:#059669;-fx-background-color:#f0fdf4;-fx-padding:10 14;-fx-background-radius:8;");
+                ? "-fx-text-fill:#dc2626;-fx-background-color:#fef2f2;-fx-padding:10 14;-fx-background-radius:8;"
+                : "-fx-text-fill:#059669;-fx-background-color:#f0fdf4;-fx-padding:10 14;-fx-background-radius:8;");
         lblPwdMsg.setVisible(true);
         lblPwdMsg.setManaged(true);
     }
@@ -447,7 +452,7 @@ public class ProfileController implements Initializable {
     private void onOpenEditProfile() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/views/users/edit-profile.fxml"));
+                    getClass().getResource("/views/users/edit-profile.fxml"));
             javafx.scene.Parent root = loader.load();
             EditProfileController ctrl = loader.getController();
             ctrl.setCurrentUser(currentUser, () -> {
@@ -455,7 +460,7 @@ public class ProfileController implements Initializable {
                 javafx.application.Platform.runLater(() -> {
                     try {
                         javafx.fxml.FXMLLoader pl = new javafx.fxml.FXMLLoader(
-                            getClass().getResource("/views/users/profile.fxml"));
+                                getClass().getResource("/views/users/profile.fxml"));
                         javafx.scene.Parent pv = pl.load();
                         ProfileController pc = pl.getController();
                         pc.setCurrentUser(currentUser, mainLayout, previousView);

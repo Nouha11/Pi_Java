@@ -35,11 +35,15 @@ import models.users.User;
 import controllers.users.ProfileController;
 import controllers.gamification.GameLauncherController;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
 public class NovaDashboardController {
+
+    // --- Added Static Instance for Cross-Controller Communication ---
+    private static NovaDashboardController instance;
 
     @FXML private BorderPane mainAppUI;
     @FXML private StackPane splashScreen;
@@ -66,7 +70,6 @@ public class NovaDashboardController {
     private Popup themePopup;
     private ContextMenu coursesDropdown;
 
-    // --- Notification Components Restored ---
     @FXML private StackPane notificationPane;
     @FXML private StackPane badgePane;
     @FXML private Label notificationCount;
@@ -76,6 +79,9 @@ public class NovaDashboardController {
 
     @FXML
     public void initialize() {
+        // Set the static instance so ProfileController can find it
+        instance = this;
+
         Platform.runLater(() -> {
             if (mainAppUI != null && mainAppUI.getScene() != null) {
                 Stage stage = (Stage) mainAppUI.getScene().getWindow();
@@ -115,15 +121,41 @@ public class NovaDashboardController {
             boolean isTutor = user.getRole() == User.Role.ROLE_TUTOR;
             if (btnGames   != null) { btnGames.setVisible(!isTutor);   btnGames.setManaged(!isTutor); }
             if (btnRewards != null) { btnRewards.setVisible(!isTutor); btnRewards.setManaged(!isTutor); }
-            loadNavGravatarAsync(user.getEmail(), user.getUsername());
 
-            // Restored Notification Logic
+            // Check for custom avatar before loading gravatar
+            refreshAvatarUI(user.getProfilePicture());
+
             notificationService = new services.NotificationService();
             startNotificationPoller();
         }
 
         if (user != null && user.getRole() == User.Role.ROLE_TUTOR) {
             Platform.runLater(this::setupTutorCoursesDropdown);
+        }
+    }
+
+    // --- NEW: Public static method for ProfileController to call ---
+    public static void refreshNavAvatar(String imagePath) {
+        if (instance != null) {
+            Platform.runLater(() -> instance.refreshAvatarUI(imagePath));
+        }
+    }
+
+    // --- NEW: Logic to load the custom image or fallback to Gravatar ---
+    private void refreshAvatarUI(String picPath) {
+        if (picPath != null && !picPath.isBlank()) {
+            File f = new File(picPath);
+            if (f.exists()) {
+                Image img = new Image(f.toURI().toString(), 120, 120, true, true);
+                if (circleNavAvatar != null) circleNavAvatar.setFill(new ImagePattern(img));
+                if (lblNavInitials != null) lblNavInitials.setVisible(false);
+                return; // Successfully loaded custom image!
+            }
+        }
+
+        // Fallback to Gravatar/Initials if no custom image exists
+        if (currentUser != null) {
+            loadNavGravatarAsync(currentUser.getEmail(), currentUser.getUsername());
         }
     }
 
