@@ -19,9 +19,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Popup;
 import javafx.scene.image.Image;
@@ -42,6 +44,7 @@ public class NovaDashboardController {
     @FXML private BorderPane mainAppUI;
     @FXML private StackPane splashScreen;
     @FXML private ImageView splashLogo;
+    @FXML private Region bgOverlay;
 
     @FXML private StackPane contentArea;
     private static StackPane staticContentArea;
@@ -53,23 +56,23 @@ public class NovaDashboardController {
 
     private User currentUser;
     @FXML private StackPane avatarPane;
-    @FXML private javafx.scene.layout.HBox navBar;
-    @FXML private ImageView  imgNavAvatar;
-    @FXML private Circle     circleNavAvatar;
-    @FXML private Label      lblNavInitials;
-    @FXML private Button     btnTheme;
+    @FXML private VBox navBar;
+    private boolean isSidebarVisible = true;
+    @FXML private Circle circleNavAvatar;
+    @FXML private Label lblNavInitials;
+    @FXML private Button btnTheme;
+
     private final services.users.GravatarService gravatarService = new services.users.GravatarService();
-
     private Popup themePopup;
-    private Popup notificationPopup;
+    private ContextMenu coursesDropdown;
 
+    // --- Notification Components Restored ---
     @FXML private StackPane notificationPane;
     @FXML private StackPane badgePane;
     @FXML private Label notificationCount;
-
     private Timeline notificationPoller;
     private services.NotificationService notificationService;
-    private ContextMenu coursesDropdown;
+    private Popup notificationPopup;
 
     @FXML
     public void initialize() {
@@ -113,6 +116,8 @@ public class NovaDashboardController {
             if (btnGames   != null) { btnGames.setVisible(!isTutor);   btnGames.setManaged(!isTutor); }
             if (btnRewards != null) { btnRewards.setVisible(!isTutor); btnRewards.setManaged(!isTutor); }
             loadNavGravatarAsync(user.getEmail(), user.getUsername());
+
+            // Restored Notification Logic
             notificationService = new services.NotificationService();
             startNotificationPoller();
         }
@@ -120,81 +125,6 @@ public class NovaDashboardController {
         if (user != null && user.getRole() == User.Role.ROLE_TUTOR) {
             Platform.runLater(this::setupTutorCoursesDropdown);
         }
-    }
-
-    private void redirectToCorrectDashboard(User user) {
-        try {
-            Stage stage = (Stage) mainAppUI.getScene().getWindow();
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
-            Parent root = loader.load();
-            controllers.admin.AdminDashboardController adminCtrl = loader.getController();
-            adminCtrl.setCurrentUser(user);
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1280, 800);
-            scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
-            stage.setTitle("NOVA - Admin Dashboard");
-            stage.setScene(scene);
-            stage.centerOnScreen();
-        } catch (Exception e) {
-            System.err.println("Redirect error: " + e.getMessage());
-        }
-    }
-
-    private void setupTutorCoursesDropdown() {
-        if (btnCourses == null) return;
-
-        // 🔥 Dynamic Theme Logic
-        boolean isDark = ThemeManager.getInstance().getMode() == ThemeManager.Mode.DARK;
-        String bgMain = isDark ? "#1e1e2e" : "white";
-        String border = isDark ? "#3d3d5c" : "#e2e8f0";
-        String textPrim = isDark ? "#e2e8f0" : "#0f172a";
-
-        coursesDropdown = new ContextMenu();
-        coursesDropdown.setStyle("-fx-background-color: " + bgMain + "; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 4); -fx-border-color: " + border + "; -fx-border-radius: 8;");
-
-        MenuItem itemMyCourses = new MenuItem("📚  My Courses");
-        itemMyCourses.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 8 16;");
-        itemMyCourses.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorCourseView.fxml"); });
-
-        MenuItem itemEnrollments = new MenuItem("📋  Enrollment Requests");
-        itemEnrollments.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 8 16;");
-        itemEnrollments.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/EnrollmentRequestsView.fxml"); });
-
-        MenuItem itemStudentProgress = new MenuItem("👥  Student Progress");
-        itemStudentProgress.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 8 16;");
-        itemStudentProgress.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorProgressMonitorView.fxml"); });
-
-        MenuItem itemAnalytics = new MenuItem("📊  Analytics");
-        itemAnalytics.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 8 16;");
-        itemAnalytics.setOnAction(e -> { setActiveButton(btnCourses); loadTutorAnalytics(); });
-
-        MenuItem itemCalendar = new MenuItem("📅  Calendar");
-        itemCalendar.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 8 16;");
-        itemCalendar.setOnAction(e -> { setActiveButton(btnCourses); loadTutorCalendar(); });
-
-        coursesDropdown.getItems().addAll(itemMyCourses, itemEnrollments, itemStudentProgress, new SeparatorMenuItem(), itemAnalytics, itemCalendar);
-
-        btnCourses.setOnAction(null);
-        btnCourses.setOnAction(event -> coursesDropdown.show(btnCourses, javafx.geometry.Side.BOTTOM, 0, 4));
-    }
-
-    private void loadTutorAnalytics() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/TutorAnalyticsDashboardView.fxml"));
-            Parent view = loader.load();
-            controllers.studysession.TutorAnalyticsDashboardController ctrl = loader.getController();
-            if (currentUser != null) ctrl.setTutorId(currentUser.getId());
-            setView(view);
-        } catch (Exception e) {}
-    }
-
-    private void loadTutorCalendar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/CalendarPlannerView.fxml"));
-            Parent view = loader.load();
-            controllers.studysession.CalendarPlannerController ctrl = loader.getController();
-            if (currentUser != null) ctrl.setCurrentUser(currentUser);
-            setView(view);
-        } catch (Exception e) {}
     }
 
     private void startNotificationPoller() {
@@ -223,27 +153,26 @@ public class NovaDashboardController {
             notificationPopup.hide(); return;
         }
 
-        // 🔥 Dynamic Theme Logic
         boolean isDark = ThemeManager.getInstance().getMode() == ThemeManager.Mode.DARK;
-        String bgMain = isDark ? "#1e1e2e" : "white";
-        String bgHeader = isDark ? "#16162a" : "#f8fafc";
-        String bgRowUnread = isDark ? "#252535" : "white";
-        String bgRowRead = isDark ? "#1e1e2e" : "#f8fafc";
-        String border = isDark ? "#3d3d5c" : "#cbd5e1";
-        String textPrim = isDark ? "#e2e8f0" : "#0f172a";
+        String bgMain = isDark ? "rgba(24, 24, 27, 0.95)" : "rgba(255, 255, 255, 0.95)";
+        String bgHeader = isDark ? "rgba(9, 9, 11, 0.95)" : "rgba(248, 250, 252, 0.95)";
+        String bgRowUnread = isDark ? "rgba(39, 39, 42, 0.8)" : "white";
+        String bgRowRead = isDark ? "transparent" : "#f8fafc";
+        String border = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+        String textPrim = isDark ? "#f1f5f9" : "#0f172a";
         String textSec = isDark ? "#94a3b8" : "#475569";
-        String hoverBg = isDark ? "#2d2d4e" : "#eff6ff";
+        String hoverBg = isDark ? "rgba(63, 63, 70, 0.8)" : "#eff6ff";
 
         notificationPopup = new Popup();
         notificationPopup.setAutoHide(true);
 
         VBox rootBox = new VBox();
-        rootBox.setStyle("-fx-background-color: " + bgMain + "; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: " + border + "; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 8); -fx-min-width: 360; -fx-max-width: 360;");
+        rootBox.setStyle("-fx-background-color: " + bgMain + "; -fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: " + border + "; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 40, 0, 0, 15); -fx-min-width: 420; -fx-max-width: 420;");
 
         HBox header = new HBox();
-        header.setStyle("-fx-background-color: " + bgHeader + "; -fx-background-radius: 12 12 0 0; -fx-padding: 15; -fx-border-color: transparent transparent " + border + " transparent; -fx-border-width: 0 0 1 0;");
+        header.setStyle("-fx-background-color: " + bgHeader + "; -fx-background-radius: 20 20 0 0; -fx-padding: 25 30; -fx-border-color: transparent transparent " + border + " transparent; -fx-border-width: 0 0 1 0;");
         Label headerTitle = new Label("Notifications");
-        headerTitle.setStyle("-fx-font-weight: 900; -fx-font-size: 16px; -fx-text-fill: " + textPrim + ";");
+        headerTitle.setStyle("-fx-font-weight: 900; -fx-font-size: 18px; -fx-text-fill: " + textPrim + ";");
         header.getChildren().add(headerTitle);
         rootBox.getChildren().add(header);
 
@@ -251,47 +180,47 @@ public class NovaDashboardController {
         ScrollPane scroll = new ScrollPane(itemsBox);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setFitToWidth(true);
-        scroll.setMaxHeight(400);
+        scroll.setMaxHeight(500);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;");
 
         List<models.Notification> notifs = notificationService.getUserNotifications(currentUser.getId());
 
         if (notifs.isEmpty()) {
-            Label emptyLbl = new Label("You're all caught up!");
-            emptyLbl.setStyle("-fx-text-fill: " + textSec + "; -fx-padding: 20; -fx-font-weight: bold; -fx-font-size: 14px;");
+            Label emptyLbl = new Label("You're all caught up! Zero notifications.");
+            emptyLbl.setStyle("-fx-text-fill: " + textSec + "; -fx-padding: 40; -fx-font-weight: bold; -fx-font-size: 14px; -fx-alignment: center;");
             itemsBox.getChildren().add(emptyLbl);
         } else {
             for (models.Notification n : notifs) {
-                HBox row = new HBox(12);
+                HBox row = new HBox(15);
                 row.setAlignment(Pos.CENTER_LEFT);
-                row.setPadding(new Insets(12, 15, 12, 15));
+                row.setPadding(new Insets(20, 25, 20, 25));
 
-                String rowBaseStyle = "-fx-background-color: " + (n.isRead() ? bgRowRead : bgRowUnread) + "; -fx-cursor: hand;";
+                String rowBaseStyle = "-fx-background-color: " + (n.isRead() ? bgRowRead : bgRowUnread) + "; -fx-cursor: hand; -fx-border-color: transparent transparent " + border + " transparent; -fx-border-width: 0 0 1 0;";
                 row.setStyle(rowBaseStyle);
 
                 StackPane iconBg = new StackPane();
-                iconBg.setPrefSize(40, 40); iconBg.setMinSize(40, 40);
-                String hexColor = n.getColor() != null ? n.getColor() : "#3b82f6";
-                iconBg.setStyle("-fx-background-color: " + hexColor + "15; -fx-background-radius: 50;");
+                iconBg.setPrefSize(45, 45); iconBg.setMinSize(45, 45);
+                String hexColor = n.getColor() != null ? n.getColor() : "#00f2fe";
+                iconBg.setStyle("-fx-background-color: " + hexColor + "20; -fx-background-radius: 50;");
 
                 String iconStr = n.getIcon();
                 if (iconStr == null || iconStr.startsWith("bi-") || iconStr.startsWith("fa-") || iconStr.length() > 4) iconStr = "📌";
-                Label iconLbl = new Label(iconStr); iconLbl.setStyle("-fx-font-size: 18px;");
+                Label iconLbl = new Label(iconStr); iconLbl.setStyle("-fx-font-size: 20px;");
                 iconBg.getChildren().add(iconLbl);
 
-                VBox textVBox = new VBox(4); HBox.setHgrow(textVBox, Priority.ALWAYS);
-                Label title = new Label(n.getTitle()); title.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: " + textPrim + ";");
-                Label msg = new Label(n.getMessage()); msg.setWrapText(true); msg.setMaxWidth(250); msg.setStyle("-fx-text-fill: " + textSec + "; -fx-font-size: 13px; -fx-line-spacing: 2px;");
+                VBox textVBox = new VBox(6); HBox.setHgrow(textVBox, Priority.ALWAYS);
+                Label title = new Label(n.getTitle()); title.setStyle("-fx-font-weight: 900; -fx-font-size: 14px; -fx-text-fill: " + textPrim + ";");
+                Label msg = new Label(n.getMessage()); msg.setWrapText(true); msg.setMaxWidth(280); msg.setStyle("-fx-text-fill: " + textSec + "; -fx-font-size: 13px; -fx-line-spacing: 3px;");
 
                 long min = (System.currentTimeMillis() - n.getCreatedAt().getTime()) / 60000;
                 Label time = new Label(min == 0 ? "Just now" : (min < 60 ? min + "m ago" : (min/60) + "h ago"));
                 time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: bold;");
 
                 textVBox.getChildren().addAll(title, msg, time);
-                Circle unreadDot = new Circle(4, Color.web("#2563eb")); unreadDot.setVisible(!n.isRead());
+                Circle unreadDot = new Circle(5, Color.web("#00f2fe")); unreadDot.setVisible(!n.isRead());
                 row.getChildren().addAll(iconBg, textVBox, unreadDot);
 
-                row.setOnMouseEntered(e -> row.setStyle("-fx-background-color: " + hoverBg + "; -fx-cursor: hand;"));
+                row.setOnMouseEntered(e -> row.setStyle(rowBaseStyle.replace(n.isRead() ? bgRowRead : bgRowUnread, hoverBg)));
                 row.setOnMouseExited(e -> row.setStyle(rowBaseStyle));
 
                 row.setOnMouseClicked(e -> {
@@ -319,7 +248,80 @@ public class NovaDashboardController {
         rootBox.getChildren().add(scroll);
         notificationPopup.getContent().add(rootBox);
         Point2D p = notificationPane.localToScreen(0.0, 0.0);
-        notificationPopup.show(notificationPane.getScene().getWindow(), p.getX() - 320, p.getY() + 40);
+        notificationPopup.show(notificationPane.getScene().getWindow(), p.getX() - 360, p.getY() + 50);
+    }
+
+    private void redirectToCorrectDashboard(User user) {
+        try {
+            Stage stage = (Stage) mainAppUI.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/AdminDashboard.fxml"));
+            Parent root = loader.load();
+            controllers.admin.AdminDashboardController adminCtrl = loader.getController();
+            adminCtrl.setCurrentUser(user);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1280, 800);
+            scene.getStylesheets().add(getClass().getResource("/css/users.css").toExternalForm());
+            stage.setTitle("NOVA - Admin Dashboard");
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (Exception e) {
+            System.err.println("Redirect error: " + e.getMessage());
+        }
+    }
+
+    private void setupTutorCoursesDropdown() {
+        if (btnCourses == null) return;
+        boolean isDark = ThemeManager.getInstance().getMode() == ThemeManager.Mode.DARK;
+        String bgMain = isDark ? "rgba(24, 24, 27, 0.95)" : "rgba(255, 255, 255, 0.95)";
+        String border = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+        String textPrim = isDark ? "#f8fafc" : "#0f172a";
+
+        coursesDropdown = new ContextMenu();
+        coursesDropdown.setStyle("-fx-background-color: " + bgMain + "; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 30, 0, 0, 10); -fx-border-color: " + border + "; -fx-border-radius: 16; -fx-padding: 8;");
+
+        MenuItem itemMyCourses = new MenuItem("📚  My Courses");
+        itemMyCourses.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 10 20;");
+        itemMyCourses.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorCourseView.fxml"); });
+
+        MenuItem itemEnrollments = new MenuItem("📋  Enrollment Requests");
+        itemEnrollments.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 10 20;");
+        itemEnrollments.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/EnrollmentRequestsView.fxml"); });
+
+        MenuItem itemStudentProgress = new MenuItem("👥  Student Progress");
+        itemStudentProgress.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 10 20;");
+        itemStudentProgress.setOnAction(e -> { setActiveButton(btnCourses); loadPage("/views/studysession/TutorProgressMonitorView.fxml"); });
+
+        MenuItem itemAnalytics = new MenuItem("📊  Analytics");
+        itemAnalytics.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 10 20;");
+        itemAnalytics.setOnAction(e -> { setActiveButton(btnCourses); loadTutorAnalytics(); });
+
+        MenuItem itemCalendar = new MenuItem("📅  Calendar");
+        itemCalendar.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 10 20;");
+        itemCalendar.setOnAction(e -> { setActiveButton(btnCourses); loadTutorCalendar(); });
+
+        coursesDropdown.getItems().addAll(itemMyCourses, itemEnrollments, itemStudentProgress, new SeparatorMenuItem(), itemAnalytics, itemCalendar);
+
+        btnCourses.setOnAction(null);
+        btnCourses.setOnAction(event -> coursesDropdown.show(btnCourses, javafx.geometry.Side.BOTTOM, 0, 15));
+    }
+
+    private void loadTutorAnalytics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/TutorAnalyticsDashboardView.fxml"));
+            Parent view = loader.load();
+            controllers.studysession.TutorAnalyticsDashboardController ctrl = loader.getController();
+            if (currentUser != null) ctrl.setTutorId(currentUser.getId());
+            setView(view);
+        } catch (Exception e) {}
+    }
+
+    private void loadTutorCalendar() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/studysession/CalendarPlannerView.fxml"));
+            Parent view = loader.load();
+            controllers.studysession.CalendarPlannerController ctrl = loader.getController();
+            if (currentUser != null) ctrl.setCurrentUser(currentUser);
+            setView(view);
+        } catch (Exception e) {}
     }
 
     @FXML
@@ -344,12 +346,25 @@ public class NovaDashboardController {
         }
     }
 
+    @FXML
+    private void onToggleSidebar(ActionEvent event) {
+        if (isSidebarVisible) {
+            navBar.setManaged(false);
+            navBar.setVisible(false);
+            isSidebarVisible = false;
+        } else {
+            navBar.setManaged(true);
+            navBar.setVisible(true);
+            isSidebarVisible = true;
+        }
+    }
+
     private void playCinematicStartup() {
-        mainAppUI.setOpacity(0); mainAppUI.setScaleX(0.92); mainAppUI.setScaleY(0.92);
+        mainAppUI.setOpacity(0); mainAppUI.setScaleX(0.97); mainAppUI.setScaleY(0.97);
         ScaleTransition pulse = null;
         if (splashLogo != null) {
             pulse = new ScaleTransition(Duration.millis(800), splashLogo);
-            pulse.setByX(0.08); pulse.setByY(0.08); pulse.setCycleCount(Animation.INDEFINITE); pulse.setAutoReverse(true); pulse.play();
+            pulse.setByX(0.05); pulse.setByY(0.05); pulse.setCycleCount(Animation.INDEFINITE); pulse.setAutoReverse(true); pulse.play();
         }
 
         PauseTransition holdSplash = new PauseTransition(Duration.seconds(1.2));
@@ -357,9 +372,9 @@ public class NovaDashboardController {
 
         holdSplash.setOnFinished(e -> {
             if (finalPulse != null) finalPulse.stop();
-            FadeTransition fadeOutSplash = new FadeTransition(Duration.millis(600), splashScreen); fadeOutSplash.setToValue(0); fadeOutSplash.setOnFinished(event -> splashScreen.setVisible(false));
-            FadeTransition fadeInApp = new FadeTransition(Duration.millis(800), mainAppUI); fadeInApp.setToValue(1);
-            ScaleTransition scaleInApp = new ScaleTransition(Duration.millis(800), mainAppUI); scaleInApp.setToX(1); scaleInApp.setToY(1); scaleInApp.setInterpolator(Interpolator.EASE_BOTH);
+            FadeTransition fadeOutSplash = new FadeTransition(Duration.millis(500), splashScreen); fadeOutSplash.setToValue(0); fadeOutSplash.setOnFinished(event -> splashScreen.setVisible(false));
+            FadeTransition fadeInApp = new FadeTransition(Duration.millis(700), mainAppUI); fadeInApp.setToValue(1);
+            ScaleTransition scaleInApp = new ScaleTransition(Duration.millis(700), mainAppUI); scaleInApp.setToX(1); scaleInApp.setToY(1); scaleInApp.setInterpolator(Interpolator.SPLINE(0.25, 1, 0.5, 1));
             new ParallelTransition(fadeInApp, scaleInApp).play();
             fadeOutSplash.play();
         });
@@ -379,33 +394,29 @@ public class NovaDashboardController {
     @FXML void handleShowStudySessions(ActionEvent event) { setActiveButton(btnCourses); loadPage("/views/studysession/UserStudyDashboard.fxml"); }
     @FXML void handleShowRewards(ActionEvent event) { setActiveButton(btnRewards); loadPage("/views/gamification/user_rewards.fxml"); }
     @FXML void handleShowLeaderboard(ActionEvent event) { loadPage("/views/gamification/leaderboard.fxml"); }
+
     @FXML void handleShowLibrary(ActionEvent event) {
         setActiveButton(btnLibrary);
-        // Show dropdown with Browse Books + My Library
         ContextMenu menu = new ContextMenu();
-        menu.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 10, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-radius: 8;");
+        boolean isDark = ThemeManager.getInstance().getMode() == ThemeManager.Mode.DARK;
+        String bgMain = isDark ? "rgba(24, 24, 27, 0.95)" : "rgba(255, 255, 255, 0.95)";
+        String border = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+        String textPrim = isDark ? "#f8fafc" : "#0f172a";
 
+        menu.setStyle("-fx-background-color: " + bgMain + "; -fx-background-radius: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 30, 0, 0, 10); -fx-border-color: " + border + "; -fx-border-radius: 16; -fx-padding: 10;");
         MenuItem itemBrowse = new MenuItem("📚  Browse Books");
-        itemBrowse.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
+        itemBrowse.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 12 25;");
         itemBrowse.setOnAction(e -> loadPage("/views/library/BookListView.fxml"));
-
         MenuItem itemMyLibrary = new MenuItem("🗂  My Library");
-        itemMyLibrary.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-padding: 8 16;");
+        itemMyLibrary.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + textPrim + "; -fx-padding: 12 25;");
         itemMyLibrary.setOnAction(e -> loadPage("/views/library/MyLibrary.fxml"));
 
         menu.getItems().addAll(itemBrowse, itemMyLibrary);
-        menu.show(btnLibrary, javafx.geometry.Side.BOTTOM, 0, 4);
+        menu.show(btnLibrary, javafx.geometry.Side.BOTTOM, 0, 15);
     }
 
-    @FXML void handleShowForum(ActionEvent event) {
-        setActiveButton(btnForum);
-        loadPage("/views/forum/forum_feed.fxml");
-    }
-
-    @FXML void handleShowQuiz(ActionEvent event) {
-        setActiveButton(btnQuiz);
-        loadPage("/views/quiz/quiz_play_list.fxml");
-    }
+    @FXML void handleShowForum(ActionEvent event) { setActiveButton(btnForum); loadPage("/views/forum/forum_feed.fxml"); }
+    @FXML void handleShowQuiz(ActionEvent event) { setActiveButton(btnQuiz); loadPage("/views/quiz/quiz_play_list.fxml"); }
 
     @FXML void handleShowGamification(ActionEvent event) {
         setActiveButton(btnGames);
@@ -429,6 +440,21 @@ public class NovaDashboardController {
         } catch (Exception e) {}
     }
 
+    public static void setView(Parent view) {
+        if (staticContentArea != null && !staticContentArea.getChildren().isEmpty()) previousView = (Parent) staticContentArea.getChildren().get(0);
+        if (staticContentArea != null) {
+            staticContentArea.getChildren().clear();
+            ThemeManager.getInstance().applyToParent(view);
+            staticContentArea.getChildren().add(view);
+
+            view.setOpacity(0); view.setTranslateY(40);
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), view); fadeIn.setToValue(1.0);
+            TranslateTransition slideUp = new TranslateTransition(Duration.millis(500), view); slideUp.setToY(0);
+            slideUp.setInterpolator(Interpolator.SPLINE(0.25, 1, 0.5, 1));
+            new ParallelTransition(fadeIn, slideUp).play();
+        }
+    }
+
     public static void loadPage(String fxmlPath) {
         try {
             Parent view = FXMLLoader.load(NovaDashboardController.class.getResource(fxmlPath));
@@ -436,30 +462,17 @@ public class NovaDashboardController {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    public static void setView(Parent view) {
-        if (staticContentArea != null && !staticContentArea.getChildren().isEmpty()) previousView = (Parent) staticContentArea.getChildren().get(0);
-        if (staticContentArea != null) {
-            staticContentArea.getChildren().clear();
-            ThemeManager.getInstance().applyToParent(view);
-            staticContentArea.getChildren().add(view);
-            view.setOpacity(0); view.setTranslateY(30);
-            FadeTransition fadeIn = new FadeTransition(Duration.millis(450), view); fadeIn.setToValue(1.0);
-            TranslateTransition slideUp = new TranslateTransition(Duration.millis(450), view); slideUp.setToY(0); slideUp.setInterpolator(Interpolator.EASE_OUT);
-            new ParallelTransition(fadeIn, slideUp).play();
-        }
-    }
-
     private void loadNavGravatarAsync(String email, String username) {
         String initials = username.length() >= 2 ? username.substring(0, 2).toUpperCase() : username.toUpperCase();
         if (lblNavInitials != null) lblNavInitials.setText(initials);
-        CompletableFuture.supplyAsync(() -> gravatarService.getAvatarUrl(email, 40, "identicon"))
+
+        CompletableFuture.supplyAsync(() -> gravatarService.getAvatarUrl(email, 120, "identicon"))
                 .thenAccept(url -> Platform.runLater(() -> {
                     try {
-                        Image img = new Image(url, 40, 40, true, true, true);
+                        Image img = new Image(url, 120, 120, true, true, true);
                         img.progressProperty().addListener((obs, old, prog) -> {
                             if (prog.doubleValue() >= 1.0 && !img.isError()) {
-                                if (imgNavAvatar != null) { imgNavAvatar.setImage(img); imgNavAvatar.setVisible(true); imgNavAvatar.setManaged(true); }
-                                if (circleNavAvatar != null) circleNavAvatar.setVisible(false);
+                                if (circleNavAvatar != null) circleNavAvatar.setFill(new ImagePattern(img));
                                 if (lblNavInitials != null) lblNavInitials.setVisible(false);
                             }
                         });
@@ -468,12 +481,11 @@ public class NovaDashboardController {
     }
 
     public void applyDarkModeToNodes(boolean dark) {
-        if (mainAppUI != null) mainAppUI.setStyle(dark ? "-fx-background-color: #13131f;" : "-fx-background-color: #f8fafc;");
-        if (navBar != null) navBar.setStyle(dark
-                ? "-fx-background-color: #1a1a2e; -fx-border-color: transparent transparent #2d2d4e transparent; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;"
-                : "-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 0 40 0 40;");
-
-        // 🔥 Force popups to close on theme switch so they rebuild with correct colors
+        if (bgOverlay != null) bgOverlay.setStyle("");
+        if (navBar != null) {
+            navBar.setStyle("-fx-border-color: " + (dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)") +
+                    "; -fx-border-width: 0 1 0 0; -fx-padding: 35 20 35 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 2, 0);");
+        }
         if (themePopup != null && themePopup.isShowing()) { themePopup.hide(); themePopup = null; }
         if (notificationPopup != null && notificationPopup.isShowing()) { notificationPopup.hide(); notificationPopup = null; }
     }
@@ -483,7 +495,7 @@ public class NovaDashboardController {
         if (themePopup == null) buildThemePopup();
         if (themePopup.isShowing()) { themePopup.hide(); return; }
         javafx.geometry.Bounds b = btnTheme.localToScreen(btnTheme.getBoundsInLocal());
-        themePopup.show(btnTheme.getScene().getWindow(), b.getMinX() - 160, b.getMaxY() + 6);
+        themePopup.show(btnTheme.getScene().getWindow(), b.getMinX() - 140, b.getMaxY() + 15);
     }
 
     private javafx.scene.layout.VBox schedulePane;
@@ -493,29 +505,28 @@ public class NovaDashboardController {
         themePopup = new Popup();
         themePopup.setAutoHide(true);
 
-        // 🔥 Dynamic Theme Logic
         boolean isDark = ThemeManager.getInstance().getMode() == ThemeManager.Mode.DARK;
-        String bgMain = isDark ? "#1e1e2e" : "white";
-        String border = isDark ? "#3d3d5c" : "#cbd5e1";
+        String bgMain = isDark ? "rgba(24, 24, 27, 0.95)" : "rgba(255, 255, 255, 0.95)";
+        String border = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
         String textTitle = isDark ? "#94a3b8" : "#64748b";
-        String sepColor = isDark ? "#2d2d4e" : "#e2e8f0";
-        String textMain = isDark ? "#e2e8f0" : "#0f172a";
-        String btnHover = isDark ? "rgba(79,142,247,0.15)" : "#eff6ff";
-        String bgSub = isDark ? "#16162a" : "#f8fafc";
+        String sepColor = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+        String textMain = isDark ? "#f8fafc" : "#0f172a";
+        String btnHover = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+        String bgSub = isDark ? "rgba(9, 9, 11, 0.95)" : "rgba(241, 245, 249, 0.95)";
 
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(0);
-        card.setStyle("-fx-background-color:" + bgMain + "; -fx-border-color:" + border + "; -fx-border-width:1; -fx-border-radius:12; -fx-background-radius:12; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.4),20,0,0,6); -fx-padding:8 0;");
-        card.setPrefWidth(260);
+        card.setStyle("-fx-background-color:" + bgMain + "; -fx-border-color:" + border + "; -fx-border-width:1; -fx-border-radius:20; -fx-background-radius:20; -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.4),30,0,0,15); -fx-padding:10 0;");
+        card.setPrefWidth(280);
 
         javafx.scene.control.Label title = new javafx.scene.control.Label("Appearance");
-        title.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:11px; -fx-font-weight:bold; -fx-padding:6 16 8 16;");
+        title.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:12px; -fx-font-weight:900; -fx-padding:10 20 12 20; -fx-letter-spacing: 1px;");
         card.getChildren().add(title);
 
         javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
         sep.setStyle("-fx-background-color:" + sepColor + ";");
         card.getChildren().add(sep);
 
-        String[] lbls = {"☀  Light", "🌙  Dark", "⏱  Schedule"};
+        String[] lbls = {"☀  Light Theme", "🌙  Dark Theme", "⏱  Automated Schedule"};
         ThemeManager.Mode[] modes = {ThemeManager.Mode.LIGHT, ThemeManager.Mode.DARK, ThemeManager.Mode.SCHEDULED};
 
         for (int i = 0; i < lbls.length; i++) {
@@ -523,7 +534,7 @@ public class NovaDashboardController {
             boolean active = ThemeManager.getInstance().getMode() == m;
             javafx.scene.control.Button btn = new javafx.scene.control.Button(lbls[i]);
             btn.setMaxWidth(Double.MAX_VALUE);
-            btn.setStyle("-fx-background-color:" + (active ? btnHover : "transparent") + "; -fx-text-fill:" + (active ? "#3b82f6" : textMain) + "; -fx-font-size:13px; -fx-font-weight:" + (active ? "bold" : "normal") + "; -fx-padding:10 16; -fx-cursor:hand; -fx-background-radius:0; -fx-alignment:CENTER_LEFT; -fx-pref-width:260;");
+            btn.setStyle("-fx-background-color:" + (active ? btnHover : "transparent") + "; -fx-text-fill:" + (active ? "#00f2fe" : textMain) + "; -fx-font-size:14px; -fx-font-weight:" + (active ? "900" : "bold") + "; -fx-padding:14 25; -fx-cursor:hand; -fx-background-radius:0; -fx-alignment:CENTER_LEFT; -fx-pref-width:280;");
             btn.setOnAction(e -> {
                 if (m == ThemeManager.Mode.LIGHT) { ThemeManager.getInstance().setLight(); themePopup.hide(); themePopup = null; }
                 else if (m == ThemeManager.Mode.DARK) { ThemeManager.getInstance().setDark(); themePopup.hide(); themePopup = null; }
@@ -532,47 +543,43 @@ public class NovaDashboardController {
             card.getChildren().add(btn);
         }
 
-        // Inline schedule pane
-        schedulePane = new javafx.scene.layout.VBox(10);
-        schedulePane.setStyle("-fx-padding:14 16; -fx-background-color:" + bgSub + "; -fx-border-color:transparent transparent " + sepColor + " transparent; -fx-border-width:0 0 1 0;");
+        schedulePane = new javafx.scene.layout.VBox(12);
+        schedulePane.setStyle("-fx-padding:20 25; -fx-background-color:" + bgSub + "; -fx-border-color:transparent transparent " + sepColor + " transparent; -fx-border-width:0 0 1 0;");
         schedulePane.setVisible(false);
         schedulePane.setManaged(false);
 
         javafx.scene.control.Label presetLbl = new javafx.scene.control.Label("QUICK PRESETS");
-        presetLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:10px; -fx-font-weight:bold;");
+        presetLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:11px; -fx-font-weight:900;");
         javafx.scene.control.ComboBox<String> cbPresets = new javafx.scene.control.ComboBox<>();
         cbPresets.getItems().add("-- Custom --");
         cbPresets.getItems().addAll(ThemeManager.PRESETS.keySet());
         cbPresets.setValue("-- Custom --");
         cbPresets.setMaxWidth(Double.MAX_VALUE);
-        cbPresets.setStyle("-fx-background-color:" + (isDark ? "#252535" : "white") + "; -fx-text-fill:" + textMain + "; -fx-border-color:" + border + "; -fx-border-radius:6; -fx-background-radius:6;");
+        cbPresets.setStyle("-fx-background-color:" + (isDark ? "#1e293b" : "white") + "; -fx-text-fill:" + textMain + "; -fx-border-color:" + border + "; -fx-border-radius:10; -fx-background-radius:10; -fx-font-size:13px;");
 
-        // Dark row
-        javafx.scene.control.Label darkLbl = new javafx.scene.control.Label("DARK AT");
-        darkLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:10px; -fx-font-weight:bold;");
+        javafx.scene.control.Label darkLbl = new javafx.scene.control.Label("DARK MODE AT");
+        darkLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:11px; -fx-font-weight:bold;");
         spDarkH = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,20));
         spDarkM = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0,5));
-        spDarkH.setPrefWidth(60); spDarkM.setPrefWidth(60); spDarkH.setEditable(true); spDarkM.setEditable(true);
+        spDarkH.setPrefWidth(65); spDarkM.setPrefWidth(65); spDarkH.setEditable(true); spDarkM.setEditable(true);
         javafx.scene.control.Label colon1 = new javafx.scene.control.Label(":");
-        colon1.setStyle("-fx-text-fill:" + textMain + "; -fx-font-size:16px; -fx-font-weight:bold;");
-        javafx.scene.layout.HBox darkRow = new javafx.scene.layout.HBox(6, spDarkH, colon1, spDarkM);
+        colon1.setStyle("-fx-text-fill:" + textMain + "; -fx-font-size:18px; -fx-font-weight:bold;");
+        javafx.scene.layout.HBox darkRow = new javafx.scene.layout.HBox(8, spDarkH, colon1, spDarkM);
         darkRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-        // Light row
-        javafx.scene.control.Label lightLbl = new javafx.scene.control.Label("LIGHT AT");
-        lightLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:10px; -fx-font-weight:bold;");
+        javafx.scene.control.Label lightLbl = new javafx.scene.control.Label("LIGHT MODE AT");
+        lightLbl.setStyle("-fx-text-fill:" + textTitle + "; -fx-font-size:11px; -fx-font-weight:bold;");
         spLightH = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,23,7));
         spLightM = new javafx.scene.control.Spinner<>(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0,59,0,5));
-        spLightH.setPrefWidth(60); spLightM.setPrefWidth(60); spLightH.setEditable(true); spLightM.setEditable(true);
+        spLightH.setPrefWidth(65); spLightM.setPrefWidth(65); spLightH.setEditable(true); spLightM.setEditable(true);
         javafx.scene.control.Label colon2 = new javafx.scene.control.Label(":");
-        colon2.setStyle("-fx-text-fill:" + textMain + "; -fx-font-size:16px; -fx-font-weight:bold;");
-        javafx.scene.layout.HBox lightRow = new javafx.scene.layout.HBox(6, spLightH, colon2, spLightM);
+        colon2.setStyle("-fx-text-fill:" + textMain + "; -fx-font-size:18px; -fx-font-weight:bold;");
+        javafx.scene.layout.HBox lightRow = new javafx.scene.layout.HBox(8, spLightH, colon2, spLightM);
         lightRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-        // Apply Button
-        javafx.scene.control.Button btnApply = new javafx.scene.control.Button("Apply Schedule");
+        javafx.scene.control.Button btnApply = new javafx.scene.control.Button("Apply Settings");
         btnApply.setMaxWidth(Double.MAX_VALUE);
-        btnApply.setStyle("-fx-background-color:#3b82f6; -fx-text-fill:white; -fx-font-weight:bold; -fx-font-size:12px; -fx-padding:8 0; -fx-background-radius:6; -fx-cursor:hand;");
+        btnApply.setStyle("-fx-background-color: linear-gradient(to right, #4facfe, #00f2fe); -fx-text-fill:#09090b; -fx-font-weight:900; -fx-font-size:14px; -fx-padding:10 0; -fx-background-radius:10; -fx-cursor:hand;");
         btnApply.setOnAction(e -> {
             ThemeManager.getInstance().setScheduled(
                     java.time.LocalTime.of(spDarkH.getValue(), spDarkM.getValue()),

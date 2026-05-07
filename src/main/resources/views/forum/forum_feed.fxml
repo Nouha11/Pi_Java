@@ -61,11 +61,9 @@
             </children>
         </VBox>
 
-        <!-- Right Side Panel -->
         <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: transparent;">
             <children>
 
-                <!-- Header Elements (Banner, Search, Sort) -->
                 <VBox spacing="25.0" style="-fx-padding: 30 50 15 50;">
                     <children>
                         <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: linear-gradient(to right, #1e293b, #334155); -fx-background-radius: 16; -fx-padding: 25 30; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5);">
@@ -123,10 +121,8 @@
                     </children>
                 </VBox>
 
-                <!-- ScrollPane now touches the absolute right edge -->
                 <ScrollPane fx:id="mainScrollPane" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                     <content>
-                        <!-- Content keeps the 50px padding to align with the banner -->
                         <VBox spacing="20.0" style="-fx-padding: 0 50 30 50;">
                             <children>
                                 <VBox fx:id="postsContainer" spacing="20.0" />

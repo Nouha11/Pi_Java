@@ -1,0 +1,73 @@
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-background-color: transparent;
+}
+
+/* Light Theme Colors */
+.bg-background { -fx-background-color: #f1f5f9; }
+.bg-surface { -fx-background-color: #ffffff; }
+.text-primary { -fx-text-fill: #0f172a; }
+.text-secondary { -fx-text-fill: #64748b; }
+
+/* Hero Banner */
+.hero-banner {
+    -fx-background-color: linear-gradient(to right, #1e3a8a, #3b82f6);
+    -fx-background-radius: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 25, 0, 0, 10);
+}
+.hero-banner-right {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 0 20px 20px 0;
+}
+
+/* Cards */
+.modern-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: rgba(0, 0, 0, 0.05);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 15, 0, 0, 5);
+}
+.modern-card-image-container {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 15px 15px 0 0;
+}
+.modern-card:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: rgba(59, 130, 246, 0.4);
+    -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.2), 30, 0, 0, 0);
+    -fx-cursor: hand;
+}
+
+/* Buttons & Nav */
+.action-btn {
+    -fx-background-color: linear-gradient(to right, #f97316, #ea580c);
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 16px;
+    -fx-padding: 16 0;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(234, 88, 12, 0.3), 20, 0, 0, 5);
+}
+.action-btn:hover { -fx-background-color: linear-gradient(to right, #fb923c, #f97316); }
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748b;
+    -fx-font-weight: 800;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+.nav-btn:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.03);
+    -fx-text-fill: #0f172a;
+}
+.nav-btn-active, .nav-btn-hub-active {
+    -fx-background-color: rgba(59, 130, 246, 0.1);
+    -fx-text-fill: #3b82f6;
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 0 0 0 4px;
+    -fx-border-radius: 0 8px 8px 0;
+}

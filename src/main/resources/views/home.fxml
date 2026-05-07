@@ -3,81 +3,101 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.SVGPath?>
 
 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.HomeController">
 
-    <VBox spacing="30.0" style="-fx-padding: 30 40;">
+    <VBox spacing="40.0" style="-fx-padding: 40 50 60 50;">
 
-        <StackPane style="-fx-background-radius: 8; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);">
-            <Pane fx:id="animationPane" style="-fx-background-color: linear-gradient(to right, #0f172a, #312e81); -fx-background-radius: 8;" />
-            <HBox style="-fx-padding: 40 40;" pickOnBounds="false">
-                <VBox spacing="12.0" HBox.hgrow="ALWAYS" pickOnBounds="false">
-                    <Label style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;" text="Study Smarter. Level Up." />
-                    <Label style="-fx-font-size: 14px; -fx-text-fill: #cbd5e1; -fx-wrap-text: true; -fx-max-width: 600;" text="Experience the full power of the NOVA ecosystem right from your desktop. Select a module below to begin your session and earn XP." />
+        <HBox prefHeight="380.0" styleClass="hero-banner">
 
-                    <HBox spacing="12.0" style="-fx-padding: 15 0 0 0;" alignment="CENTER_LEFT">
-                        <Button onAction="#handleStartLearning" style="-fx-background-color: #ffffff; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 8 20; -fx-background-radius: 4; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 5, 0, 0, 2);" text="▶  Explore Courses" />
-                        <Button onAction="#handleViewLeaderboard" style="-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-padding: 8 20; -fx-background-radius: 4; -fx-border-color: rgba(255,255,255,0.2); -fx-border-radius: 4; -fx-cursor: hand;" text="📊  View Leaderboard" />
+            <StackPane HBox.hgrow="ALWAYS" style="-fx-background-radius: 16 0 0 16;">
+
+                <Pane fx:id="animationPane" prefWidth="600.0" prefHeight="340.0" />
+
+                <VBox alignment="BOTTOM_LEFT" spacing="15" style="-fx-padding: 30;">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="🌍 Join 1,245 students currently online." style="-fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-color: rgba(15,23,42,0.6); -fx-padding: 8 16; -fx-background-radius: 20;" />
                     </HBox>
                 </VBox>
-            </HBox>
-        </StackPane>
+            </StackPane>
 
-        <HBox spacing="20.0">
-            <VBox fx:id="cardCourses" onMouseClicked="#goToCourses" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconCourses" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #eff6ff; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13ZM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-2H6.5a.5.5 0 0 1-.5-.5v-.5Z" fill="#3b82f6"/>
-                </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Interactive Courses" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Resume your structured learning modules and track your overall progress." />
-            </VBox>
-
-            <VBox fx:id="cardForum" onMouseClicked="#goToForum" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconForum" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #ecfdf5; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2Zm-2 9H6V9h12v2Zm-4 3H6v-2h8v2Zm4-6H6V6h12v2Z" fill="#10b981"/>
-                </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="AI Peer Forum" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Collaborate, ask questions, upvote answers, and tutor your peers." />
-            </VBox>
-
-            <VBox fx:id="cardLibrary" onMouseClicked="#goToLibrary" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconLibrary" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #f5f3ff; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M12 2 2 7l10 5 10-5-10-5ZM2 22h20v-2H2v2Zm2-4h3v-7H4v7Zm5 0h3v-7H9v7Zm5 0h3v-7h-3v7Zm5 0h3v-7h-3v7Z" fill="#8b5cf6"/>
-                </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Digital Library" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Access digital books, research papers, and request physical book loans." />
+            <VBox prefWidth="420.0" spacing="25.0" styleClass="hero-banner-right" style="-fx-padding: 50 45;">
+                <Label text="Learn with Nova" style="-fx-text-fill: white; -fx-font-size: 34px; -fx-font-weight: 900;" />
+                <Label text="Dive into interactive modules, collaborate with peers in real-time, and track your academic journey all in one place." wrapText="true" style="-fx-text-fill: #cbd5e1; -fx-font-size: 16px; -fx-line-spacing: 8px;" />
+                <Region VBox.vgrow="ALWAYS" />
+                <Button onAction="#handleStartLearning" maxWidth="Infinity" styleClass="action-btn" text="Explore Courses" />
             </VBox>
         </HBox>
 
-        <HBox spacing="20.0">
-            <VBox fx:id="cardQuiz" onMouseClicked="#goToQuiz" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconQuiz" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #fffbeb; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1Zm4.3 9.3-5.6 5.6c-.39.39-1.02.39-1.41 0l-2.6-2.6c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0l1.9 1.9 4.9-4.9c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41Z" fill="#f59e0b"/>
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+            <Label text="Active Modules" styleClass="text-primary" style="-fx-font-size: 24px; -fx-font-weight: 900;" />
+            <Region HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <HBox spacing="25.0">
+
+            <VBox fx:id="cardCourses" onMouseClicked="#goToCourses" prefWidth="230.0" prefHeight="280.0" styleClass="modern-card">
+                <StackPane prefHeight="220.0" styleClass="modern-card-image-container">
+                    <ImageView fitWidth="180.0" fitHeight="180.0" preserveRatio="true">
+                        <image><Image url="@../images/courses.png" /></image>
+                    </ImageView>
                 </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Skill Quizzes" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Test your knowledge, beat the clock, and unlock achievements." />
+                <VBox alignment="CENTER" prefHeight="60.0">
+                    <Label text="Interactive Courses" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                </VBox>
             </VBox>
 
-            <VBox fx:id="cardGames" onMouseClicked="#goToGames" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconGames" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #fef2f2; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2Zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2Zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5Zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5Z" fill="#ef4444"/>
+            <VBox fx:id="cardForum" onMouseClicked="#goToForum" prefWidth="230.0" prefHeight="280.0" styleClass="modern-card">
+                <StackPane prefHeight="220.0" styleClass="modern-card-image-container">
+                    <ImageView fitWidth="190.0" fitHeight="190.0" preserveRatio="true">
+                        <image><Image url="@../images/forum.png" /></image>
+                    </ImageView>
                 </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Gamification Hub" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Play educational mini-games to boost your focus and earn coins." />
+                <VBox alignment="CENTER" prefHeight="60.0">
+                    <Label text="Peer Forum" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                </VBox>
             </VBox>
 
-            <VBox fx:id="cardRewards" onMouseClicked="#goToRewards" spacing="12.0" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="card-bg" style="-fx-background-radius: 8; -fx-padding: 25; -fx-cursor: hand; -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2); -fx-border-radius: 8;">
-                <StackPane fx:id="iconRewards" alignment="CENTER" prefHeight="50.0" prefWidth="50.0" style="-fx-background-color: #fdf2f8; -fx-background-radius: 12; -fx-max-width: 50.0; -fx-max-height: 50.0;">
-                    <SVGPath content="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2Zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1Zm11 15H4v-2h16v2Zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6Z" fill="#db2777"/>
+            <VBox fx:id="cardLibrary" onMouseClicked="#goToLibrary" prefWidth="230.0" prefHeight="280.0" styleClass="modern-card">
+                <StackPane prefHeight="220.0" styleClass="modern-card-image-container">
+                    <ImageView fitWidth="170.0" fitHeight="170.0" preserveRatio="true">
+                        <image><Image url="@../images/library.png" /></image>
+                    </ImageView>
                 </StackPane>
-                <Label styleClass="text-primary" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Rewards Store" />
-                <Label styleClass="text-secondary" style="-fx-font-size: 13px; -fx-wrap-text: true;" text="Trade your hard-earned NOVA coins for real-world rewards and perks." />
+                <VBox alignment="CENTER" prefHeight="60.0">
+                    <Label text="Digital Library" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                </VBox>
             </VBox>
+
+            <VBox fx:id="cardGames" onMouseClicked="#goToGames" prefWidth="230.0" prefHeight="280.0" styleClass="modern-card">
+                <StackPane prefHeight="220.0" styleClass="modern-card-image-container">
+                    <ImageView fitWidth="190.0" fitHeight="190.0" preserveRatio="true">
+                        <image><Image url="@../images/gamification.png" /></image>
+                    </ImageView>
+                </StackPane>
+                <VBox alignment="CENTER" prefHeight="60.0">
+                    <Label text="Gamification Hub" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                </VBox>
+            </VBox>
+
+            <VBox fx:id="cardQuiz" onMouseClicked="#goToQuiz" prefWidth="230.0" prefHeight="280.0" styleClass="modern-card">
+                <StackPane prefHeight="220.0" styleClass="modern-card-image-container">
+                    <ImageView fitWidth="170.0" fitHeight="170.0" preserveRatio="true">
+                        <image><Image url="@../images/quiz.png" /></image>
+                    </ImageView>
+                </StackPane>
+                <VBox alignment="CENTER" prefHeight="60.0">
+                    <Label text="Skill Quizzes" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold; -fx-font-size: 15px;" />
+                </VBox>
+            </VBox>
+
         </HBox>
 
     </VBox>

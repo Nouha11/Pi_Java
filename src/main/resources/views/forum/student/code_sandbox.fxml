@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #0f172a;" xmlns="[http://javafx.com/javafx/21](http://javafx.com/javafx/21)" xmlns:fx="[http://javafx.com/fxml/1](http://javafx.com/fxml/1)" fx:controller="controllers.forum.CodeSandboxController">
+<AnchorPane prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #0f172a;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forum.CodeSandboxController">
     <children>
         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" spacing="0">
 
@@ -26,9 +26,7 @@
                     <Label text="Language:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;"/>
                     <ComboBox fx:id="languageCombo" prefWidth="120.0" style="-fx-background-color: #0f172a; -fx-text-fill: white; -fx-border-color: #334155; -fx-border-radius: 6; -fx-background-radius: 6;"/>
 
-                    <!-- 🔥 NEW: Share to Forum Button -->
                     <Button mnemonicParsing="false" onAction="#handleShareToForum" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand;" text="↗ Share to Forum"/>
-
                     <Button fx:id="runButton" mnemonicParsing="false" onAction="#handleRunCode" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 6; -fx-cursor: hand;" text="▶ Run Code"/>
                 </children>
             </HBox>
@@ -42,8 +40,8 @@
 
                     <VBox style="-fx-background-color: #000000;">
                         <Label text="TERMINAL OUTPUT" style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 8 15;"/>
-                        <TextArea fx:id="outputArea" editable="false" style="-fx-control-inner-background: #000000; -fx-text-fill: #10b981; -fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;" promptText> Waiting for execution..." VBox.vgrow="ALWAYS" />
-                        </TextArea></VBox>
+                        <TextArea fx:id="outputArea" editable="false" style="-fx-control-inner-background: #000000; -fx-text-fill: #10b981; -fx-font-family: 'Consolas', monospace; -fx-font-size: 14px;" promptText="Waiting for execution..." VBox.vgrow="ALWAYS" />
+                    </VBox>
                 </items>
             </SplitPane>
 

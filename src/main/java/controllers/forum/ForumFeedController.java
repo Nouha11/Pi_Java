@@ -303,9 +303,19 @@ public class ForumFeedController {
     private void refreshFeed() {
         if (allPostsCache == null || postsContainer == null) return;
         final Set<Integer> mySavedPosts = utils.ForumSession.savedPostsPerUser.computeIfAbsent(currentUserId, k -> new java.util.HashSet<>());
+
         List<Post> filteredPosts = allPostsCache.stream()
                 .filter(p -> currentSpaceFilterId == null || (p.getSpaceId() != null && p.getSpaceId().equals(currentSpaceFilterId)))
-                .filter(p -> currentTagFilter == null || (p.getTags() != null && p.getTags().toLowerCase().contains(currentTagFilter)))
+                // 🔥 EXACT TAG MATCHING (Fixes "physics" mathcing "cs")
+                .filter(p -> {
+                    if (currentTagFilter == null) return true;
+                    if (p.getTags() == null || p.getTags().trim().isEmpty()) return false;
+                    String[] tags = p.getTags().toLowerCase().split(",");
+                    for (String t : tags) {
+                        if (t.trim().equals(currentTagFilter)) return true;
+                    }
+                    return false;
+                })
                 .filter(p -> !showSavedOnly || mySavedPosts.contains(p.getId()))
                 .collect(Collectors.toList());
 
@@ -423,7 +433,6 @@ public class ForumFeedController {
 
     private Node createPostCard(final Post post, final Set<Integer> mySavedPosts, final int preloadedCommentCount, Map<String, Integer> reactionCounts, String myReaction) {
 
-        // 🔥 BEAUTIFUL WIDE LAYOUT (No more side voting bar squishing the content)
         VBox mainCard = new VBox(12);
         mainCard.setPadding(new Insets(20, 25, 20, 25));
 
@@ -444,7 +453,7 @@ public class ForumFeedController {
 
         headerRow.getChildren().addAll(spaceBadge, authorLabel);
 
-        // 2. Title & Content (NO MAX HEIGHT!)
+        // 2. Title & Content
         String displayTitle = post.isLocked() ? "🔒 " + post.getTitle() : post.getTitle();
         Label titleLabel = new Label(displayTitle);
         titleLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 18px; -fx-font-weight: 900;");
@@ -452,8 +461,24 @@ public class ForumFeedController {
 
         Label contentLabel = new Label(post.getContent());
         contentLabel.setWrapText(true);
-        // REMOVED setMaxHeight(60) so posts are fully readable without clicking!
         contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 4px;");
+
+        // 🔥 TAGS BOX
+        HBox tagsBox = new HBox(6);
+        if (post.getTags() != null && !post.getTags().trim().isEmpty()) {
+            String[] tags = post.getTags().split(",");
+            for (String tag : tags) {
+                if (!tag.trim().isEmpty()) {
+                    Label tagLabel = new Label("#" + tag.trim().toLowerCase());
+                    tagLabel.setStyle("-fx-text-fill: #8b5cf6; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-color: #f3e8ff; -fx-padding: 4 8; -fx-background-radius: 4; -fx-cursor: hand;");
+                    tagLabel.setOnMouseClicked(ev -> {
+                        ev.consume();
+                        filterByTag(tag.trim());
+                    });
+                    tagsBox.getChildren().add(tagLabel);
+                }
+            }
+        }
 
         // 3. Poll Box
         VBox pollBox = new VBox(8);
@@ -559,7 +584,6 @@ public class ForumFeedController {
         footerRow.setAlignment(Pos.CENTER_LEFT);
         footerRow.setPadding(new Insets(10, 0, 0, 0));
 
-        // 🔥 HORIZONTAL VOTE PILL
         HBox horizontalVoteBox = new HBox(10);
         horizontalVoteBox.setAlignment(Pos.CENTER);
         horizontalVoteBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 4 12;");
@@ -588,7 +612,6 @@ public class ForumFeedController {
 
         horizontalVoteBox.getChildren().addAll(upArrowBtn, voteCount, downArrowBtn);
 
-        // Reactions
         HBox reactionBar = new HBox(8);
         reactionBar.setAlignment(Pos.CENTER_LEFT);
         updateReactionBarUI(reactionBar, post, reactionCounts, myReaction);
@@ -596,7 +619,6 @@ public class ForumFeedController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Comments
         HBox commentsBtn = new HBox(6);
         commentsBtn.setAlignment(Pos.CENTER);
         commentsBtn.setStyle("-fx-padding: 6 12; -fx-background-radius: 6; -fx-background-color: #f1f5f9;");
@@ -604,7 +626,6 @@ public class ForumFeedController {
         commentsLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 12px; -fx-font-weight: bold;");
         commentsBtn.getChildren().add(commentsLabel);
 
-        // Save
         boolean isSaved = mySavedPosts.contains(post.getId());
         HBox saveBtn = new HBox(6);
         saveBtn.setAlignment(Pos.CENTER);
@@ -636,8 +657,10 @@ public class ForumFeedController {
 
         footerRow.getChildren().addAll(horizontalVoteBox, reactionBar, spacer, commentsBtn, saveBtn);
 
-        // Put it all together in the mainCard VBox
-        mainCard.getChildren().addAll(headerRow, titleLabel, contentLabel, pollBox);
+        // Put it all together
+        mainCard.getChildren().addAll(headerRow, titleLabel, contentLabel);
+        if(!tagsBox.getChildren().isEmpty()) mainCard.getChildren().add(tagsBox);
+        mainCard.getChildren().add(pollBox);
         if(!attachmentBox.getChildren().isEmpty()) mainCard.getChildren().add(attachmentBox);
         mainCard.getChildren().add(footerRow);
 
@@ -712,7 +735,9 @@ public class ForumFeedController {
             popupStage.setScene(new Scene(root, 900, 700));
             popupStage.initModality(Modality.APPLICATION_MODAL);
             popupStage.showAndWait();
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void openUserProfile(int userId, String username) {

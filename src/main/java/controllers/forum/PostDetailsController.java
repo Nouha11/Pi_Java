@@ -120,6 +120,24 @@ public class PostDetailsController {
         contentLabel.setText(post.getContent());
         if (statsUpvotesLabel != null) statsUpvotesLabel.setText("👍 Upvotes: " + post.getUpvotes());
 
+        // 🔥 DYNAMICALLY SHOW TAGS ON POST DETAILS
+        VBox parentBox = (VBox) contentLabel.getParent();
+        parentBox.getChildren().removeIf(node -> "tags-box-dynamic".equals(node.getId()));
+        if (post.getTags() != null && !post.getTags().trim().isEmpty()) {
+            HBox tagsBox = new HBox(8);
+            tagsBox.setId("tags-box-dynamic");
+            String[] tags = post.getTags().split(",");
+            for (String tag : tags) {
+                if (!tag.trim().isEmpty()) {
+                    Label tagLabel = new Label("#" + tag.trim().toLowerCase());
+                    tagLabel.setStyle("-fx-text-fill: #8b5cf6; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-color: #f3e8ff; -fx-padding: 5 10; -fx-background-radius: 6;");
+                    tagsBox.getChildren().add(tagLabel);
+                }
+            }
+            int contentIdx = parentBox.getChildren().indexOf(contentLabel);
+            parentBox.getChildren().add(contentIdx + 1, tagsBox);
+        }
+
         if (utils.ForumSession.upvotedPosts.contains(post.getId())) currentPost.setMyVote(1);
         else if (utils.ForumSession.downvotedPosts.contains(post.getId())) currentPost.setMyVote(-1);
         else currentPost.setMyVote(0);
@@ -346,7 +364,6 @@ public class PostDetailsController {
         }
     }
 
-    // 🔥 NEW: Loads, groups, and physically nests replies tightly under the parent comment!
     private void loadComments() {
         commentsContainer.getChildren().clear();
 
@@ -372,44 +389,38 @@ public class PostDetailsController {
                     return;
                 }
 
-                // 1. Grouping Logic (Separate Parents from Nested Replies)
                 List<Comment> topLevelComments = new ArrayList<>();
                 Map<Integer, List<Comment>> nestedRepliesMap = new HashMap<>();
 
                 for (Comment c : allComments) {
                     String content = c.getContent();
-                    // Intercept our hidden tag
                     if (content != null && content.startsWith("[REPLY_TO:")) {
                         int closeIdx = content.indexOf("]");
                         try {
                             int parentId = Integer.parseInt(content.substring(10, closeIdx));
                             nestedRepliesMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(c);
                         } catch (Exception e) {
-                            topLevelComments.add(c); // fallback if parse fails
+                            topLevelComments.add(c);
                         }
                     } else {
                         topLevelComments.add(c);
                     }
                 }
 
-                // 2. Rendering Logic (Cohesive Threads)
                 for (Comment parent : topLevelComments) {
-                    // This container holds the parent AND its replies tightly together to eliminate huge gaps
                     VBox threadBox = new VBox(0);
                     threadBox.setStyle("-fx-background-color: transparent;");
 
                     VBox parentNode = createCommentNode(parent, false, null);
                     threadBox.getChildren().add(parentNode);
 
-                    // Render nested replies directly under this parent, indented nicely!
                     if (nestedRepliesMap.containsKey(parent.getId())) {
-                        VBox repliesContainer = new VBox(8); // Small spacing between replies
-                        repliesContainer.setStyle("-fx-padding: 10 0 0 45;"); // Indent the block of replies
+                        VBox repliesContainer = new VBox(8);
+                        repliesContainer.setStyle("-fx-padding: 10 0 0 45;");
 
                         for (Comment reply : nestedRepliesMap.get(parent.getId())) {
                             VBox replyNode = createCommentNode(reply, true, parent);
 
-                            // Visual threaded line connector
                             HBox threadedReply = new HBox();
                             Region line = new Region();
                             line.setPrefWidth(3);
@@ -436,11 +447,9 @@ public class PostDetailsController {
         }).start();
     }
 
-    // Helper method to create each comment visually
     private VBox createCommentNode(Comment c, boolean isNested, Comment parentComment) {
         VBox commentCard = new VBox(8);
 
-        // Styling differences for parents vs nested replies
         if (isNested) {
             commentCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12 16;");
         } else {
@@ -455,7 +464,6 @@ public class PostDetailsController {
         time.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
         headerBox.getChildren().addAll(author, time);
 
-        // Clean up the text (remove hidden tags or old legacy quote strings so they don't look ugly)
         String rawContent = c.getContent();
         if (rawContent.startsWith("[REPLY_TO:")) {
             int closeIdx = rawContent.indexOf("]");
@@ -492,11 +500,9 @@ public class PostDetailsController {
         actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
         if (!isCensored && !currentPost.isLocked()) {
-            // 🔥 INLINE REPLY BUTTON
             Button replyBtn = new Button("↩ Reply");
             replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #10b981; -fx-cursor: hand; -fx-font-size: 12px; -fx-font-weight: bold;");
             replyBtn.setOnAction(e -> {
-                // Prevent opening multiple boxes under the same comment
                 if (commentCard.getChildren().stream().anyMatch(n -> "inline-box".equals(n.getId()))) return;
 
                 VBox inlineBox = new VBox(8);
@@ -521,13 +527,12 @@ public class PostDetailsController {
                     String text = inlineInput.getText().trim();
                     if(text.length() < 2) return;
 
-                    // If we are replying to a reply, attach to the root parent so the thread doesn't push infinitely right
                     int targetParentId = (isNested && parentComment != null) ? parentComment.getId() : c.getId();
                     String finalContent = "[REPLY_TO:" + targetParentId + "]" + text;
 
                     Comment newComment = new Comment(finalContent, currentPost.getId(), currentUserId, null);
                     commentService.ajouter(newComment);
-                    loadComments(); // Reload everything to show the new nested reply!
+                    loadComments();
                 });
 
                 buttons.getChildren().addAll(cancel, submit);
@@ -845,7 +850,6 @@ public class PostDetailsController {
         saveBtn.setOnAction(e -> {
             String newContent = textArea.getText().trim();
             if (!newContent.isEmpty()) {
-                // Restore hidden tag if it was a nested reply
                 String oldContent = c.getContent();
                 if(oldContent.startsWith("[REPLY_TO:")) {
                     String tag = oldContent.substring(0, oldContent.indexOf("]") + 1);

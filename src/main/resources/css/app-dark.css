@@ -1,0 +1,73 @@
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-background-color: transparent;
+}
+
+/* Dark Theme Colors */
+.bg-background { -fx-background-color: #0b1121; }
+.bg-surface { -fx-background-color: #121b2d; }
+.text-primary { -fx-text-fill: #f8fafc; }
+.text-secondary { -fx-text-fill: #94a3b8; }
+
+/* Hero Banner */
+.hero-banner {
+    -fx-background-color: linear-gradient(to right, #111827, #1e3a8a);
+    -fx-background-radius: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 25, 0, 0, 10);
+}
+.hero-banner-right {
+    -fx-background-color: rgba(15, 23, 42, 0.4);
+    -fx-background-radius: 0 20px 20px 0;
+}
+
+/* Cards */
+.modern-card {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 15, 0, 0, 5);
+}
+.modern-card-image-container {
+    -fx-background-color: #27374d;
+    -fx-background-radius: 15px 15px 0 0;
+}
+.modern-card:hover {
+    -fx-background-color: #2a3b54;
+    -fx-border-color: rgba(0, 242, 254, 0.4);
+    -fx-effect: dropshadow(gaussian, rgba(0, 242, 254, 0.25), 30, 0, 0, 0);
+    -fx-cursor: hand;
+}
+
+/* Buttons & Nav */
+.action-btn {
+    -fx-background-color: linear-gradient(to right, #f97316, #ea580c);
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-size: 16px;
+    -fx-padding: 16 0;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(234, 88, 12, 0.5), 20, 0, 0, 5);
+}
+.action-btn:hover { -fx-background-color: linear-gradient(to right, #fb923c, #f97316); }
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: 800;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+.nav-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: #f8fafc;
+}
+.nav-btn-active, .nav-btn-hub-active {
+    -fx-background-color: rgba(0, 242, 254, 0.12);
+    -fx-text-fill: #00f2fe;
+    -fx-border-color: #00f2fe;
+    -fx-border-width: 0 0 0 4px;
+    -fx-border-radius: 0 8px 8px 0;
+}
